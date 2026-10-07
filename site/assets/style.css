@@ -232,7 +232,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #directives{--fade:rgba(0,0,0,.30)}}
 :root[data-theme="dark"] #directives{--fade:rgba(0,0,0,.30)}
 .dh-mark{display:block;height:0}
-.dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + 72px)}
+/* --dh-h is the measured height of the sticky heading (it wraps on narrow screens) */
+.dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + var(--dh-h,56px) + 16px)}
 .dir{--dir-shadow:0 12px 28px -10px rgba(15,23,42,.22),0 2px 6px rgba(15,23,42,.06);transition:transform .5s var(--spring),box-shadow .35s var(--soft)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}}
 :root[data-theme="dark"] .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}

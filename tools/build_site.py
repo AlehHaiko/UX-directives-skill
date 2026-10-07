@@ -393,13 +393,13 @@ def render_sub(ch, s, prev, nxt, chapters):
             href = f'{target}#{tid.replace("/", "-")}' if target else "#"
             cards.append(
                 f'<article class="dir repealed" id="{anchor}"><p class="dir-meta">'
-                f'<span class="chip">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</span>'
+                f'<a class="chip" href="#{anchor}">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</a>'
                 f'<span class="chip rep">Repealed</span></p>'
                 f'<p class="dir-body">Merged into <a href="{href}"><span class="mono">{tid}</span>—{inline(ttitle)}</a></p></article>')
         else:
             cards.append(
                 f'<article class="dir" id="{anchor}"><p class="dir-meta">'
-                f'<span class="chip">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</span></p>'
+                f'<a class="chip" href="#{anchor}">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</a></p>'
                 f'<h3 class="dir-title">{inline(d["title"])}</h3><p class="dir-body">{inline(d["body"])}</p></article>')
     out.append(f'<section style="{chapter_vars(ch["n"])}"><span class="dh-mark" aria-hidden="true"></span>{sec_head("directives", name)}<div class="dirs">{"".join(cards)}</div></section>')
     out.append(f'<section>{sec_head("summary", name)}'
@@ -767,7 +767,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #directives{--fade:rgba(0,0,0,.30)}}
 :root[data-theme="dark"] #directives{--fade:rgba(0,0,0,.30)}
 .dh-mark{display:block;height:0}
-.dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + 72px)}
+/* --dh-h is the measured height of the sticky heading (it wraps on narrow screens) */
+.dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + var(--dh-h,56px) + 16px)}
 .dir{--dir-shadow:0 12px 28px -10px rgba(15,23,42,.22),0 2px 6px rgba(15,23,42,.06);transition:transform .5s var(--spring),box-shadow .35s var(--soft)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}}
 :root[data-theme="dark"] .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}
@@ -943,6 +944,8 @@ JS = r"""
       var natural=mk.getBoundingClientRect().top+m,top=dh.getBoundingClientRect().top;
       dh.classList.toggle('is-stuck',natural<t-0.5&&top>t-0.5)};
     var req=function(){if(!raf)raf=requestAnimationFrame(stick)};
+    var headH=function(){root.style.setProperty('--dh-h',dh.offsetHeight+'px')};
+    headH();addEventListener('resize',headH);
     addEventListener('scroll',req,{passive:true});addEventListener('scrollend',stick);addEventListener('resize',req);stick();}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];

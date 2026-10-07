@@ -67,6 +67,8 @@
       var natural=mk.getBoundingClientRect().top+m,top=dh.getBoundingClientRect().top;
       dh.classList.toggle('is-stuck',natural<t-0.5&&top>t-0.5)};
     var req=function(){if(!raf)raf=requestAnimationFrame(stick)};
+    var headH=function(){root.style.setProperty('--dh-h',dh.offsetHeight+'px')};
+    headH();addEventListener('resize',headH);
     addEventListener('scroll',req,{passive:true});addEventListener('scrollend',stick);addEventListener('resize',req);stick();}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];
