@@ -51,12 +51,27 @@
   if(sb)sb.addEventListener('scroll',function(){sb.classList.add('is-scrolling');clearTimeout(sbt);sbt=setTimeout(function(){sb.classList.remove('is-scrolling')},900)},{passive:true});
   // remember the menu's scroll position for the next page
   if(sb)addEventListener('pagehide',function(){try{sessionStorage.setItem('bb-nav-y',sb.scrollTop)}catch(e){}});
-  // toc highlight
+  // toc highlight: the last heading at or above the line anchors land on (scroll-margin-top, +1px for fractions)
   var links=[].slice.call(document.querySelectorAll('.toc a'));
-  if(links.length&&'IntersectionObserver' in window){
-    var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
-    var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.remove('is-active')});var a=map[e.target.id];if(a)a.classList.add('is-active');}})},{rootMargin:'-'+(70+(cv?cv.offsetHeight:0))+'px 0px -60% 0px'});
-    Object.keys(map).forEach(function(id){var el=document.getElementById(id);if(el)obs.observe(el)});
+  if(links.length){
+    var heads=[],picked=null,traf=0,tmk=document.querySelector('.dh-mark');
+    var treq=function(){if(!traf)traf=requestAnimationFrame(mark)};
+    links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
+      heads.push({a:a,el:el});if(location.hash==='#'+el.id)picked=a;
+      a.addEventListener('click',function(){picked=a;treq()})});
+    // the directives heading is sticky: the mark before it keeps its natural place
+    var topOf=function(el){return (el.id==='directives'&&tmk?tmk:el).getBoundingClientRect().top};
+    var mark=function(){traf=0;if(!heads.length)return;
+      var L=(parseFloat(getComputedStyle(heads[0].el).scrollMarginTop)||0)+1,cur=null;
+      heads.forEach(function(h){if(topOf(h.el)<=L)cur=h});
+      // at the end of the page the last headings cannot reach the line: the clicked one if it is on screen, else the last
+      if(scrollY>0&&scrollY+innerHeight>=root.scrollHeight-1){var p=null;
+        heads.forEach(function(h){if(h.a===picked){var r=h.el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)p=h}});
+        cur=p||heads[heads.length-1]}
+      links.forEach(function(a){a.classList.toggle('is-active',!!cur&&cur.a===a)})};
+    // a click is "just clicked" only until the reader scrolls by hand
+    ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){picked=null},{passive:true})});
+    addEventListener('scroll',treq,{passive:true});addEventListener('resize',treq);addEventListener('load',treq);mark();
   }
   // directives heading: shadow only while stuck under the banner
   var dh=document.getElementById('directives');
