@@ -493,8 +493,13 @@ SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',fu
 
 def render_404(chapters):
     """The page the host serves for any unknown URL, at any depth: every link resolves against <base href>."""
+    # the quote is the book's own pattern: a markdown blockquote inside .prose, as on the Contents page
+    quote = md_blocks("> “Some things are better not seen, and some things are better lost than found.” \U0001F609\n"
+                      ">\n> **Stephen King,** The Dead Zone (1979)")
     body = ('<div class="page-head"><h1>Page not found</h1>'
-            '<p>No page of the book lives at this address. <a href="index.html">Go to Contents</a></p></div>' + SKIP_FIX)
+            '<p>No page of the book lives at this address.</p>'
+            f'<div class="prose">{quote}</div>'
+            '<p><a href="index.html">Go to Contents</a></p></div>' + SKIP_FIX)
     return layout(f"Page not found—{BOOK_TITLE}", body, chapters, "404.html",
                   cover_html=HOME_COVER.format(arrows=""), base_href=BASE, noindex=True)
 

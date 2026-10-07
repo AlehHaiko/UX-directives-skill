@@ -38,7 +38,8 @@
   </nav>
   <script>(function(){var st={},y=null,sb=document.getElementById('sidebar');try{st=JSON.parse(localStorage.getItem('bb-nav')||'{}');y=sessionStorage.getItem('bb-nav-y')}catch(e){}[].forEach.call(sb.querySelectorAll('.nav-ch'),function(d){var k=d.dataset.ch;if(d.hasAttribute('data-here')){d.open=true;st[k]=true}else if(k in st)d.open=!!st[k];});try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}if(y!==null){sb.scrollTop=+y}else{var c=sb.querySelector('[aria-current]');if(c&&c.offsetTop>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2;}})();</script>
   <main id="main" class="main">
-<div class="page-head"><h1>Page not found</h1><p>No page of the book lives at this address. <a href="index.html">Go to Contents</a></p></div><script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();var m=document.getElementById('main');m.setAttribute('tabindex','-1');m.focus()})</script>
+<div class="page-head"><h1>Page not found</h1><p>No page of the book lives at this address.</p><div class="prose"><blockquote><p>“Some things are better not seen, and some things are better lost than found.” 😉</p>
+<p><strong>Stephen King,</strong> The Dead Zone (1979)</p></blockquote></div><p><a href="index.html">Go to Contents</a></p></div><script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();var m=document.getElementById('main');m.setAttribute('tabindex','-1');m.focus()})</script>
   </main>
   <span id="page-ready" hidden></span>
   
