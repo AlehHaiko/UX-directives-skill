@@ -967,8 +967,10 @@ JS = r"""
     });
     scored.sort(function(a,b){return b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
-    var n=scored.length;say(!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results');
+    var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';say(count);
     if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
+    // the same count, visible: a heading row, not an option (arrows skip it; #q-status does the announcing)
+    else{var head=document.createElement('li');head.className='r-head';head.setAttribute('role','presentation');head.setAttribute('aria-hidden','true');head.textContent=count;res.appendChild(head)}
     items.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+hl(x.id,terms)+'</span><span class="r-t">'+hl(x.title,terms)+'</span><span class="r-b">'+hl(x.body,terms)+(x.sub?' · '+hl(x.sub,terms):'')+'</span></a>';
