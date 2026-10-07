@@ -280,6 +280,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Toggle navigation" title="Hide navigation" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
   <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span></a>
+  <a class="brand-m" href="index.html" aria-label="Home">{HM_MARK.format(stroke="currentColor")}</a>
   <div class="search">
     <label class="sr" for="q">Search directives</label>
     <span class="search-ic">{ICON_SEARCH}</span>
@@ -444,11 +445,14 @@ def render_chapter(ch, prev, nxt, chapters):
     return layout(f'{ch["n"]}. {ch["title"]}—{BOOK_TITLE}', body, chapters, ch["file"], ch["n"], toc, ch["mission"], cv)
 
 
+# The book's emblem: on the Contents banner and, on phones, the header's home link.
+HM_MARK = ('<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill="none" stroke="{stroke}">'
+           '<rect x="685" y="54" width="80" height="80"/><circle cx="725" cy="86" r="48"/>'
+           '<path d="M723,132l-4-49-30-24v-1l36,16,36-16v1l-30,24-4,49h-4Z"/><path d="M720,63l5-5,5,5-5,6-5-6Z"/></svg>')
+
 # Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on #1829c4.
 HOME_COVER = ('<div class="cover cover-home"><div class="cover-in"><div class="hm" role="img" aria-label="Human-Centered Systems Engineering">'
-              '<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill="none" stroke="#fff">'
-              '<rect x="685" y="54" width="80" height="80"/><circle cx="725" cy="86" r="48"/>'
-              '<path d="M723,132l-4-49-30-24v-1l36,16,36-16v1l-30,24-4,49h-4Z"/><path d="M720,63l5-5,5,5-5,6-5-6Z"/></svg>'
+              + HM_MARK.format(stroke="#fff") +
               '<span class="hm-t">Human-Centered Systems Engineering</span></div>{arrows}</div></div>')
 
 
@@ -585,6 +589,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* header content sits on the same 1440px grid as the page: menu button over the sidebar, theme button over the toc */
 .top-in{height:100%;max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px}
 .brand{color:var(--text);font-weight:650;letter-spacing:-.01em;white-space:nowrap}.brand:hover{text-decoration:none}
+.brand-m{display:none;flex:none;place-items:center;width:36px;height:36px;border-radius:8px;color:var(--text)}.brand-m .hm-mark{width:24px}
 .search{position:relative;margin-left:auto;width:min(420px,45vw)}
 .search input{width:100%;height:36px;border:1px solid var(--line);background:var(--bg-soft);color:var(--text);border-radius:8px;padding:0 36px 0 34px;font:inherit;font-size:14px}
 .search input::-webkit-search-cancel-button{display:none}
@@ -863,8 +868,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
 }
-/* phones: the field gets the title's room; Contents in the menu still leads home */
-@media (max-width:520px){.brand{display:none}}
+/* phones: the field gets the title's room; the emblem stands in for it as the home link */
+@media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after,::details-content{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
