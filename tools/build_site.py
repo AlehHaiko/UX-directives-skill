@@ -1039,8 +1039,8 @@ JS = r"""
   // directives heading: shadow only while stuck under the banner
   var dh=document.getElementById('directives');
   if(dh){var mk=document.querySelector('.dh-mark'),raf=0;
-    var stick=function(){raf=0;var t=parseFloat(getComputedStyle(dh).top)||0,m=parseFloat(getComputedStyle(dh).marginTop)||0;
-      var natural=mk.getBoundingClientRect().top+m,top=dh.getBoundingClientRect().top;
+    var stick=function(){raf=0;var t=parseFloat(getComputedStyle(dh).top)||0;
+      var natural=mk.getBoundingClientRect().top,top=dh.getBoundingClientRect().top;
       dh.classList.toggle('is-stuck',natural<t-0.5&&top>t-0.5)};
     var req=function(){if(!raf)raf=requestAnimationFrame(stick)};
     var headH=function(){root.style.setProperty('--dh-h',dh.offsetHeight+'px')};
