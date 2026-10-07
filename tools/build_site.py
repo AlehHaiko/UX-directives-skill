@@ -565,7 +565,11 @@ def main(base="/"):
                 idx.append({"t": "d", "c": c["n"], "ch": c["title"], "id": d["id"], "title": title, "body": body,
                             "url": s["file"] + "#" + d["id"].replace("/", "-"), "sub": s["code"] + " " + s["name"]})
     ASSETS.mkdir(exist_ok=True)
-    (ASSETS / "search-index.js").write_text("window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n", encoding="utf-8")
+    # the search vocabulary (spelling, phrases, synonyms) is data: tools/search_vocab.json
+    vocab = json.loads((ROOT / "tools" / "search_vocab.json").read_text(encoding="utf-8"))
+    (ASSETS / "search-index.js").write_text(
+        "window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n"
+        + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n", encoding="utf-8")
@@ -1054,7 +1058,7 @@ JS = r"""
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
-  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];
+  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],vocab=window.BB_VOCAB||{},sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
   // result count for screen readers, announced once typing pauses
@@ -1073,14 +1077,32 @@ JS = r"""
     var re=new RegExp('(^|[^a-z0-9])('+ts.join('|')+')','ig'),o='',last=0,m;
     while((m=re.exec(s))){var st=m.index+m[1].length;o+=escH(s.slice(last,st))+'<mark>'+escH(m[2])+'</mark>';last=re.lastIndex=st+m[2].length}
     return o+escH(s.slice(last))}
+  // query -> groups of alternatives (vocabulary: tools/search_vocab.json); an entry matches a group if any member matches
+  function groups(v){
+    var sp=vocab.spelling||{},ph=vocab.phrases||{},wd=vocab.words||{},out=[],k;
+    for(k in sp)v=v.split(k).join(sp[k]);
+    var w=v.split(/\s+/),max=1;
+    for(k in ph)max=Math.max(max,k.split(' ').length);
+    for(var i=0;i<w.length;){
+      for(var n=Math.min(max,w.length-i),p=null;n>1&&!(p=ph[w.slice(i,i+n).join(' ')]);n--);
+      if(p){out.push(p.slice());i+=n;continue}
+      var t=w[i++],g=[t].concat(wd[t]||[]);
+      // a plural also tries its singular and the singular's synonyms
+      if(t.length>3&&t.charAt(t.length-1)==='s'){var b=t.slice(0,-1);g=g.concat([b],wd[b]||[])}
+      out.push(g.filter(function(m,j){return g.indexOf(m)===j}));
+    }
+    return out}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
-    var terms=v.split(/\s+/),scored=[];
+    var gs=groups(v),terms=[].concat.apply([],gs),scored=[];
     idx.forEach(function(x){
-      if(!terms.every(function(t){return at(x._h,t)}))return;
-      var s=0,tl=norm(x.title),id=x.id;
-      terms.forEach(function(t){if(id.indexOf(t)===0)s+=50;if(at(tl,t))s+=10;});
+      var s=0,hit=0,tl=norm(x.title),id=x.id;
+      gs.forEach(function(g){
+        if(!g.some(function(t){return at(x._h,t)}))return;
+        hit++;if(g.some(function(t){return id.indexOf(t)===0}))s+=50;if(g.some(function(t){return at(tl,t)}))s+=10;
+      });
+      if(hit<gs.length)return;
       if(x.t==='s')s+=5;if(x.title==='Repealed')s-=20;
       scored.push([s,x]);
     });
