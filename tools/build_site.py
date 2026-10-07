@@ -373,7 +373,7 @@ def render_sub(ch, s, prev, nxt, chapters):
     cv = cover(ch, s, (prev, nxt))
     out = [f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> '
            f'<a href="{ch["file"]}">{ch["n"]}. {esc(ch["title"])}</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{s["num"]}. {esc(name)}</span></p>'
-           f'{crumb_nav(ch, prev, nxt)}</div><h1>{inline(s["governs"])}</h1></div>']
+           f'{crumb_nav(ch, prev, nxt)}</div><h1>{s["code"]} {esc(name)}</h1><p>{inline(s["governs"])}</p></div>']
     out.append(f'<section>{sec_head("ask", name)}<blockquote class="q">{inline(s["ask"])}</blockquote></section>')
     out.append(f'<section>{sec_head("mission", name)}{call("mission", "c-peach", inline(s["mission"]))}</section>')
     out.append(f'<section>{sec_head("heuristics", name)}'
@@ -432,7 +432,7 @@ def render_chapter(ch, prev, nxt, chapters):
         f'<span class="tile-ask">{inline(s["ask"])}</span>'
         f'<span class="card-foot"><span class="tile-count">{len([d for d in s["directives"] if not d["repealed"]])} directives</span>{GO}</span></a>'
         for s in ch["subs"])
-    # the intro's first line is the page h1, styled like a subcategory's "Governs" h1
+    # the intro's first line is the page h1; a subcategory page puts its "Governs" line in the same plain <p> under the h1
     intro = "".join(f"<h1>{inline(x)}</h1>" if i == 0 else f"<p>{inline(x)}</p>" for i, x in enumerate(ch["intro"]))
     cv = cover(ch, None, (prev, nxt))
     body = (f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{ch["n"]}. {esc(ch["title"])}</span></p>'
