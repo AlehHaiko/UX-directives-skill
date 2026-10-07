@@ -125,7 +125,8 @@
   var status=document.getElementById('q-status'),sayT;
   function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
   function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
-  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||''))});
+  // the chapter title (x.ch) is searched but never shown
+  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(x.ch||''))});
   function hl(s,terms){var o=s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});terms.forEach(function(t){if(t.length<2)return;o=o.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;

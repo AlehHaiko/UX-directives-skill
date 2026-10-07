@@ -558,11 +558,11 @@ def main(base="/"):
     idx = []
     for c in chapters:
         for s in c["subs"]:
-            idx.append({"t": "s", "c": c["n"], "id": s["code"], "title": s["name"], "body": s["governs"], "url": s["file"]})
+            idx.append({"t": "s", "c": c["n"], "ch": c["title"], "id": s["code"], "title": s["name"], "body": s["governs"], "url": s["file"]})
             for d in s["directives"]:
                 body = d["body"] if not d["repealed"] else "Repealed—merged into " + d["repealed"][0]
                 title = d["title"] if not d["repealed"] else "Repealed"
-                idx.append({"t": "d", "c": c["n"], "id": d["id"], "title": title, "body": body,
+                idx.append({"t": "d", "c": c["n"], "ch": c["title"], "id": d["id"], "title": title, "body": body,
                             "url": s["file"] + "#" + d["id"].replace("/", "-"), "sub": s["code"] + " " + s["name"]})
     ASSETS.mkdir(exist_ok=True)
     (ASSETS / "search-index.js").write_text("window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n", encoding="utf-8")
@@ -1061,7 +1061,8 @@ JS = r"""
   var status=document.getElementById('q-status'),sayT;
   function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
   function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
-  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||''))});
+  // the chapter title (x.ch) is searched but never shown
+  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(x.ch||''))});
   function hl(s,terms){var o=s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});terms.forEach(function(t){if(t.length<2)return;o=o.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
