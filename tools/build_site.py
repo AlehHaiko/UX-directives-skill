@@ -896,7 +896,9 @@ JS = r"""
   var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
   // opening moves focus into the menu; closing returns it to the button (unless keep)
+  // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
   function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
+    [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,script'))n.inert=open});
     if(open){var f=side.querySelector('a[href],button,summary');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
