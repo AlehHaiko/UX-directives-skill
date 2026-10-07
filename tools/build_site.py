@@ -782,16 +782,20 @@ h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
 section>h2{margin-top:36px}
 /* landing cue: the heading a click in "On this page" lands on twitches from the centre of its text;
-   with reduced motion a ring flashes round its box instead (app.js adds .cue once the scroll stops and sets --cue-x, --cue-l, --cue-d) */
-:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-r:12px;--cue-gap:6px;--cue-ring-dur:.4s;--cue-c:var(--cue-l,var(--link))}
+   with reduced motion a ring flashes round its text instead and fades outward
+   (app.js adds .cue once the scroll stops and sets --cue-x, the text box --cue-bx/-by/-bw/-bh, and the colours --cue-l, --cue-d) */
+:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-r:12px;--cue-ring-w:3px;--cue-ring-gap:6px;--cue-ring-spread:8px;--cue-ring-dur:.9s;--cue-c:var(--cue-l,var(--link))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-c:var(--cue-d,var(--link))}}
 :root[data-theme="dark"]{--cue-c:var(--cue-d,var(--link))}
 .cue{transform-origin:var(--cue-x,50%) center;animation:bb-cue-twitch var(--cue-dur) ease-in-out}
 @keyframes bb-cue-twitch{40%{transform:scale(var(--cue-scale))}75%{transform:scale(var(--cue-dip))}}
-@keyframes bb-cue-ring{0%{opacity:0}15%{opacity:1}100%{opacity:0}}  /* full in the first 60ms of .4s */
+/* of .9s: full by 60ms, held to 210ms, then fading while the gap grows by the spread */
+@keyframes bb-cue-ring{0%{opacity:0}6.67%{opacity:1}23.33%{opacity:1;inset:calc(var(--cue-by) - var(--cue-ring-gap)) auto auto calc(var(--cue-bx) - var(--cue-ring-gap));width:calc(var(--cue-bw) + 2 * var(--cue-ring-gap));height:calc(var(--cue-bh) + 2 * var(--cue-ring-gap));animation-timing-function:ease-out}
+  100%{opacity:0;inset:calc(var(--cue-by) - var(--cue-ring-gap) - var(--cue-ring-spread)) auto auto calc(var(--cue-bx) - var(--cue-ring-gap) - var(--cue-ring-spread));width:calc(var(--cue-bw) + 2 * (var(--cue-ring-gap) + var(--cue-ring-spread)));height:calc(var(--cue-bh) + 2 * (var(--cue-ring-gap) + var(--cue-ring-spread)))}}
 @media (prefers-reduced-motion:reduce){
   .cue{position:relative}
-  .cue::before{content:"";position:absolute;inset:calc(-1 * var(--cue-gap));border:2px solid var(--cue-c);border-radius:var(--cue-r);pointer-events:none;opacity:0;animation:bb-cue-ring var(--cue-ring-dur) ease-out!important}
+  .cue::before{content:"";position:absolute;box-sizing:border-box;inset:calc(var(--cue-by) - var(--cue-ring-gap)) auto auto calc(var(--cue-bx) - var(--cue-ring-gap));width:calc(var(--cue-bw) + 2 * var(--cue-ring-gap));height:calc(var(--cue-bh) + 2 * var(--cue-ring-gap));
+    border:var(--cue-ring-w) solid var(--cue-c);border-radius:var(--cue-r);pointer-events:none;opacity:0;animation:bb-cue-ring var(--cue-ring-dur) linear!important}
 }
 
 /* blocks */
@@ -1013,9 +1017,10 @@ JS = r"""
     if(mix)['--cue-l','--cue-d'].forEach(function(k,i){if(mix[i]!==null)root.style.setProperty(k,mix[i]?'color-mix(in oklab,'+acc+',#000 '+mix[i]+'%)':acc)});
     var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
       var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');
-      // the twitch grows from the centre of the text, not of the column-wide box
-      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect();
-      el.style.setProperty('--cue-x',(tr.left+tr.width/2-el.getBoundingClientRect().left)+'px');
+      // the twitch grows from the centre of the text, not of the column-wide box; the ring wraps the same text box
+      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect(),er=el.getBoundingClientRect();
+      el.style.setProperty('--cue-x',(tr.left+tr.width/2-er.left)+'px');
+      [['bx',tr.left-er.left],['by',tr.top-er.top],['bw',tr.width],['bh',tr.height]].forEach(function(v){el.style.setProperty('--cue-'+v[0],v[1]+'px')});
       void el.offsetWidth;el.classList.add('cue')};
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};

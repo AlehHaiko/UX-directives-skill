@@ -81,9 +81,10 @@
     if(mix)['--cue-l','--cue-d'].forEach(function(k,i){if(mix[i]!==null)root.style.setProperty(k,mix[i]?'color-mix(in oklab,'+acc+',#000 '+mix[i]+'%)':acc)});
     var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
       var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');
-      // the twitch grows from the centre of the text, not of the column-wide box
-      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect();
-      el.style.setProperty('--cue-x',(tr.left+tr.width/2-el.getBoundingClientRect().left)+'px');
+      // the twitch grows from the centre of the text, not of the column-wide box; the ring wraps the same text box
+      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect(),er=el.getBoundingClientRect();
+      el.style.setProperty('--cue-x',(tr.left+tr.width/2-er.left)+'px');
+      [['bx',tr.left-er.left],['by',tr.top-er.top],['bw',tr.width],['bh',tr.height]].forEach(function(v){el.style.setProperty('--cue-'+v[0],v[1]+'px')});
       void el.offsetWidth;el.classList.add('cue')};
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
