@@ -617,6 +617,8 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .skip{position:absolute;left:-999px;top:8px;background:var(--text);color:var(--bg);padding:8px 12px;border-radius:6px;z-index:100}.skip:focus{left:8px}
 :focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:4px}
+/* targets that only scripts focus (a heading after an in-page link, main after the skip link) are not controls: no ring */
+[tabindex="-1"]:focus{outline:none}
 
 /* top bar */
 .top{position:sticky;top:0;z-index:30;height:var(--top);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
