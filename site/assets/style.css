@@ -222,6 +222,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 :root[data-theme="dark"] .dir:not(.repealed){background:#22282b}
 .dir:target{box-shadow:0 0 0 2px var(--ring,var(--ch-dark))}
 .dir:not(.repealed){cursor:default}
+/* hover: the active card comes forward, the others step back (repealed cards stay put) */
 /* the "UX directives" heading stays under the banner while its cards scroll */
 #directives{--bleed:var(--pad,16px);--fade:rgba(15,23,42,.06);position:sticky;top:calc(var(--top) + var(--cover-h));z-index:5;background:var(--bg);margin:24px calc(-1 * var(--bleed)) 0;padding:12px var(--bleed)}
 /* shadow: a soft strip below the heading only, fading out toward both ends */
@@ -233,6 +234,14 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .dh-mark{display:block;height:0}
 /* --dh-h is the measured height of the sticky heading (it wraps on narrow screens) */
 .dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + var(--dh-h,56px) + 16px)}
+.dir{--dir-shadow:0 12px 28px -10px rgba(15,23,42,.22),0 2px 6px rgba(15,23,42,.06);transition:transform .5s var(--spring),box-shadow .35s var(--soft)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}}
+:root[data-theme="dark"] .dir{--dir-shadow:0 12px 28px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4)}
+@media (hover:hover){
+  .dirs:has(.dir:not(.repealed):hover) .dir:not(.repealed):not(:hover){transform:scale(.985)}
+  .dir:not(.repealed):hover{transform:scale(1.015);box-shadow:var(--dir-shadow);position:relative;z-index:1}
+  .dir:target:not(.repealed):hover{box-shadow:0 0 0 2px var(--ring,var(--ch-dark)),var(--dir-shadow)}
+}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dir:target{--ring:var(--ch-accent)}}
 :root[data-theme="dark"] .dir:target{--ring:var(--ch-accent)}
 .dir-meta{display:flex;align-items:center;gap:2px;font-size:11px}
@@ -284,7 +293,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   background:linear-gradient(color-mix(in srgb,var(--ch-mid) calc(var(--ch-mid-op)*100%),transparent),color-mix(in srgb,var(--ch-mid) calc(var(--ch-mid-op)*100%),transparent)),var(--ch-dark)}
 .tile{transition:transform .5s var(--spring),box-shadow .35s var(--soft)}
 .tile:hover{text-decoration:none}
-/* hover: the active tile comes forward */
+/* hover: like directive cards, the active tile comes forward, the others step back */
 @media (hover:hover){
   .tile:hover{transform:scale(1.03);box-shadow:0 14px 30px -10px rgba(15,23,42,.35),0 2px 6px rgba(15,23,42,.08);position:relative;z-index:1}
 }
