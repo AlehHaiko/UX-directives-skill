@@ -3,10 +3,12 @@
 
 Source of truth: ux-directives/references/*.md (the same files the skill uses).
 Run from the repository root:
-    python3 tools/build_site.py
+    python3 tools/build_site.py [--base /path/]
+--base is the URL path the site is served from (default "/").
 Writes the HTML pages to site/ and refreshes site/assets/. No dependencies.
 Favicons in site/ are static files and are not touched.
 """
+import argparse
 import html
 import json
 import math
@@ -240,7 +242,15 @@ NAV_RESTORE = ("(function(){var st={},y=null,sb=document.getElementById('sidebar
                "if(c&&c.offsetTop>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2;}})();")
 
 
-def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html=""):
+def norm_base(path):
+    """The site's base path with one leading and one trailing slash: "" and "/" give "/", "book" gives "/book/"."""
+    path = path.strip().strip("/")
+    return f"/{path}/" if path else "/"
+
+
+def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html="", base_href=None):
+    # Pages link to each other relatively and need no <base>. base_href is for a page served at any URL depth.
+    base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     nav = []
     for c in chapters:
         here = c["n"] == current_ch  # this page belongs to the chapter
@@ -265,7 +275,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <html lang="en" class="preload">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+{base_tag}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc or BOOK_SUBTITLE)}">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -477,9 +487,12 @@ def render_home(chapters, front):
 
 # ---------------------------------------------------------------- build
 DIR_INDEX = {}
+BASE = "/"  # URL path the site is served from; set by --base
 
 
-def main():
+def main(base="/"):
+    global BASE
+    BASE = norm_base(base)
     chapters = [parse_chapter(REF / f"chapter_{i}.md") for i in range(1, 10)]
     for c in chapters:
         for s in c["subs"]:
@@ -1034,4 +1047,7 @@ JS = r"""
 """
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description="Build the static site for The Blue Book of UX Directives.")
+    ap.add_argument("--base", default="/", metavar="PATH",
+                    help='URL path the site is served from, for example "/book/" (default: "/")')
+    main(ap.parse_args().base)
