@@ -558,17 +558,18 @@ def main(base="/"):
     idx = []
     for c in chapters:
         for s in c["subs"]:
-            idx.append({"t": "s", "c": c["n"], "ch": c["title"], "id": s["code"], "title": s["name"], "body": s["governs"], "url": s["file"]})
+            idx.append({"t": "s", "c": c["n"], "id": s["code"], "title": s["name"], "body": s["governs"], "url": s["file"]})
             for d in s["directives"]:
                 body = d["body"] if not d["repealed"] else "Repealed—merged into " + d["repealed"][0]
                 title = d["title"] if not d["repealed"] else "Repealed"
-                idx.append({"t": "d", "c": c["n"], "ch": c["title"], "id": d["id"], "title": title, "body": body,
+                idx.append({"t": "d", "c": c["n"], "id": d["id"], "title": title, "body": body,
                             "url": s["file"] + "#" + d["id"].replace("/", "-"), "sub": s["code"] + " " + s["name"]})
     ASSETS.mkdir(exist_ok=True)
     # the search vocabulary (spelling, phrases, synonyms) is data: tools/search_vocab.json
     vocab = json.loads((ROOT / "tools" / "search_vocab.json").read_text(encoding="utf-8"))
     (ASSETS / "search-index.js").write_text(
         "window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n"
+        + "window.BB_CHAPTERS=" + json.dumps({c["n"]: c["title"] for c in chapters}, ensure_ascii=False, separators=(",", ":")) + ";\n"
         + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
@@ -1058,15 +1059,15 @@ JS = r"""
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
-  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],vocab=window.BB_VOCAB||{},sel=-1,items=[];
+  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
   // result count for screen readers, announced once typing pauses
   var status=document.getElementById('q-status'),sayT;
   function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
   function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
-  // the chapter title (x.ch) is searched but never shown
-  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(x.ch||''))});
+  // the chapter title (BB_CHAPTERS, by chapter number x.c) is searched but never shown
+  idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(chTitles[x.c]||''))});
   function escH(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
   // a term matches only where a word starts: at the start of the text or after a non-alphanumeric character
   function at(h,t){var i=-1;while((i=h.indexOf(t,i+1))>-1){if(!i||!/[a-z0-9]/.test(h.charAt(i-1)))return true}return false}
