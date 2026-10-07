@@ -1,136 +1,91 @@
 # UX Directives — Claude Skill
 
-> A Claude skill that applies the **UX Directives** to any design task — audits, new product design, interaction critique, and AI-mediated interface evaluation.
+> A Claude skill that applies **The Blue Book of UX Directives** to design work: audits, design reviews, topic lookups, and requirements — every finding cited by directive ID.
 
-**Author: [Aleh Haiko](https://github.com/alehhaiko)**
+**Author: [Aleh Haiko](https://www.alehhaiko.com)** · **Read the book online: [lab.alehhaiko.com](https://lab.alehhaiko.com)**
 
 ---
 
 ## What is this?
 
-This is a **Claude Project Skill** authored by **[Aleh Haiko](https://github.com/alehhaiko)** that turns Claude into a senior UX practitioner fluent in the *UX Directives* — a doctrine of Human-Centered Systems Engineering.
+*The Blue Book of UX Directives* is a field manual of Human-Centered Systems Engineering: 9 chapters, 62 subcategories and 550 numbered, command-form directives (IDs like `32/02`), from human cognition to AI-mediated interaction.
 
-When this skill is active in your Claude Project, Claude will:
+This skill bundles the full text of the book, so Claude cites exact directives instead of paraphrasing from memory. When it is installed, Claude will:
 
-- **Audit designs** against all 9 chapters of the Blue Book, citing directive numbers and severity levels
-- **Guide new product design** by surfacing the right constraints before you build
-- **Critique single decisions** with directive-backed rationale, not personal opinion
-- **Evaluate AI interfaces** using Chapter 9 — a dedicated framework for AI-mediated interaction
+- **Audit designs, flows and specs** — each finding names the violated directive (ID and title), the evidence, the fix and a severity weighed by consequence.
+- **Find the directives for a topic** — onboarding, errors, navigation, consent, AI explainability, and so on, grouped by subcategory.
+- **Write requirements and acceptance criteria** traced to directive IDs.
+- **Explain any directive by ID**, including repealed IDs and what replaced them.
 
 ---
 
-## The 9 Chapters of the Blue Book
+## The 9 chapters
 
 | # | Chapter | Governs |
 |---|---------|---------|
-| 1 | **Human Cognition & Behavior** | Attention, cognitive load, recognition, mental models, learnability, simplicity |
-| 2 | **Information Architecture & Wayfinding** | Information hierarchy, discoverability, navigation, progressive disclosure |
-| 3 | **Interaction Mechanics & Agency** | Affordances, direct manipulation, feedback loops, efficiency, Fitts's Law |
-| 4 | **System Behavior & Workflow Logic** | Defaults, anticipation, error prevention, recovery, latency |
-| 5 | **Visual Communication** | Visual hierarchy, contrast, readability, accessibility, information density |
+| 1 | **Human Cognition & Behavior** | Attention, cognitive load, recognition, mental models, metaphors, learnability, simplicity, decision-making |
+| 2 | **Information Architecture & Wayfinding** | Information hierarchy, discoverability, navigation, progressive disclosure, state, explorability, search & labeling |
+| 3 | **Interaction Mechanics & Agency** | Interface objects, affordances, direct manipulation, feedback, efficiency, Fitts's law, input |
+| 4 | **System Behavior & Workflow Logic** | Defaults, anticipation, autonomy, error prevention, recovery, work protection, latency |
+| 5 | **Visual Communication** | Visual hierarchy, contrast, readability, accessibility, information density, color semantics, aesthetics, motion |
 | 6 | **Consistency & Coherence** | Consistency, conventions, patterns, design system integrity |
-| 7 | **Trust, Safety & Responsibility** | Consent & control, transparency, error communication, data integrity |
-| 8 | **Adaptation & Evolution** | Continuity, scalability, observability, validation |
-| 9 | **AI-Mediated Interaction** | Human oversight, automation consent, explainability, trust calibration, graceful failure |
+| 7 | **Trust, Safety & Responsibility** | Consent & control, transparency, error communication, data integrity, privacy, non-manipulation |
+| 8 | **Adaptation & Evolution** | Continuity, scalability, observability, validation, personalization |
+| 9 | **AI-Mediated Interaction** | Human oversight, learning consent, predictability, explainability, confidence, graceful failure, provenance, bias, trust calibration, non-anthropomorphism |
 
 ---
 
-## How to Install
+## Install
 
-### Step 1 — Create a Claude Project
+Download [`ux-directives.skill`](./ux-directives.skill) from this repository and add it to Claude as a skill (in Claude's settings, where skills are managed). The file is a zip of the [`ux-directives/`](./ux-directives) folder, so you can also upload that folder zipped.
 
-Go to [claude.ai](https://claude.ai), create a new **Project**, and open its settings.
-
-### Step 2 — Add the Skill
-
-1. In your Project settings, go to **Skills** (or **Custom Instructions**)
-2. Upload `SKILL.md` from this repository
-3. Optionally, upload the full **Blue Book of UX Directives** as a project knowledge document so Claude can cite specific directive numbers
-
-### Step 3 — Start a conversation
-
-Ask Claude to review a design, audit a flow, or guide a new feature — it will automatically apply the Blue Book framework.
+Claude uses the skill on its own when a task calls for it. You don't need to mention the skill by name.
 
 ---
 
-## Example Prompts
+## Example prompts
 
 ```
-Review this onboarding flow and audit it against UX Directives.
-```
-
-```
-We're designing a dashboard with AI-generated recommendations. 
-What UX directives should govern this feature?
+Audit our account settings screen against the UX Directives. [screenshot]
 ```
 
 ```
-Here's a screenshot of our checkout page. What do you think?
+We're redesigning onboarding — new users get a 9-step tour before they can do anything. What does the Blue Book say?
 ```
 
 ```
-Evaluate this error message design against the Blue Book.
+Write acceptance criteria for an LLM that drafts support replies the agent can send or edit.
+```
+
+```
+What does directive 22/02 say, and how does it apply to an icon-only toolbar?
 ```
 
 ---
 
-## How the Skill Works
-
-When triggered, Claude:
-
-1. **Identifies the task type** (audit, new design, single decision, AI interface)
-2. **Searches project knowledge** for the relevant directive chapters
-3. **Evaluates systematically** using Key Heuristics and Success Indicators
-4. **Classifies findings** by severity: 🔴 Critical · 🟡 Major · 🟢 Minor
-5. **Cites directives by number** (e.g., *Directive 44/03*)
-6. **Pairs every critique with a recommendation**
-
----
-
-## Key Principles
-
-- **The system is responsible**, not the user. Errors, confusion, and inefficiency are design failures.
-- **Defaults are behavioral commitments**, not placeholder values.
-- **Accessibility is equal task capability** — not optional accommodation.
-- **Attention must be earned** — every interruption must justify its cognitive cost.
-- **Aesthetic restraint is functional** — visual noise is a usability defect.
-- **AI behavior must remain understandable, controllable, and trustworthy.**
-- **Design debt is a system risk** — inconsistencies must be tracked and refactored.
-
----
-
-## Repository Structure
+## Repository structure
 
 ```
-UX-directives-skills/
-├── README.md              ← Landing page with install guide & examples
-├── SKILL.md               ← The actual skill file users upload to Claude
-├── LICENSE                ← MIT License
-├── .gitignore
-└── .github/
-    └── ISSUE_TEMPLATE/
-        └── feedback.md    ← Issue template for directive feedback
+UX-directives-skill/
+├── README.md
+├── LICENSE
+├── ux-directives.skill        ← packaged skill (zip of ux-directives/)
+├── ux-directives/             ← the skill
+│   ├── SKILL.md               ← when and how Claude uses the book
+│   └── references/
+│       ├── index.md           ← map: chapters, subcategories, general provisions
+│       └── chapter_1.md … chapter_9.md
+├── site/                      ← the book as a static website (lab.alehhaiko.com)
+└── .github/ISSUE_TEMPLATE/feedback.md
 ```
+
+The previous version of the skill (a single `SKILL.md` that relied on project knowledge) is kept under the tag [`v1`](../../tree/v1).
 
 ---
 
 ## Contributing
 
-The UX Directives is a living doctrine. If you have feedback on specific directives, encounter edge cases, or want to propose additions to any chapter, please open an issue using the feedback template.
-
-Pull requests are welcome for:
-- Clarifications to the SKILL.md trigger logic
-- New example prompts
-- Documentation improvements
-
----
-
-## Author
-
-**Aleh Haiko** — Human-Centered Systems Engineering practitioner and author of the UX Directives.
-
-- Website: [alehhaiko.com](https://www.alehhaiko.com)
-- GitHub: [@alehhaiko](https://github.com/alehhaiko)
+The UX Directives is a living doctrine. If you have feedback on specific directives, encounter edge cases, or want to propose additions, please open an issue using the feedback template.
 
 ---
 
