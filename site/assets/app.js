@@ -127,15 +127,24 @@
   function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
   // the chapter title (x.ch) is searched but never shown
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(x.ch||''))});
-  function hl(s,terms){var o=s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});terms.forEach(function(t){if(t.length<2)return;o=o.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
+  function escH(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  // a term matches only where a word starts: at the start of the text or after a non-alphanumeric character
+  function at(h,t){var i=-1;while((i=h.indexOf(t,i+1))>-1){if(!i||!/[a-z0-9]/.test(h.charAt(i-1)))return true}return false}
+  // marks what the matcher matched: the same word starts, longest term first
+  function hl(s,terms){
+    var ts=terms.filter(function(t){return t.length>1}).sort(function(a,b){return b.length-a.length}).map(function(t){return t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')});
+    if(!ts.length)return escH(s);
+    var re=new RegExp('(^|[^a-z0-9])('+ts.join('|')+')','ig'),o='',last=0,m;
+    while((m=re.exec(s))){var st=m.index+m[1].length;o+=escH(s.slice(last,st))+'<mark>'+escH(m[2])+'</mark>';last=re.lastIndex=st+m[2].length}
+    return o+escH(s.slice(last))}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var terms=v.split(/\s+/),scored=[];
     idx.forEach(function(x){
-      if(!terms.every(function(t){return x._h.indexOf(t)>-1}))return;
+      if(!terms.every(function(t){return at(x._h,t)}))return;
       var s=0,tl=norm(x.title),id=x.id;
-      terms.forEach(function(t){if(id.indexOf(t)===0)s+=50;if(tl.indexOf(t)>-1)s+=10;});
+      terms.forEach(function(t){if(id.indexOf(t)===0)s+=50;if(at(tl,t))s+=10;});
       if(x.t==='s')s+=5;if(x.title==='Repealed')s-=20;
       scored.push([s,x]);
     });
