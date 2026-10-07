@@ -1,0 +1,43 @@
+# CLAUDE.md
+
+This repository holds *The Blue Book of UX Directives* by Aleh Haiko in two forms:
+
+- `ux-directives/` — a Claude skill: `SKILL.md` plus the full book in `references/` (`index.md`, `chapter_1.md` … `chapter_9.md`).
+- `site/` — the book as a static website, published by Vercel at https://lab.alehhaiko.com on every push to `main`.
+
+`ux-directives.skill` is a zip of `ux-directives/` for installing the skill in Claude.
+
+## Source of truth
+
+The Markdown in `ux-directives/references/` is the only source of the book's text. The skill and the website both come from it.
+
+- To change the book, edit the Markdown, then rebuild the site.
+- To change the website's layout, styles or behavior, edit `tools/build_site.py` (templates, CSS and JS live in it), then rebuild.
+- Never edit files in `site/` by hand, except the static favicons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`). The next build overwrites everything else.
+
+Rebuild from the repository root (Python 3, no dependencies):
+
+```
+python3 tools/build_site.py
+```
+
+The build prints the page count (72 pages: 1 home, 9 chapters, 62 subcategories). If it changes, a chapter or subcategory heading was added, renamed or removed.
+
+## After changing the Markdown
+
+Rebuild `ux-directives.skill` so the packaged skill matches the folder:
+
+```
+rm -f ux-directives.skill && zip -r -X -D ux-directives.skill ux-directives -x '*.DS_Store'
+```
+
+## Book conventions
+
+- Directive IDs are `<chapter><subcategory>/<number>`, for example `32/02`; subcategory 9.10 uses `910/05`. IDs are stable: never renumber.
+- Repealed IDs (`15/03`, `22/02`, `22/03`, `94/06`, `94/09`) stay in the text with a pointer to their replacement.
+- Em dashes are unspaced (`word—word`).
+- Directives are imperative, terse and absolute. Keep that register.
+
+## Reviewing the website
+
+Use the `ux-directives` skill to audit the site against the book itself: findings cite directive IDs in the format given in `ux-directives/SKILL.md`.

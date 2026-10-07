@@ -75,11 +75,28 @@ UX-directives-skill/
 │   └── references/
 │       ├── index.md           ← map: chapters, subcategories, general provisions
 │       └── chapter_1.md … chapter_9.md
-├── site/                      ← the book as a static website (lab.alehhaiko.com)
+├── site/                      ← the book as a static website (lab.alehhaiko.com), generated
+├── tools/
+│   └── build_site.py          ← builds site/ from ux-directives/references/
+├── CLAUDE.md                  ← instructions for Claude Code in this repository
 └── .github/ISSUE_TEMPLATE/feedback.md
 ```
 
 The previous version of the skill (a single `SKILL.md` that relied on project knowledge) is kept under the tag [`v1`](../../tree/v1).
+
+---
+
+## Website
+
+[lab.alehhaiko.com](https://lab.alehhaiko.com) is the book as a static website. Vercel publishes the `site/` folder on every push to `main`.
+
+`site/` is generated: do not edit its HTML, CSS or JS by hand. Change the book in `ux-directives/references/*.md` (or the page templates, styles and scripts in `tools/build_site.py`), then rebuild from the repository root:
+
+```
+python3 tools/build_site.py
+```
+
+The script needs Python 3 and nothing else. It rewrites every page in `site/` and the files in `site/assets/`; the favicons in `site/` are static and stay as they are.
 
 ---
 
