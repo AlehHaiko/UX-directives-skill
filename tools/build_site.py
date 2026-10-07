@@ -1095,20 +1095,23 @@ JS = r"""
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
-    var gs=groups(v),terms=[].concat.apply([],gs),scored=[];
+    var gs=groups(v),terms=[].concat.apply([],gs),scored=[],some=[],any=false;
     idx.forEach(function(x){
       var s=0,hit=0,tl=norm(x.title),id=x.id;
       gs.forEach(function(g){
         if(!g.some(function(t){return at(x._h,t)}))return;
         hit++;if(g.some(function(t){return id.indexOf(t)===0}))s+=50;if(g.some(function(t){return at(tl,t)}))s+=10;
       });
-      if(hit<gs.length)return;
+      if(!hit)return;
       if(x.t==='s')s+=5;if(x.title==='Repealed')s-=20;
-      scored.push([s,x]);
+      (hit<gs.length?some:scored).push([s,x,hit]);
     });
-    scored.sort(function(a,b){return b[0]-a[0]});
+    // nothing matches every group: fall back to entries matching any, most groups first, then the usual score
+    if(!scored.length&&gs.length>1&&some.length){any=true;scored=some}
+    scored.sort(function(a,b){return any&&b[2]-a[2]||b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
-    var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';say(count);
+    var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
+    if(any)count='No directive matches all words. Showing directives that match any.';say(count);
     if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
     // the same count, visible: a heading row, not an option (arrows skip it; #q-status does the announcing)
     else{var head=document.createElement('li');head.className='r-head';head.setAttribute('role','presentation');head.setAttribute('aria-hidden','true');head.textContent=count;res.appendChild(head)}
