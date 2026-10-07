@@ -171,7 +171,7 @@
     scored.sort(function(a,b){return any&&b[2]-a[2]||b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
     var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
-    if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n:n)+' that match any.';say(count);
+    if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';say(count);
     if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
     // the same count, visible: a heading row, not an option (arrows skip it; #q-status does the announcing);
     // the any-word notice is a sentence, so it takes the plain look of the no-match line (.r-empty)
