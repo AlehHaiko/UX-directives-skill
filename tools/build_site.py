@@ -249,13 +249,13 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
              if s["file"] == current_file else
              f'<li><a href="{s["file"]}"><span class="num">{s["code"]}</span>{esc(s["name"])}</a></li>')
             for s in c["subs"])
-        label = (f'<span class="nav-ch-n">{c["n"]}.</span><span class="nav-ch-l">{esc(c["title"])}</span>'
-                 f'<span class="chev" aria-hidden="true"></span>')
+        label = f'<span class="nav-ch-n">{c["n"]}.</span><span class="nav-ch-l">{esc(c["title"])}</span>'
+        chev = '<span class="chev" aria-hidden="true"></span>'
         if here:  # row toggles the list; never links to the current chapter
             cur = ' aria-current="page"' if c["file"] == current_file else ""
-            summary = f'<summary><span class="nav-ch-t"{cur}>{label}</span></summary>'
-        else:     # row opens the chapter page (the chapter is expanded there)
-            summary = f'<summary tabindex="-1"><a class="nav-ch-t" href="{c["file"]}">{label}</a></summary>'
+            summary = f'<summary><span class="nav-ch-t"{cur}>{label}</span>{chev}</summary>'
+        else:     # title opens the chapter page (the chapter is expanded there); the chevron toggles the list
+            summary = f'<summary><a class="nav-ch-t" href="{c["file"]}">{label}</a>{chev}</summary>'
         nav.append(
             f'<details class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}"{" open" if here else ""}>'
             f'{summary}<ul>{items}</ul></details>')
@@ -283,9 +283,10 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
   <div class="search">
     <label class="sr" for="q">Search directives</label>
     <span class="search-ic">{ICON_SEARCH}</span>
-    <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" aria-controls="results" aria-expanded="false">
+    <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" role="combobox" aria-autocomplete="list" aria-controls="results" aria-expanded="false">
     <kbd>/</kbd>
     <ol id="results" class="results" role="listbox" hidden></ol>
+    <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
   <button class="theme-btn" aria-label="Toggle color theme" title="Toggle color theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
 </div></header>
@@ -461,7 +462,7 @@ def render_home(chapters, front):
         f'<span class="ch-card-d">{inline(c["intro"][0]) if c["intro"] else ""}</span>'
         f'<span class="card-foot"><span class="ch-card-c">{len(c["subs"])} subcategories</span>{GO}</span></a>' for c in chapters)
     sections = "".join(f'<section class="prose">{md_blocks("## " + n + chr(10) + b)}</section>' for n, b in front)
-    toc = "<ol>" + "".join(f'<li><a href="#{slug(n)}">{n}</a></li>' for n, _ in front) + '<li><a href="#chapters">Chapters</a></li></ol>'
+    toc = '<ol><li><a href="#chapters">Chapters</a></li>' + "".join(f'<li><a href="#{slug(n)}">{n}</a></li>' for n, _ in front) + "</ol>"
     cv = HOME_COVER.format(arrows=cover_arrows((None, (f'1. {chapters[0]["title"]}', chapters[0]["file"]))))
     body = (f'<div class="hero"><p class="hero-k">{AUTHOR}</p><h1>{BOOK_TITLE}</h1><p class="hero-s">{BOOK_SUBTITLE}</p>'
             f'<p class="hero-stats"><span><b>9</b> chapters</span><span><b>{subs}</b> subcategories</span>'
@@ -648,14 +649,16 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-toggle,.nav-home,.nav-ch summary,.nav-ch li a{transition:background-color .35s var(--soft)}
 .nav-home.is-cur,a.nav-home:hover{background:var(--bg-soft);text-decoration:none}
 .nav-home.is-cur{cursor:default}
-.nav-ch summary{list-style:none;cursor:pointer;border-radius:6px;font-weight:600}
-.nav-ch-t{display:flex;gap:6px;align-items:center;padding:6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
+.nav-ch summary{display:flex;align-items:stretch;list-style:none;cursor:pointer;border-radius:6px;font-weight:600}
+.nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 .nav-ch-n{flex:none;align-self:flex-start}.nav-ch-l{flex:1;min-width:0}.nav-ch-t:hover{text-decoration:none}
 .nav-ch summary:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
-.chev{flex:none;width:18px;height:18px;display:grid;place-items:center;transition:transform .6s var(--spring)}
-.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateX(-1px) rotate(-45deg)}
-.nav-ch[open]>summary .chev{transform:rotate(90deg)}
+/* the chevron is the toggle: a 34px strip at the row's end, separate from the title link */
+.chev{flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
+.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring)}
+.nav-ch[open]>summary .chev::before{transform:translateY(-1px) rotate(45deg)}
+.nav-ch summary:has(a) .chev:hover{background:var(--ch-sel)}
 :root{interpolate-size:allow-keywords}
 .nav-ch::details-content{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
 .nav-ch[open]::details-content{block-size:auto}
@@ -695,7 +698,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* prev/next arrows at the banner's edges */
 /* the link is a tall 80px strip (easy to hit); the visible 40px circle sits 30px from the edge */
 /* each arrow's hit area runs from the banner edge to the text column; the 40px circle sits 30px from the edge */
-.cv-arr{position:absolute;top:0;bottom:0;z-index:1;display:block;width:max(80px,calc((100% - var(--measure)) / 2));color:var(--ch-accent);opacity:.35;
+.cv-arr{position:absolute;top:0;bottom:0;z-index:1;display:block;width:max(80px,calc((100% - var(--measure)) / 2));color:var(--ch-accent);opacity:.6;
   transition:opacity .3s var(--soft),background-color .3s var(--soft)}
 .cv-arr::before{content:"";position:absolute;top:50%;width:40px;height:40px;margin-top:-20px;border-radius:50%;transition:background-color .3s var(--soft)}
 .cv-arr svg{position:absolute;top:50%;margin-top:-11px}
@@ -709,9 +712,11 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .cv-arr svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cv-prev{left:10px}.cv-next{right:10px}
 .cover:hover .cv-arr,.cv-arr:focus-visible{opacity:1}
+@media (hover:none){.cv-arr{opacity:1}}
 .cv-arr:hover,.cv-arr:focus-visible{text-decoration:none;outline-offset:-4px}
+.cv-arr:focus-visible{outline-color:var(--ch-accent)}.cover-home .cv-arr:focus-visible{outline-color:#fff}
 .cv-arr:hover::before,.cv-arr:focus-visible::before{background:color-mix(in srgb,var(--ch-accent) 16%,transparent)}
-.cover-home .cv-arr{color:#fff}.cover-home .cv-arr:hover::before{background:rgba(255,255,255,.14)}
+.cover-home .cv-arr{color:#fff}.cover-home .cv-arr:hover::before,.cover-home .cv-arr:focus-visible::before{background:rgba(255,255,255,.14)}
 
 /* page head */
 .page-head{position:relative;margin-top:-6px}
@@ -842,8 +847,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   :root{--cover-h:88px}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:15px}.cv-next::before{right:6px}.cv-next svg{right:15px}.cv-prev{left:0}.cv-next{right:0}
-  .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);transition:transform .2s ease}
-  body.nav-open .sidebar{transform:none}
+  .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
+  body.nav-open .sidebar{transform:none;visibility:visible;transition:transform .2s ease,visibility 0s}
+  body.nav-open{overflow:hidden}
   .ic-panel{display:none}.ic-burger{display:block}
   body.nav-open .ic-burger .l1{transform:translateY(4px) rotate(45deg)}
   body.nav-open .ic-burger .l2{opacity:0}
@@ -852,10 +858,13 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .top-in{padding:0 16px;gap:10px}
   .brand-t{display:inline-block;max-width:34vw;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
   .search{width:auto;flex:1}.search kbd{display:none}
+  .search input{padding:0 10px 0 32px}
   .main{padding:16px 16px 64px}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
 }
+/* phones: the field gets the title's room; Contents in the menu still leads home */
+@media (max-width:520px){.brand{display:none}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after,::details-content{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
@@ -884,15 +893,19 @@ JS = r"""
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
   });
   // mobile nav
-  var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim');
+  var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
-  function setNav(open){document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync()}
+  // opening moves focus into the menu; closing returns it to the button (unless keep)
+  function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
+    if(open){var f=side.querySelector('a[href],button,summary');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
   if(mb){mb.addEventListener('click',function(){if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
-    scrim.addEventListener('click',function(){setNav(false)});mobile.addEventListener('change',sync);sync();}
+    scrim.addEventListener('click',function(){setNav(false)});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&mobile.matches&&document.body.classList.contains('nav-open'))setNav(false)});
+    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();}
   // chapter menu: independent sections, remembered across pages, collapse/expand all
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};
@@ -928,11 +941,15 @@ JS = r"""
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
+  // result count for screen readers, announced once typing pauses
+  var status=document.getElementById('q-status'),sayT;
+  function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
+  function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||''))});
   function hl(s,terms){var o=s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});terms.forEach(function(t){if(t.length<2)return;o=o.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
-    if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');return}
+    if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var terms=v.split(/\s+/),scored=[];
     idx.forEach(function(x){
       if(!terms.every(function(t){return x._h.indexOf(t)>-1}))return;
@@ -943,6 +960,7 @@ JS = r"""
     });
     scored.sort(function(a,b){return b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
+    var n=scored.length;say(!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results');
     if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
     items.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='rc'+x.c;
@@ -958,7 +976,7 @@ JS = r"""
   function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
   function showHist(){
-    var h=hist();res.innerHTML='';sel=-1;items=[];
+    var h=hist();res.innerHTML='';sel=-1;items=[];say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
     var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
     h.forEach(function(x,i){
@@ -979,10 +997,14 @@ JS = r"""
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   q.addEventListener('keydown',function(e){
-    if(e.key==='ArrowDown'){e.preventDefault();move(1)}
-    else if(e.key==='ArrowUp'){e.preventDefault();move(-1)}
-    else if(e.key==='Enter'){var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
-    else if(e.key==='Escape'){q.value='';refresh();res.hidden=true;q.blur()}
+    if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
+    else if(e.key==='Enter'){if(res.hidden)return;var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
+    // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
+    else if(e.key==='Escape'){
+      if(!res.hidden){e.preventDefault();close()}
+      else if(q.value){e.preventDefault();q.value='';q.parentNode.classList.remove('has-val');say('')}
+      else q.blur()}
   });
   // "/" focuses search; typing a letter or digit anywhere outside a field goes into search
   document.addEventListener('keydown',function(e){

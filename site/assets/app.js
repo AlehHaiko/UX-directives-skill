@@ -22,15 +22,19 @@
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
   });
   // mobile nav
-  var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim');
+  var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
-  function setNav(open){document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync()}
+  // opening moves focus into the menu; closing returns it to the button (unless keep)
+  function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
+    if(open){var f=side.querySelector('a[href],button,summary');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
   if(mb){mb.addEventListener('click',function(){if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
-    scrim.addEventListener('click',function(){setNav(false)});mobile.addEventListener('change',sync);sync();}
+    scrim.addEventListener('click',function(){setNav(false)});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&mobile.matches&&document.body.classList.contains('nav-open'))setNav(false)});
+    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();}
   // chapter menu: independent sections, remembered across pages, collapse/expand all
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};
@@ -66,11 +70,15 @@
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
+  // result count for screen readers, announced once typing pauses
+  var status=document.getElementById('q-status'),sayT;
+  function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
+  function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||''))});
   function hl(s,terms){var o=s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});terms.forEach(function(t){if(t.length<2)return;o=o.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
-    if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');return}
+    if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var terms=v.split(/\s+/),scored=[];
     idx.forEach(function(x){
       if(!terms.every(function(t){return x._h.indexOf(t)>-1}))return;
@@ -81,6 +89,7 @@
     });
     scored.sort(function(a,b){return b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
+    var n=scored.length;say(!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results');
     if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
     items.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='rc'+x.c;
@@ -96,7 +105,7 @@
   function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
   function showHist(){
-    var h=hist();res.innerHTML='';sel=-1;items=[];
+    var h=hist();res.innerHTML='';sel=-1;items=[];say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
     var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
     h.forEach(function(x,i){
@@ -117,10 +126,14 @@
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   q.addEventListener('keydown',function(e){
-    if(e.key==='ArrowDown'){e.preventDefault();move(1)}
-    else if(e.key==='ArrowUp'){e.preventDefault();move(-1)}
-    else if(e.key==='Enter'){var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
-    else if(e.key==='Escape'){q.value='';refresh();res.hidden=true;q.blur()}
+    if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
+    else if(e.key==='Enter'){if(res.hidden)return;var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
+    // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
+    else if(e.key==='Escape'){
+      if(!res.hidden){e.preventDefault();close()}
+      else if(q.value){e.preventDefault();q.value='';q.parentNode.classList.remove('has-val');say('')}
+      else q.blur()}
   });
   // "/" focuses search; typing a letter or digit anywhere outside a field goes into search
   document.addEventListener('keydown',function(e){
