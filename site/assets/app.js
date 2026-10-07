@@ -92,8 +92,8 @@
     [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
       el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
-        // where the jump will stop: the heading's line, kept within the page
-        var d=el.getBoundingClientRect().top-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
+        // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
+        var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
         cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
         cueEl=el;if(Math.abs(cueY-scrollY)<1){cueNow();return}
         addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
@@ -109,7 +109,14 @@
     var req=function(){if(!raf)raf=requestAnimationFrame(stick)};
     var headH=function(){root.style.setProperty('--dh-h',dh.offsetHeight+'px')};
     headH();addEventListener('resize',headH);
-    addEventListener('scroll',req,{passive:true});addEventListener('scrollend',stick);addEventListener('resize',req);stick();}
+    addEventListener('scroll',req,{passive:true});addEventListener('scrollend',stick);addEventListener('resize',req);stick();
+    // links to the heading: a native jump lands by its stuck place, so go to the mark's line and set hash and focus by hand
+    // (location.hash, not pushState: it moves :target too; the scroll it starts is replaced by the one below)
+    [].forEach.call(document.querySelectorAll('a[href="#directives"]'),function(a){a.addEventListener('click',function(e){
+      if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();
+      var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(dh).scrollMarginTop)||0);
+      if(location.hash!=='#directives')location.hash='directives';
+      focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],sel=-1,items=[];
   if(!q)return;
