@@ -132,7 +132,8 @@
   q.addEventListener('keydown',function(e){
     if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
     else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
-    else if(e.key==='Enter'){if(res.hidden)return;var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
+    // Enter on a closed list reopens the results for the current query; on an open list it follows the selection
+    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
     // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
     else if(e.key==='Escape'){
       if(!res.hidden){e.preventDefault();close()}
