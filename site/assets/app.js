@@ -1,10 +1,8 @@
 
 (function(){
   var root=document.documentElement;
-  // sticky cover: keep anchors clear of it
+  // sticky cover: --cover-h comes from CSS alone, so it follows the width; land a #id clear of it
   var cv=document.querySelector('body>.cover');
-  function coverH(){root.style.setProperty('--cover-h',(cv?cv.offsetHeight:0)+'px')}
-  coverH();addEventListener('resize',coverH);
   if(location.hash){var tg=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(tg)setTimeout(function(){tg.scrollIntoView({behavior:'instant'})},0)}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
