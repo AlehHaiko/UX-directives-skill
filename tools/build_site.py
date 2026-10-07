@@ -1016,12 +1016,11 @@ JS = r"""
       else if(q.value){e.preventDefault();q.value='';q.parentNode.classList.remove('has-val');say('')}
       else q.blur()}
   });
-  // "/" focuses search; typing a letter or digit anywhere outside a field goes into search
+  // "/" focuses search from anywhere outside a field
   document.addEventListener('keydown',function(e){
     var el=document.activeElement,inField=el&&(/input|textarea|select/i.test(el.tagName)||el.isContentEditable);
     if(inField||e.ctrlKey||e.metaKey||e.altKey)return;
-    if(e.key==='/'){e.preventDefault();q.focus({preventScroll:true});return}
-    if(e.key.length===1&&/[\p{L}\p{N}]/u.test(e.key)){e.preventDefault();q.focus({preventScroll:true});q.value+=e.key;refresh()}
+    if(e.key==='/'){e.preventDefault();q.focus({preventScroll:true})}
   });
   document.addEventListener('click',function(e){if(!e.target.closest('.search')){res.hidden=true;q.setAttribute('aria-expanded','false')}});
   var ic=document.querySelector('.search-ic');
