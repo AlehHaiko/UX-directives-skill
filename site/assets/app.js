@@ -73,6 +73,26 @@
     ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){picked=null},{passive:true})});
     addEventListener('scroll',treq,{passive:true});addEventListener('resize',treq);addEventListener('load',treq);mark();
   }
+  // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
+  var toc=document.querySelector('.toc');
+  if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
+    if(acc)root.style.setProperty('--cue-color',acc);
+    var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
+      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');void el.offsetWidth;el.classList.add('cue')};
+    // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
+    var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
+    var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
+    [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
+      el.addEventListener('animationend',function(e){if(e.target===el&&e.animationName==='bb-cue-out')el.classList.remove('cue')});
+      a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        // where the jump will stop: the heading's line, kept within the page
+        var d=el.getBoundingClientRect().top-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
+        cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
+        cueEl=el;if(Math.abs(cueY-scrollY)<1){cueNow();return}
+        addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
+        // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
+        clearTimeout(cueT);cueT=setTimeout(cueNow,400)})});
+  }
   // directives heading: shadow only while stuck under the banner
   var dh=document.getElementById('directives');
   if(dh){var mk=document.querySelector('.dh-mark'),raf=0;

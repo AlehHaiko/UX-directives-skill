@@ -774,6 +774,16 @@ h1,.lede{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em
 h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-weight:650;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
 section>h2{margin-top:36px}
+/* landing cue: the heading a click in "On this page" lands on twitches and glows in the chapter accent (app.js adds .cue once the scroll stops) */
+:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-fade:1s;--cue-blur:.3em;--cue-glow:85%}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-glow:55%}}
+:root[data-theme="dark"]{--cue-glow:55%}
+.cue{--cue-c:color-mix(in srgb,var(--cue-color,var(--link)) var(--cue-glow),transparent);--cue-shadow:0 0 calc(var(--cue-blur) / 3) var(--cue-c),0 0 var(--cue-blur) var(--cue-c);--cue-none:0 0 calc(var(--cue-blur) / 3) transparent,0 0 var(--cue-blur) transparent;
+  transform-origin:left center;animation:bb-cue-twitch var(--cue-dur) ease-in-out,bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)}
+@keyframes bb-cue-twitch{40%{transform:scale(var(--cue-scale))}75%{transform:scale(var(--cue-dip))}}
+@keyframes bb-cue-in{from{text-shadow:var(--cue-none)}to{text-shadow:var(--cue-shadow)}}
+@keyframes bb-cue-out{from{text-shadow:var(--cue-shadow)}to{text-shadow:var(--cue-none)}}
+@media (prefers-reduced-motion:reduce){.cue{animation:bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)!important}}
 
 /* blocks */
 .q{margin:4px;padding:2px 0 2px 10px;border-left:3px solid var(--quote)}
@@ -985,6 +995,26 @@ JS = r"""
     // a click is "just clicked" only until the reader scrolls by hand
     ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){picked=null},{passive:true})});
     addEventListener('scroll',treq,{passive:true});addEventListener('resize',treq);addEventListener('load',treq);mark();
+  }
+  // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
+  var toc=document.querySelector('.toc');
+  if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
+    if(acc)root.style.setProperty('--cue-color',acc);
+    var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
+      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');void el.offsetWidth;el.classList.add('cue')};
+    // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
+    var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
+    var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
+    [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
+      el.addEventListener('animationend',function(e){if(e.target===el&&e.animationName==='bb-cue-out')el.classList.remove('cue')});
+      a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+        // where the jump will stop: the heading's line, kept within the page
+        var d=el.getBoundingClientRect().top-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
+        cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
+        cueEl=el;if(Math.abs(cueY-scrollY)<1){cueNow();return}
+        addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
+        // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
+        clearTimeout(cueT);cueT=setTimeout(cueNow,400)})});
   }
   // directives heading: shadow only while stuck under the banner
   var dh=document.getElementById('directives');
