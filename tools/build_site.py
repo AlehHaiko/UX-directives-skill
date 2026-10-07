@@ -5,7 +5,7 @@ Source of truth: ux-directives/references/*.md (the same files the skill uses).
 Run from the repository root:
     python3 tools/build_site.py [--base /path/]
 --base is the URL path the site is served from (default "/").
-Writes the HTML pages to site/ and refreshes site/assets/. No dependencies.
+Writes the HTML pages and 404.html to site/ and refreshes site/assets/. No dependencies.
 Favicons in site/ are static files and are not touched.
 """
 import argparse
@@ -248,9 +248,10 @@ def norm_base(path):
     return f"/{path}/" if path else "/"
 
 
-def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html="", base_href=None):
+def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html="", base_href=None, noindex=False):
     # Pages link to each other relatively and need no <base>. base_href is for a page served at any URL depth.
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
+    robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     nav = []
     for c in chapters:
         here = c["n"] == current_ch  # this page belongs to the chapter
@@ -278,7 +279,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 {base_tag}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc or BOOK_SUBTITLE)}">
-<link rel="icon" href="favicon.ico" sizes="any">
+{robots}<link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
@@ -485,6 +486,19 @@ def render_home(chapters, front):
     return layout(BOOK_TITLE, body, chapters, "index.html", None, toc, cover_html=cv)
 
 
+# Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
+SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
+            "var m=document.getElementById('main');m.setAttribute('tabindex','-1');m.focus()})</script>")
+
+
+def render_404(chapters):
+    """The page the host serves for any unknown URL, at any depth: every link resolves against <base href>."""
+    body = ('<div class="page-head"><h1>Page not found</h1>'
+            '<p>No page of the book lives at this address. <a href="index.html">Go to Contents</a></p></div>' + SKIP_FIX)
+    return layout(f"Page not found—{BOOK_TITLE}", body, chapters, "404.html",
+                  cover_html=HOME_COVER.format(arrows=""), base_href=BASE, noindex=True)
+
+
 # ---------------------------------------------------------------- build
 DIR_INDEX = {}
 BASE = "/"  # URL path the site is served from; set by --base
@@ -509,7 +523,7 @@ def main(base="/"):
             return (f'{item[1]["n"]}. {item[1]["title"]}', item[1]["file"], item[1]["n"])
         return (f'{item[2]["code"]} {item[2]["name"]}', item[2]["file"], item[1]["n"])
 
-    expected = {"index.html"} | {c["file"] for c in chapters} | {s["file"] for c in chapters for s in c["subs"]}
+    expected = {"index.html", "404.html"} | {c["file"] for c in chapters} | {s["file"] for c in chapters for s in c["subs"]}
     for f in HERE.glob("*.html"):
         if f.name not in expected:  # remove pages whose subcategory was renamed or removed
             try:
@@ -526,6 +540,8 @@ def main(base="/"):
         else:
             html_ = render_sub(item[1], item[2], prev, nxt, chapters)
             (HERE / item[2]["file"]).write_text(html_, encoding="utf-8")
+
+    (HERE / "404.html").write_text(render_404(chapters), encoding="utf-8")  # not counted as a page of the book
 
     idx = []
     for c in chapters:
