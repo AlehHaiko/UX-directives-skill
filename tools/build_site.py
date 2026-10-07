@@ -345,7 +345,7 @@ def cover(ch, s=None, nav=(None, None)):
                 f'<span class="cv-1"><span class="cv-n">{ch["n"]}.</span> {esc(ch["title"])}</span>{cover_arrows(nav)}</div></div>')
     return (f'<div class="cover cover-css" style="{chapter_vars(ch["n"])}"><div class="cover-in">'
             f'<span class="cv-1"><span class="cv-n">{ch["n"]}.</span> {esc(ch["title"])}</span>'
-            f'<span class="cv-2"><span class="cv-n">{s["num"]}.</span> {esc(s["name"])}</span>{cover_arrows(nav)}</div></div>')
+            f'<h1 class="cv-2"><span class="cv-n">{s["num"]}.</span> {esc(s["name"])}</h1>{cover_arrows(nav)}</div></div>')
 
 
 # Emoji sit inside the colored blocks (left column), not in the section headings.
@@ -373,7 +373,7 @@ def render_sub(ch, s, prev, nxt, chapters):
     cv = cover(ch, s, (prev, nxt))
     out = [f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> '
            f'<a href="{ch["file"]}">{ch["n"]}. {esc(ch["title"])}</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{s["num"]}. {esc(name)}</span></p>'
-           f'{crumb_nav(ch, prev, nxt)}</div><h1>{s["code"]} {esc(name)}</h1><p>{inline(s["governs"])}</p></div>']
+           f'{crumb_nav(ch, prev, nxt)}</div><p class="lede">{inline(s["governs"])}</p></div>']
     out.append(f'<section>{sec_head("ask", name)}<blockquote class="q">{inline(s["ask"])}</blockquote></section>')
     out.append(f'<section>{sec_head("mission", name)}{call("mission", "c-peach", inline(s["mission"]))}</section>')
     out.append(f'<section>{sec_head("heuristics", name)}'
@@ -432,7 +432,7 @@ def render_chapter(ch, prev, nxt, chapters):
         f'<span class="tile-ask">{inline(s["ask"])}</span>'
         f'<span class="card-foot"><span class="tile-count">{len([d for d in s["directives"] if not d["repealed"]])} directives</span>{GO}</span></a>'
         for s in ch["subs"])
-    # the intro's first line is the page h1; a subcategory page puts its "Governs" line in the same plain <p> under the h1
+    # the intro's first line is the page h1, styled like a subcategory's "Governs" line (p.lede; that page's h1 is the banner name)
     intro = "".join(f"<h1>{inline(x)}</h1>" if i == 0 else f"<p>{inline(x)}</p>" for i, x in enumerate(ch["intro"]))
     cv = cover(ch, None, (prev, nxt))
     body = (f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{ch["n"]}. {esc(ch["title"])}</span></p>'
@@ -693,7 +693,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .cover-css{background:linear-gradient(color-mix(in srgb,var(--ch-mid) calc(var(--ch-mid-op)*100%),transparent),color-mix(in srgb,var(--ch-mid) calc(var(--ch-mid-op)*100%),transparent)),var(--ch-dark)}
 .cv-1{color:var(--ch-light);font-size:15px;text-transform:uppercase;letter-spacing:.12em;font-weight:500;line-height:1}
 .cover-ch .cv-1{margin:0;font-size:24px;letter-spacing:.08em;line-height:1;text-transform:uppercase}
-.cv-2{color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
+.cv-2{margin:0;color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
 .cv-n{font-family:var(--mono);font-weight:500}
 .cover-home{background:#1829c4}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
@@ -734,7 +734,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .cn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}a.cn:hover{background:var(--ch-hov);text-decoration:none}
 .cn.is-off{opacity:.25}.crumbs .sep{margin:0 6px;color:var(--arrow);font-size:.85em}.crumbs a{color:var(--muted)}
-h1{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em;margin:40px 0 18px;font-weight:700}
+h1,.lede{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em;margin:40px 0 18px;font-weight:700}
 h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-weight:650;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
 section>h2{margin-top:36px}
