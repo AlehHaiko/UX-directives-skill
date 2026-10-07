@@ -41,7 +41,7 @@ There are no automated tests. These are the checks, in the order the work rules 
 python3 tools/build_site.py && git diff --stat
 ```
 
-Healthy output: `Built 72 pages: 1 home, 9 chapters, 62 subcategories; 555 directive IDs indexed.` The diff touches only the files the pass meant to change (a template or CSS/JS change rewrites all 72 pages and `site/assets/`; that is expected).
+Healthy output: `Built 72 pages: 1 home, 9 chapters, 62 subcategories; 555 directive IDs indexed.` `site/` then holds 73 HTML files: the 72 pages plus `404.html`. The diff touches only the files the pass meant to change (a template or CSS/JS change rewrites all 72 pages and `site/assets/`; that is expected).
 
 **Local preview.** `file://` loads pages without CSS and JS, so serve the folder:
 
