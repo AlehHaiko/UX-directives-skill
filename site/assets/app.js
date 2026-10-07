@@ -76,14 +76,20 @@
   // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
   var toc=document.querySelector('.toc');
   if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
-    if(acc)root.style.setProperty('--cue-color',acc);
+    // ring colour per theme: the chapter accent, darkened where the build found it below 3:1 on the page background
+    var mix={"#ee82ee":[10,0],"#3ee439":[20,0],"#00ffff":[28,0],"#ffa528":[15,0],"#fff500":[30,0],"#ffd596":[25,0],"#ffa500":[15,0],"#1ef58d":[24,0],"#28fff1":[28,0]}[acc];
+    if(mix)['--cue-l','--cue-d'].forEach(function(k,i){if(mix[i]!==null)root.style.setProperty(k,mix[i]?'color-mix(in oklab,'+acc+',#000 '+mix[i]+'%)':acc)});
     var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
-      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');void el.offsetWidth;el.classList.add('cue')};
+      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');
+      // the twitch grows from the centre of the text, not of the column-wide box
+      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect();
+      el.style.setProperty('--cue-x',(tr.left+tr.width/2-el.getBoundingClientRect().left)+'px');
+      void el.offsetWidth;el.classList.add('cue')};
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
     [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      el.addEventListener('animationend',function(e){if(e.target===el&&e.animationName==='bb-cue-out')el.classList.remove('cue')});
+      el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line, kept within the page
         var d=el.getBoundingClientRect().top-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);

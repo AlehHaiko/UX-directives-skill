@@ -224,6 +224,13 @@ TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10
 TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TINT_TARGETS.items()}
          for n, v in PALETTE.items()}
 
+# Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
+# percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
+def cue_mix(accent, bg):
+    L,C,h=rgb2oklch(hex2rgb(accent)); bgc=hex2rgb(bg)
+    return next((p for p in range(101) if cr(oklch2rgb(L*(1-p/100),C*(1-p/100),h),bgc)>=3), None)
+CUE_MIX = {v[4]: [cue_mix(v[4], "#ffffff"), cue_mix(v[4], "#191919")] for v in PALETTE.values()}  # accent: [light %, dark %]
+
 
 def chapter_vars(n):
     d, m, o, l, a, b = PALETTE[n]
@@ -562,7 +569,7 @@ def main(base="/"):
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n", encoding="utf-8")
-    (ASSETS / "app.js").write_text(JS, encoding="utf-8")
+    (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
     print(f"Built {1 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories; {n_dirs} directive IDs indexed.")
 
@@ -774,16 +781,18 @@ h1,.lede{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em
 h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-weight:650;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
 section>h2{margin-top:36px}
-/* landing cue: the heading a click in "On this page" lands on twitches and glows in the chapter accent (app.js adds .cue once the scroll stops) */
-:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-fade:1s;--cue-blur:.3em;--cue-glow:85%}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-glow:55%}}
-:root[data-theme="dark"]{--cue-glow:55%}
-.cue{--cue-c:color-mix(in srgb,var(--cue-color,var(--link)) var(--cue-glow),transparent);--cue-shadow:0 0 calc(var(--cue-blur) / 3) var(--cue-c),0 0 var(--cue-blur) var(--cue-c);--cue-none:0 0 calc(var(--cue-blur) / 3) transparent,0 0 var(--cue-blur) transparent;
-  transform-origin:left center;animation:bb-cue-twitch var(--cue-dur) ease-in-out,bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)}
+/* landing cue: the heading a click in "On this page" lands on twitches from the centre of its text;
+   with reduced motion a ring flashes round its box instead (app.js adds .cue once the scroll stops and sets --cue-x, --cue-l, --cue-d) */
+:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-r:12px;--cue-gap:6px;--cue-ring-dur:.4s;--cue-c:var(--cue-l,var(--link))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-c:var(--cue-d,var(--link))}}
+:root[data-theme="dark"]{--cue-c:var(--cue-d,var(--link))}
+.cue{transform-origin:var(--cue-x,50%) center;animation:bb-cue-twitch var(--cue-dur) ease-in-out}
 @keyframes bb-cue-twitch{40%{transform:scale(var(--cue-scale))}75%{transform:scale(var(--cue-dip))}}
-@keyframes bb-cue-in{from{text-shadow:var(--cue-none)}to{text-shadow:var(--cue-shadow)}}
-@keyframes bb-cue-out{from{text-shadow:var(--cue-shadow)}to{text-shadow:var(--cue-none)}}
-@media (prefers-reduced-motion:reduce){.cue{animation:bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)!important}}
+@keyframes bb-cue-ring{0%{opacity:0}15%{opacity:1}100%{opacity:0}}  /* full in the first 60ms of .4s */
+@media (prefers-reduced-motion:reduce){
+  .cue{position:relative}
+  .cue::before{content:"";position:absolute;inset:calc(-1 * var(--cue-gap));border:2px solid var(--cue-c);border-radius:var(--cue-r);pointer-events:none;opacity:0;animation:bb-cue-ring var(--cue-ring-dur) ease-out!important}
+}
 
 /* blocks */
 .q{margin:4px;padding:2px 0 2px 10px;border-left:3px solid var(--quote)}
@@ -999,14 +1008,20 @@ JS = r"""
   // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
   var toc=document.querySelector('.toc');
   if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
-    if(acc)root.style.setProperty('--cue-color',acc);
+    // ring colour per theme: the chapter accent, darkened where the build found it below 3:1 on the page background
+    var mix=__CUE_MIX__[acc];
+    if(mix)['--cue-l','--cue-d'].forEach(function(k,i){if(mix[i]!==null)root.style.setProperty(k,mix[i]?'color-mix(in oklab,'+acc+',#000 '+mix[i]+'%)':acc)});
     var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
-      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');void el.offsetWidth;el.classList.add('cue')};
+      var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');
+      // the twitch grows from the centre of the text, not of the column-wide box
+      var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect();
+      el.style.setProperty('--cue-x',(tr.left+tr.width/2-el.getBoundingClientRect().left)+'px');
+      void el.offsetWidth;el.classList.add('cue')};
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
     [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      el.addEventListener('animationend',function(e){if(e.target===el&&e.animationName==='bb-cue-out')el.classList.remove('cue')});
+      el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line, kept within the page
         var d=el.getBoundingClientRect().top-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);

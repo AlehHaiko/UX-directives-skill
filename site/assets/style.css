@@ -205,16 +205,18 @@ h1,.lede{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em
 h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-weight:650;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
 section>h2{margin-top:36px}
-/* landing cue: the heading a click in "On this page" lands on twitches and glows in the chapter accent (app.js adds .cue once the scroll stops) */
-:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-fade:1s;--cue-blur:.3em;--cue-glow:85%}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-glow:55%}}
-:root[data-theme="dark"]{--cue-glow:55%}
-.cue{--cue-c:color-mix(in srgb,var(--cue-color,var(--link)) var(--cue-glow),transparent);--cue-shadow:0 0 calc(var(--cue-blur) / 3) var(--cue-c),0 0 var(--cue-blur) var(--cue-c);--cue-none:0 0 calc(var(--cue-blur) / 3) transparent,0 0 var(--cue-blur) transparent;
-  transform-origin:left center;animation:bb-cue-twitch var(--cue-dur) ease-in-out,bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)}
+/* landing cue: the heading a click in "On this page" lands on twitches from the centre of its text;
+   with reduced motion a ring flashes round its box instead (app.js adds .cue once the scroll stops and sets --cue-x, --cue-l, --cue-d) */
+:root{--cue-scale:1.03;--cue-dip:.99;--cue-dur:.3s;--cue-r:12px;--cue-gap:6px;--cue-ring-dur:.4s;--cue-c:var(--cue-l,var(--link))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--cue-c:var(--cue-d,var(--link))}}
+:root[data-theme="dark"]{--cue-c:var(--cue-d,var(--link))}
+.cue{transform-origin:var(--cue-x,50%) center;animation:bb-cue-twitch var(--cue-dur) ease-in-out}
 @keyframes bb-cue-twitch{40%{transform:scale(var(--cue-scale))}75%{transform:scale(var(--cue-dip))}}
-@keyframes bb-cue-in{from{text-shadow:var(--cue-none)}to{text-shadow:var(--cue-shadow)}}
-@keyframes bb-cue-out{from{text-shadow:var(--cue-shadow)}to{text-shadow:var(--cue-none)}}
-@media (prefers-reduced-motion:reduce){.cue{animation:bb-cue-in var(--cue-dur) ease-out,bb-cue-out var(--cue-fade) ease-out var(--cue-dur)!important}}
+@keyframes bb-cue-ring{0%{opacity:0}15%{opacity:1}100%{opacity:0}}  /* full in the first 60ms of .4s */
+@media (prefers-reduced-motion:reduce){
+  .cue{position:relative}
+  .cue::before{content:"";position:absolute;inset:calc(-1 * var(--cue-gap));border:2px solid var(--cue-c);border-radius:var(--cue-r);pointer-events:none;opacity:0;animation:bb-cue-ring var(--cue-ring-dur) ease-out!important}
+}
 
 /* blocks */
 .q{margin:4px;padding:2px 0 2px 10px;border-left:3px solid var(--quote)}
