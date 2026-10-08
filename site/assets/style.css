@@ -76,6 +76,10 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .results .r-t{font-weight:650}.results .r-b{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
 .results mark{background:var(--ch-sel,var(--yellow));color:inherit;border-radius:3px;padding:0 1px}
 .results .r-empty{padding:10px;color:var(--muted)}
+/* a link inside a sentence row is a text link, not a result card */
+.results .r-empty a,.results .r-empty a:hover{display:inline;padding:0;border:0;border-radius:0;background:none;color:var(--link)}.results .r-empty a:hover{text-decoration:underline}
+/* the suggestion has no chapter tint, so its hover and selection show on the border */
+.results .r-fix a:hover,.results .r-fix[aria-selected="true"] a{border-color:var(--link)}
 .results[hidden]{display:none}
 .results{scrollbar-width:thin;scrollbar-color:transparent transparent;scrollbar-gutter:stable}
 .results.is-scrolling{scrollbar-color:color-mix(in srgb,var(--text) 40%,transparent) transparent}

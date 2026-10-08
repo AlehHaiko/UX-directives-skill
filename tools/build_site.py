@@ -9,6 +9,7 @@ Writes the HTML pages and 404.html to site/ and refreshes site/assets/. No depen
 Favicons in site/ are static files and are not touched.
 """
 import argparse
+from collections import Counter
 import html
 import json
 import math
@@ -567,10 +568,19 @@ def main(base="/"):
     ASSETS.mkdir(exist_ok=True)
     # the search vocabulary (spelling, phrases, synonyms) is data: tools/search_vocab.json
     vocab = json.loads((ROOT / "tools" / "search_vocab.json").read_text(encoding="utf-8"))
+    # the book's words with their frequencies, most frequent first: the search suggests the nearest one for a
+    # misspelled query word. Same text and same word boundaries as the matcher in app.js (x._h, at()).
+    ch_titles = {c["n"]: c["title"] for c in chapters}
+    words = Counter()
+    for x in idx:
+        hay = " ".join([x["id"], x["title"], x["body"], x.get("sub", ""), ch_titles[x["c"]]]).lower()
+        words.update(w for w in re.split(r"[^a-z0-9]+", re.sub("[’']", "", hay)) if len(w) > 1 and w.isalpha())
+    words = dict(sorted(words.items(), key=lambda kv: (-kv[1], kv[0])))
     (ASSETS / "search-index.js").write_text(
         "window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n"
         + "window.BB_CHAPTERS=" + json.dumps({c["n"]: c["title"] for c in chapters}, ensure_ascii=False, separators=(",", ":")) + ";\n"
-        + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
+        + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        + "window.BB_WORDS=" + json.dumps(words, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n", encoding="utf-8")
@@ -657,6 +667,10 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .results .r-t{font-weight:650}.results .r-b{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
 .results mark{background:var(--ch-sel,var(--yellow));color:inherit;border-radius:3px;padding:0 1px}
 .results .r-empty{padding:10px;color:var(--muted)}
+/* a link inside a sentence row is a text link, not a result card */
+.results .r-empty a,.results .r-empty a:hover{display:inline;padding:0;border:0;border-radius:0;background:none;color:var(--link)}.results .r-empty a:hover{text-decoration:underline}
+/* the suggestion has no chapter tint, so its hover and selection show on the border */
+.results .r-fix a:hover,.results .r-fix[aria-selected="true"] a{border-color:var(--link)}
 .results[hidden]{display:none}
 .results{scrollbar-width:thin;scrollbar-color:transparent transparent;scrollbar-gutter:stable}
 .results.is-scrolling{scrollbar-color:color-mix(in srgb,var(--text) 40%,transparent) transparent}
@@ -1059,7 +1073,7 @@ JS = r"""
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
-  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},sel=-1,items=[];
+  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words=window.BB_WORDS||{},sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
   // result count for screen readers, announced once typing pauses
@@ -1093,6 +1107,34 @@ JS = r"""
       out.push(g.filter(function(m,j){return g.indexOf(m)===j}));
     }
     return out}
+  // ---- no results: suggest a correction (27/08)
+  // true if the query finds anything, counting the any-word fallback
+  function finds(v){var gs=groups(v);return idx.some(function(x){return gs.some(function(g){return g.some(function(t){return at(x._h,t)})})})}
+  // Damerau-Levenshtein distance (adjacent transpositions count as one edit)
+  function dist(a,b){
+    var m=a.length,n=b.length,p2,p=[],c,i,j;
+    for(j=0;j<=n;j++)p[j]=j;
+    for(i=1;i<=m;i++){
+      c=[i];
+      for(j=1;j<=n;j++){
+        c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));
+        if(i>1&&j>1&&a.charAt(i-1)===b.charAt(j-2)&&a.charAt(i-2)===b.charAt(j-1))c[j]=Math.min(c[j],p2[j-2]+1);
+      }
+      p2=p;p=c;
+    }
+    return p[n]}
+  // the nearest word of the book: 1 edit for words up to 5 letters, 2 for longer; BB_WORDS is most frequent first, so a tie keeps the more frequent
+  function nearest(w){
+    var lim=w.length>5?2:1,best=null,bd=lim+1,k,d;
+    for(k in words){if(Math.abs(k.length-w.length)>lim)continue;d=dist(w,k);if(d<bd){bd=d;best=k}}
+    return best}
+  // the query with every word that alone finds nothing replaced by its nearest word; null unless that query finds results
+  function correct(raw){
+    var changed=false,out=raw.trim().split(/\s+/).map(function(w){
+      var n=norm(w),fix=/^[a-z]+$/.test(n)&&!finds(n)&&nearest(n);
+      if(fix)changed=true;return fix||w}).join(' ');
+    return changed&&finds(norm(out))?out:null}
+  function applyFix(li){q.value=li.getAttribute('data-q');q.parentNode.classList.add('has-val');run();q.focus({preventScroll:true})}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
@@ -1113,7 +1155,14 @@ JS = r"""
     items=scored.slice(0,30).map(function(p){return p[1]});
     var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
     if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';say(count);
-    if(!items.length){res.innerHTML='<li class="r-empty">No directives match “'+hl(q.value,[])+'”.</li>'}
+    // nothing at all: say what happened, suggest a correction, offer a way out. The suggestion is an option
+    // (arrows reach it, Enter or a click runs it); the two sentences are not. #q-status says the same text.
+    if(!items.length){
+      var fix=correct(q.value),l1='The book has no directive on “'+q.value.trim()+'”.',l3='Try a broader word, or browse the Contents.';
+      say(l1+(fix?' Did you mean '+fix+'? ':' ')+l3);
+      res.innerHTML='<li class="r-empty" role="presentation">'+escH(l1)+'</li>'
+        +(fix?'<li role="option" id="r0" class="r-fix" data-q="'+escH(fix).replace(/"/g,'&quot;')+'"><a href="#">Did you mean <span class="r-t">'+escH(fix)+'</span>?</a></li>':'')
+        +'<li class="r-empty" role="presentation">Try a broader word, or browse the <a href="index.html">Contents</a>.</li>'}
     // the same count, visible: a heading row, not an option (arrows skip it; #q-status does the announcing);
     // the any-word notice is a sentence, so it takes the plain look of the no-match line (.r-empty)
     else{var head=document.createElement('li');head.className=any?'r-empty':'r-head';head.setAttribute('role','presentation');head.setAttribute('aria-hidden','true');head.textContent=count;res.appendChild(head)}
@@ -1148,14 +1197,14 @@ JS = r"""
   }
   function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
-  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
+  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   q.addEventListener('keydown',function(e){
     if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
     else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
     // Enter on a closed list reopens the results for the current query; on an open list it follows the selection
-    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
+    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li&&li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
     // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
     else if(e.key==='Escape'){
       if(!res.hidden){e.preventDefault();close()}
