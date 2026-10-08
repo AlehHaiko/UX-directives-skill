@@ -219,10 +219,12 @@ TINT_TARGETS = {  # (background, contrast, max chroma)
     "sel-d": ("#191919", 1.45, .07), "hov-d": ("#191919", 1.20, .05),
     # one step denser than selected, same hue: the chevron's block while it is pointed at, focused or pressed
     "live-l": ("#ffffff", 1.45, .11), "live-d": ("#191919", 1.70, .09),
+    # one more step: the edge of the chevron's box while its fill is the step above
+    "deep-l": ("#ffffff", 1.60, .13), "deep-d": ("#191919", 1.95, .11),
 }
 # Chapter 5: yellow darkened to the common target turns olive, so it keeps a lighter, purer lemon
 # (selected 1.20 instead of 1.30, hover 1.10 instead of 1.15; light theme only).
-TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10, .12), "live-l": ("#ffffff", 1.30, .20)}}
+TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10, .12), "live-l": ("#ffffff", 1.30, .20), "deep-l": ("#ffffff", 1.40, .24)}}
 TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TINT_TARGETS.items()}
          for n, v in PALETTE.items()}
 
@@ -239,7 +241,7 @@ def chapter_vars(n):
     t = TINTS[n]
     return (f"--ch-dark:{d};--ch-mid:{m};--ch-mid-op:{o};--ch-light:{l};--ch-accent:{a};"
             f"--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']};"
-            f"--ch-live-l:{t['live-l']};--ch-live-d:{t['live-d']};")
+            f"--ch-live-l:{t['live-l']};--ch-live-d:{t['live-d']};--ch-deep-l:{t['deep-l']};--ch-deep-d:{t['deep-d']};")
 
 
 # Restores the menu before first paint: saved open/closed state, current chapter open, saved scroll position.
@@ -614,9 +616,9 @@ CSS = r"""
 @supports (transition-timing-function:linear(0, 1)){:root{
   --spring:linear(0, 0.042, 0.145, 0.282, 0.432, 0.579, 0.712, 0.825, 0.916, 0.985, 1.033, 1.063, 1.079, 1.084, 1.08, 1.072, 1.06, 1.048, 1.035, 1.024, 1.015, 1.007, 1.001, 0.997, 0.995, 0.993, 0.993, 0.993, 0.994, 0.995, 0.996, 0.997, 1);  /* damped spring, ~8% overshoot */
   --soft:linear(0, 0.029, 0.099, 0.189, 0.285, 0.381, 0.471, 0.552, 0.624, 0.687, 0.741, 0.787, 0.825, 0.857, 0.884, 0.906, 0.924, 0.939, 0.951, 0.96, 0.968, 0.975, 0.98, 0.984, 0.987, 0.99, 0.992, 0.994, 0.995, 0.996, 0.997, 0.997, 1);}}  /* critically damped spring, no overshoot */
-*{box-sizing:border-box;--ch-sel:var(--ch-sel-l);--ch-hov:var(--ch-hov-l);--ch-live:var(--ch-live-l)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d)}}
-:root[data-theme="dark"] *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d)}
+*{box-sizing:border-box;--ch-sel:var(--ch-sel-l);--ch-hov:var(--ch-hov-l);--ch-live:var(--ch-live-l);--ch-deep:var(--ch-deep-l)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d);--ch-deep:var(--ch-deep-d)}}
+:root[data-theme="dark"] *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d);--ch-deep:var(--ch-deep-d)}
 @media (prefers-reduced-motion:no-preference){html.smooth{scroll-behavior:smooth}@view-transition{navigation:auto}}
 .top{view-transition-name:top}.sidebar{view-transition-name:sidebar}
 body>.cover{view-transition-name:cover}.cover .cv-1{view-transition-name:cv-ch}.cover .cv-2{view-transition-name:cv-sub}
@@ -745,15 +747,17 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
    is still what is pressed; what is seen is a box inside it (::after): the border, radius and height of .nav-toggle
    (12px text at line height 1.6, 3px padding, 1px border), its right edge under that button's. It sits at the title's
    first line (6px padding, 14px text at 1.3), so boxes of rows one under another keep a gap, and so does the glyph.
-   The box's fill (--chev-bg) at rest: grey when folded, the chapter's selected tint when open; the current chapter's,
-   open or folded, one step denser (never grey); pressed: the dense step */
+   The box's fill (--chev-bg) at rest: grey when folded, the chapter's hover tint when open; the current chapter's,
+   open or folded, its selected tint (never grey); pressed: one step denser. A coloured box has a coloured edge
+   (--chev-bd): the chapter's tint one step denser than the fill; the grey edge belongs to the grey box alone */
 @media (hover:none){
-  .chev{padding:calc(6px + 14px * 1.3 / 2 - 3px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line)}
-  .chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--line);border-radius:6px;background:var(--chev-bg);transition:background-color .35s var(--soft)}
+  .chev{padding:calc(6px + 14px * 1.3 / 2 - 3px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line);--chev-bd:var(--line)}
+  .chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--chev-bd);border-radius:6px;background:var(--chev-bg);transition:background-color .35s var(--soft),border-color .35s var(--soft)}
   .chev::before{position:relative;z-index:1}
   .chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
-  .chev[aria-expanded="true"]{--chev-bg:var(--ch-sel)}
-  .nav-ch[data-here] .chev,.chev:active{--chev-bg:var(--ch-live)}
+  .chev[aria-expanded="true"]{--chev-bg:var(--ch-hov);--chev-bd:var(--ch-sel)}
+  .nav-ch[data-here] .chev{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
+  .chev:active,.nav-ch[data-here] .chev:active,.nav-ch[data-here] .nav-ch-h:active .chev{--chev-bg:var(--ch-live);--chev-bd:var(--ch-deep)}
   .chev:active::before,.nav-ch[data-here] .nav-ch-h:active .chev::before{opacity:1}
   /* a subcategory's chapter, folded: the current item is out of sight, so its chapter's row carries the mark */
   .nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]){background:var(--ch-sel)}
