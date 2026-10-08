@@ -728,34 +728,35 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 .nav-ch-n{flex:none;align-self:flex-start}.nav-ch-l{flex:1;min-width:0}.nav-ch-t:hover{text-decoration:none}
 .nav-ch-h:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
-/* a subcategory's chapter, folded: the current item is out of sight, so its chapter's row carries the mark */
-.nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
-/* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link.
-   The strip, as tall as the row, is what is pressed; what is seen is a box inside it (::after) drawn as "Expand all" is:
-   the same border, radius and height (.nav-toggle: 12px text at line height 1.6, 3px padding, 1px border), its right edge
-   under that button's. It sits at the title's first line (6px padding, 14px text at 1.3), so boxes of rows one under
-   another keep a gap, and so does the glyph. States change the box's fill (--chev-bg), nothing else */
-.chev{appearance:none;border:0;margin:0;padding:calc(6px + 14px * 1.3 / 2 - 3px) 0 0 6px;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:start center;position:relative}
-.chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--line);border-radius:6px;background:var(--chev-bg,transparent);transition:background-color .35s var(--soft)}
-.chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
+/* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
+.chev{appearance:none;border:0;margin:0;padding:0;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
 /* the glyph is the text colour, a little lighter at rest; the button's states are its block's background alone */
-.chev::before{content:"";position:relative;z-index:1;width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.75;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring),opacity .35s var(--soft)}
+.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.75;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring),opacity .35s var(--soft)}
 .chev[aria-expanded="true"]::before{transform:translateY(-1px) rotate(45deg)}
 @media (hover:hover){
   /* neighbour: pointer or keyboard focus on the title next to it (a link to another chapter) */
-  .nav-ch-h:has(a.nav-ch-t:hover) .chev,.nav-ch-h:has(a.nav-ch-t:focus-visible) .chev{--chev-bg:var(--ch-sel)}
+  .nav-ch-h:has(a.nav-ch-t:hover) .chev,.nav-ch-h:has(a.nav-ch-t:focus-visible) .chev{background:var(--ch-sel)}
   /* live: pointer or focus on the chevron itself; pointer on the current chapter's row, where the title folds the list too */
-  .chev:hover,.chev:focus-visible,.nav-ch[data-here] .nav-ch-h:hover .chev{--chev-bg:var(--ch-live)}
+  .chev:hover,.chev:focus-visible,.nav-ch[data-here] .nav-ch-h:hover .chev{background:var(--ch-live)}
   .chev:hover::before,.chev:focus-visible::before,.nav-ch[data-here] .nav-ch-h:hover .chev::before{opacity:1}
 }
-/* no hover to announce it: the box is filled at rest. Closed: grey; open: the chapter's selected tint;
-   the current chapter's, open or folded: one step denser (never grey); pressed: the dense step */
+/* no hover to announce it, so the toggle is drawn as a button, the way "Expand all" is. The strip, as tall as the row,
+   is still what is pressed; what is seen is a box inside it (::after): the border, radius and height of .nav-toggle
+   (12px text at line height 1.6, 3px padding, 1px border), its right edge under that button's. It sits at the title's
+   first line (6px padding, 14px text at 1.3), so boxes of rows one under another keep a gap, and so does the glyph.
+   The box's fill (--chev-bg) at rest: grey when folded, the chapter's selected tint when open; the current chapter's,
+   open or folded, one step denser (never grey); pressed: the dense step */
 @media (hover:none){
-  .chev{--chev-bg:var(--line)}
+  .chev{padding:calc(6px + 14px * 1.3 / 2 - 3px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line)}
+  .chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--line);border-radius:6px;background:var(--chev-bg);transition:background-color .35s var(--soft)}
+  .chev::before{position:relative;z-index:1}
+  .chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
   .chev[aria-expanded="true"]{--chev-bg:var(--ch-sel)}
   .nav-ch[data-here] .chev,.chev:active{--chev-bg:var(--ch-live)}
   .chev:active::before,.nav-ch[data-here] .nav-ch-h:active .chev::before{opacity:1}
+  /* a subcategory's chapter, folded: the current item is out of sight, so its chapter's row carries the mark */
+  .nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]){background:var(--ch-sel)}
 }
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
