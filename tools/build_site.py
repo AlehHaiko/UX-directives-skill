@@ -262,6 +262,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     # nav_sec: the page's "On this page" items, repeated under the current menu item where that list is hidden (style.css, .nav-sec)
+    # a chapter page's go under the chapter row, outside the list the chevron folds
     sec = f'<ol class="nav-sec">{nav_sec}</ol>' if nav_sec else ""
     nav = []
     for c in chapters:
@@ -284,7 +285,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
         closed = "" if here else ' hidden="until-found"'  # until-found: find-in-page still reaches a closed list
         nav.append(
             f'<div class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}">'
-            f'{head}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}><ul>{items}</ul></div></div>')
+            f'{head}{sec if c["file"] == current_file else ""}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}><ul>{items}</ul></div></div>')
     toc_style = f' style="{chapter_vars(current_ch)}"' if current_ch else ""
     toc_html = f'<aside class="toc"{toc_style} aria-label="On this page"><p class="toc-h">On this page</p>{toc}</aside>' if toc else ""
     return f"""<!doctype html>
@@ -468,8 +469,8 @@ def render_chapter(ch, prev, nxt, chapters):
             f'<section><h2 id="mission">Mission statement</h2>{call("mission", "c-peach", inline(ch["mission"]))}</section>'
             f'<section><h2 id="subcategories">Subcategories</h2><div class="tiles" style="{chapter_vars(ch["n"])}">{tiles}</div></section>'
             + pager(prev, nxt))
-    toc = '<ol><li><a href="#mission">Mission statement</a></li><li><a href="#subcategories">Subcategories</a></li></ol>'
-    return layout(f'{ch["n"]}. {ch["title"]}—{BOOK_TITLE}', body, chapters, ch["file"], ch["n"], toc, ch["mission"], cv)
+    items = '<li><a href="#mission">Mission statement</a></li><li><a href="#subcategories">Subcategories</a></li>'
+    return layout(f'{ch["n"]}. {ch["title"]}—{BOOK_TITLE}', body, chapters, ch["file"], ch["n"], f"<ol>{items}</ol>", ch["mission"], cv, nav_sec=items)
 
 
 # The book's emblem: on the Contents banner and, on phones, the header's home link.
@@ -740,6 +741,8 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* the page's sections under the current item: shown only where "On this page" is hidden (see responsive) */
 .nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 12px;font-size:13px}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
+/* under a chapter row the sections stand where they stand under a subcategory: the list's 16px and their own 12px */
+.nav-ch>.nav-sec{padding-left:28px}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
