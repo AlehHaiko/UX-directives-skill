@@ -147,6 +147,14 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
   .chev:hover,.chev:focus-visible,.nav-ch[data-here] .nav-ch-h:hover .chev{background:var(--ch-live)}
   .chev:hover::before,.chev:focus-visible::before,.nav-ch[data-here] .nav-ch-h:hover .chev::before{opacity:1}
 }
+/* no hover to announce it: the block is filled at rest. Closed: grey; open: the chapter's selected tint,
+   one step denser on the current chapter's row (that row is the selected tint already); pressed: the dense step */
+@media (hover:none){
+  .chev{background:var(--line)}
+  .chev[aria-expanded="true"]{background:var(--ch-sel)}
+  .nav-ch-h:has(.nav-ch-t[aria-current]) .chev[aria-expanded="true"],.chev:active,.nav-ch[data-here] .nav-ch-h:active .chev{background:var(--ch-live)}
+  .chev:active::before,.nav-ch[data-here] .nav-ch-h:active .chev::before{opacity:1}
+}
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
 .nav-ch-c:not([hidden]){block-size:auto}
