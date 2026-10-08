@@ -180,8 +180,12 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* under a chapter row: the same column, reached without the subcategory list's 16px */
 .nav-ch>.nav-sec{padding-left:calc(16px + 2.4 * 12px + 8px)}
 /* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself,
-   their text in the chapter numbers' column */
+   their text where chapter 1's title starts. An unseen "1." set as the chapter numbers are (.nav-ch-n in .nav-ch-h)
+   and the row's 6px gap stand before each item, so the column holds in any font */
 .sidebar>.nav-sec{margin:-4px 0 6px;padding-left:0}
+.sidebar>.nav-sec li{display:flex}
+.sidebar>.nav-sec li::before{content:"1.";flex:none;visibility:hidden;font-size:14px;font-weight:600;line-height:1;margin-right:6px}
+.sidebar>.nav-sec a{flex:1;min-width:0}
 .sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
 .sidebar>.nav-sec a:hover,.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
 .sidebar>.nav-sec a.is-active{font-weight:700}
