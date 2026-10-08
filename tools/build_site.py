@@ -938,6 +938,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .cover.is-min .hm{padding:0 16px}
   /* "2. Discoverability" reads "2.2 Discoverability": the chapter number appears, the dot after the subcategory number takes no room */
   .cover.is-min .cv-c{display:inline}.cover.is-min .cv-d{font-size:0}
+  /* the sticky heading is just "UX directives": the banner above it names the subcategory; the name stays for screen readers */
+  #directives .arrow{display:none}#directives .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:15px}.cv-next::before{right:6px}.cv-next svg{right:15px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
