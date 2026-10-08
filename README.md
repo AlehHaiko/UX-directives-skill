@@ -96,7 +96,7 @@ The previous version of the skill (a single `SKILL.md` that relied on project kn
 python3 tools/build_site.py
 ```
 
-The script needs Python 3 and nothing else. It rewrites every page in `site/` and the files in `site/assets/`; the favicons in `site/` are static and stay as they are.
+The script needs Python 3 and nothing else. It rewrites every page in `site/` and the files in `site/assets/`; the favicons in `site/assets/` are static and stay as they are.
 
 ---
 
