@@ -9,7 +9,6 @@ Writes the HTML pages and 404.html to site/ and refreshes site/assets/. No depen
 Favicons in site/ are static files and are not touched.
 """
 import argparse
-from collections import Counter
 import html
 import json
 import math
@@ -568,19 +567,10 @@ def main(base="/"):
     ASSETS.mkdir(exist_ok=True)
     # the search vocabulary (spelling, phrases, synonyms) is data: tools/search_vocab.json
     vocab = json.loads((ROOT / "tools" / "search_vocab.json").read_text(encoding="utf-8"))
-    # the book's words with their frequencies, most frequent first: the search suggests the nearest one for a
-    # misspelled query word. Same text and same word boundaries as the matcher in app.js (x._h, at()).
-    ch_titles = {c["n"]: c["title"] for c in chapters}
-    words = Counter()
-    for x in idx:
-        hay = " ".join([x["id"], x["title"], x["body"], x.get("sub", ""), ch_titles[x["c"]]]).lower()
-        words.update(w for w in re.split(r"[^a-z0-9]+", re.sub("[’']", "", hay)) if len(w) > 1 and w.isalpha())
-    words = dict(sorted(words.items(), key=lambda kv: (-kv[1], kv[0])))
     (ASSETS / "search-index.js").write_text(
         "window.BB_INDEX=" + json.dumps(idx, ensure_ascii=False) + ";\n"
         + "window.BB_CHAPTERS=" + json.dumps({c["n"]: c["title"] for c in chapters}, ensure_ascii=False, separators=(",", ":")) + ";\n"
-        + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n"
-        + "window.BB_WORDS=" + json.dumps(words, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
+        + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n", encoding="utf-8")
@@ -1073,7 +1063,7 @@ JS = r"""
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
-  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words=window.BB_WORDS||{},sel=-1,items=[];
+  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[];
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
   // result count for screen readers, announced once typing pauses
@@ -1082,6 +1072,11 @@ JS = r"""
   function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
   // the chapter title (BB_CHAPTERS, by chapter number x.c) is searched but never shown
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(chTitles[x.c]||''))});
+  // the book's words with their frequencies, most frequent first: counted once from the text the matcher searches,
+  // split where at() sees a word start; the search suggests the nearest one for a misspelled query word
+  (function(){var f={};
+    idx.forEach(function(x){x._h.split(/[^a-z0-9]+/).forEach(function(w){if(w.length>1&&/^[a-z]+$/.test(w))f[w]=(f[w]||0)+1})});
+    Object.keys(f).sort(function(a,b){return f[b]-f[a]||(a<b?-1:1)}).forEach(function(w){words[w]=f[w]})})();
   function escH(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
   // a term matches only where a word starts: at the start of the text or after a non-alphanumeric character
   function at(h,t){var i=-1;while((i=h.indexOf(t,i+1))>-1){if(!i||!/[a-z0-9]/.test(h.charAt(i-1)))return true}return false}
@@ -1123,7 +1118,7 @@ JS = r"""
       p2=p;p=c;
     }
     return p[n]}
-  // the nearest word of the book: 1 edit for words up to 5 letters, 2 for longer; BB_WORDS is most frequent first, so a tie keeps the more frequent
+  // the nearest word of the book: 1 edit for words up to 5 letters, 2 for longer; the list is most frequent first, so a tie keeps the more frequent
   function nearest(w){
     var lim=w.length>5?2:1,best=null,bd=lim+1,k,d;
     for(k in words){if(Math.abs(k.length-w.length)>lim)continue;d=dist(w,k);if(d<bd){bd=d;best=k}}
