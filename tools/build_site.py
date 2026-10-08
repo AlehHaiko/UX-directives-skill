@@ -6,7 +6,7 @@ Run from the repository root:
     python3 tools/build_site.py [--base /path/]
 --base is the URL path the site is served from (default "/").
 Writes the HTML pages and 404.html to site/ and refreshes site/assets/. No dependencies.
-Favicons in site/ are static files and are not touched.
+Favicons in site/assets/ are static files and are not touched.
 """
 import argparse
 import html
@@ -300,9 +300,9 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 {base_tag}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc or BOOK_SUBTITLE)}">
-{robots}<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+{robots}<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="expect" href="#page-ready" blocking="render">
 <script>document.documentElement.classList.add('cvc');try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>

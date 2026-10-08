@@ -13,7 +13,7 @@ The Markdown in `ux-directives/references/` is the only source of the book's tex
 
 - To change the book, edit the Markdown, then rebuild the site.
 - To change the website's layout, styles or behavior, edit `tools/build_site.py` (templates, CSS and JS live in it), then rebuild.
-- Never edit files in `site/` by hand, except the static favicons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`). The next build overwrites everything else.
+- Never edit files in `site/` by hand, except the static favicons in `site/assets/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`). The next build overwrites everything else.
 
 Rebuild from the repository root (Python 3, no dependencies):
 
