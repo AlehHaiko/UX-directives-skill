@@ -38,7 +38,7 @@ body>.cover{view-transition-name:cover}.cover .cv-1{view-transition-name:cv-ch}.
 ::view-transition-old(cv-sub):only-child{animation:.3s ease-out both bb-sub-out}
 @keyframes bb-sub-in{from{opacity:0;transform:translateY(60%) scale(.55)}}
 @keyframes bb-sub-out{to{opacity:0;transform:translateY(60%) scale(.55)}}
-.preload *,.preload .nav-ch::details-content{transition:none!important}
+.preload *{transition:none!important}
 /* anchors clear the sticky header and banner; set on targets (not as scroll-padding) so typing in the header search never scrolls the page */
 [id]{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + 16px)}
 .search input{scroll-margin:0}
@@ -127,24 +127,23 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-toggle:hover{background:var(--bg-soft)}
 .nav-toggle>span{grid-area:1/1}
 .nav-toggle[data-state="collapse"] .l-e,.nav-toggle[data-state="expand"] .l-c{visibility:hidden}
-.nav-toggle,.nav-home,.nav-ch summary,.nav-ch li a{transition:background-color .35s var(--soft)}
+.nav-toggle,.nav-home,.nav-ch-h,.nav-ch li a{transition:background-color .35s var(--soft)}
 .nav-home.is-cur,a.nav-home:hover{background:var(--bg-soft);text-decoration:none}
 .nav-home.is-cur{cursor:default}
-.nav-ch summary{display:flex;align-items:stretch;list-style:none;cursor:pointer;border-radius:6px;font-weight:600}
+.nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 .nav-ch-n{flex:none;align-self:flex-start}.nav-ch-l{flex:1;min-width:0}.nav-ch-t:hover{text-decoration:none}
-.nav-ch summary:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
+.nav-ch-h:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
-/* the chevron is the toggle: a 34px strip at the row's end, separate from the title link */
-.chev{flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
+/* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
+.chev{appearance:none;border:0;margin:0;padding:0;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
 .chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring)}
-.nav-ch[open]>summary .chev::before{transform:translateY(-1px) rotate(45deg)}
-.nav-ch summary:has(a) .chev:hover{background:var(--ch-sel)}
+.chev[aria-expanded="true"]::before{transform:translateY(-1px) rotate(45deg)}
+.nav-ch-h:has(a) .chev:hover{background:var(--ch-sel)}
 :root{interpolate-size:allow-keywords}
-.nav-ch::details-content{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
-.nav-ch[open]::details-content{block-size:auto}
-.nav-ch summary::-webkit-details-marker{display:none}
-.nav-ch summary:hover,.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
+.nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
+.nav-ch-c:not([hidden]){block-size:auto}
+.nav-ch-h:hover,.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
@@ -381,7 +380,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 }
 /* phones: the field gets the title's room; the emblem stands in for it as the home link */
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
-@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after,::details-content{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b}

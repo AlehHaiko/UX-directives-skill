@@ -241,9 +241,11 @@ def chapter_vars(n):
 
 # Restores the menu before first paint: saved open/closed state, current chapter open, saved scroll position.
 NAV_RESTORE = ("(function(){var st={},y=null,sb=document.getElementById('sidebar');"
+               "function set(d,v){d.querySelector('.chev').setAttribute('aria-expanded',v);var p=d.querySelector('.nav-ch-c');"
+               "if(v)p.removeAttribute('hidden');else p.setAttribute('hidden','until-found')}"
                "try{st=JSON.parse(localStorage.getItem('bb-nav')||'{}');y=sessionStorage.getItem('bb-nav-y')}catch(e){}"
                "[].forEach.call(sb.querySelectorAll('.nav-ch'),function(d){var k=d.dataset.ch;"
-               "if(d.hasAttribute('data-here')){d.open=true;st[k]=true}else if(k in st)d.open=!!st[k];});"
+               "if(d.hasAttribute('data-here')){set(d,true);st[k]=true}else if(k in st)set(d,!!st[k]);});"
                "try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}"
                "if(y!==null){sb.scrollTop=+y}else{var c=sb.querySelector('[aria-current]');"
                "if(c&&c.offsetTop>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2;}})();")
@@ -270,15 +272,19 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
              f'<li><a href="{s["file"]}"><span class="num">{s["code"]}</span>{esc(s["name"])}</a></li>')
             for s in c["subs"])
         label = f'<span class="nav-ch-n">{c["n"]}.</span><span class="nav-ch-l">{esc(c["title"])}</span>'
-        chev = '<span class="chev" aria-hidden="true"></span>'
+        # the toggle is a button of its own, next to the title: no control sits inside another
+        # open/closed lives in two attributes: aria-expanded on the button, hidden on the list (app.js, navSet)
+        chev = (f'<button class="chev" type="button" aria-expanded="{"true" if here else "false"}" '
+                f'aria-controls="nav-ch-{c["n"]}" aria-label="Chapter {c["n"]} subcategories"></button>')
         if here:  # row toggles the list; never links to the current chapter
             cur = ' aria-current="page"' if c["file"] == current_file else ""
-            summary = f'<summary><span class="nav-ch-t"{cur}>{label}</span>{chev}</summary>'
+            head = f'<div class="nav-ch-h"><span class="nav-ch-t"{cur}>{label}</span>{chev}</div>'
         else:     # title opens the chapter page (the chapter is expanded there); the chevron toggles the list
-            summary = f'<summary><a class="nav-ch-t" href="{c["file"]}">{label}</a>{chev}</summary>'
+            head = f'<div class="nav-ch-h"><a class="nav-ch-t" href="{c["file"]}">{label}</a>{chev}</div>'
+        closed = "" if here else ' hidden="until-found"'  # until-found: find-in-page still reaches a closed list
         nav.append(
-            f'<details class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}"{" open" if here else ""}>'
-            f'{summary}<ul>{items}</ul></details>')
+            f'<div class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}">'
+            f'{head}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}><ul>{items}</ul></div></div>')
     toc_style = f' style="{chapter_vars(current_ch)}"' if current_ch else ""
     toc_html = f'<aside class="toc"{toc_style} aria-label="On this page"><p class="toc-h">On this page</p>{toc}</aside>' if toc else ""
     return f"""<!doctype html>
@@ -622,7 +628,7 @@ body>.cover{view-transition-name:cover}.cover .cv-1{view-transition-name:cv-ch}.
 ::view-transition-old(cv-sub):only-child{animation:.3s ease-out both bb-sub-out}
 @keyframes bb-sub-in{from{opacity:0;transform:translateY(60%) scale(.55)}}
 @keyframes bb-sub-out{to{opacity:0;transform:translateY(60%) scale(.55)}}
-.preload *,.preload .nav-ch::details-content{transition:none!important}
+.preload *{transition:none!important}
 /* anchors clear the sticky header and banner; set on targets (not as scroll-padding) so typing in the header search never scrolls the page */
 [id]{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + 16px)}
 .search input{scroll-margin:0}
@@ -711,24 +717,23 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-toggle:hover{background:var(--bg-soft)}
 .nav-toggle>span{grid-area:1/1}
 .nav-toggle[data-state="collapse"] .l-e,.nav-toggle[data-state="expand"] .l-c{visibility:hidden}
-.nav-toggle,.nav-home,.nav-ch summary,.nav-ch li a{transition:background-color .35s var(--soft)}
+.nav-toggle,.nav-home,.nav-ch-h,.nav-ch li a{transition:background-color .35s var(--soft)}
 .nav-home.is-cur,a.nav-home:hover{background:var(--bg-soft);text-decoration:none}
 .nav-home.is-cur{cursor:default}
-.nav-ch summary{display:flex;align-items:stretch;list-style:none;cursor:pointer;border-radius:6px;font-weight:600}
+.nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 .nav-ch-n{flex:none;align-self:flex-start}.nav-ch-l{flex:1;min-width:0}.nav-ch-t:hover{text-decoration:none}
-.nav-ch summary:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
+.nav-ch-h:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
-/* the chevron is the toggle: a 34px strip at the row's end, separate from the title link */
-.chev{flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
+/* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
+.chev{appearance:none;border:0;margin:0;padding:0;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
 .chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring)}
-.nav-ch[open]>summary .chev::before{transform:translateY(-1px) rotate(45deg)}
-.nav-ch summary:has(a) .chev:hover{background:var(--ch-sel)}
+.chev[aria-expanded="true"]::before{transform:translateY(-1px) rotate(45deg)}
+.nav-ch-h:has(a) .chev:hover{background:var(--ch-sel)}
 :root{interpolate-size:allow-keywords}
-.nav-ch::details-content{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
-.nav-ch[open]::details-content{block-size:auto}
-.nav-ch summary::-webkit-details-marker{display:none}
-.nav-ch summary:hover,.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
+.nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
+.nav-ch-c:not([hidden]){block-size:auto}
+.nav-ch-h:hover,.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
@@ -965,7 +970,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 }
 /* phones: the field gets the title's room; the emblem stands in for it as the home link */
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
-@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after,::details-content{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
 
@@ -1004,7 +1009,7 @@ JS = r"""
   // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
   function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
     [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,script'))n.inert=open});
-    if(open){var f=side.querySelector('a[href],button,summary');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
+    if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
@@ -1017,12 +1022,16 @@ JS = r"""
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};
   try{st=JSON.parse(localStorage.getItem('bb-nav')||'{}')}catch(e){}
-  function label(){if(tg)tg.dataset.state=chs.some(function(d){return d.open})?'collapse':'expand'}
+  function navOpen(d){return d.querySelector('.chev').getAttribute('aria-expanded')==='true'}
+  function navSet(d,v){d.querySelector('.chev').setAttribute('aria-expanded',v);var p=d.querySelector('.nav-ch-c');if(v)p.removeAttribute('hidden');else p.setAttribute('hidden','until-found')}
+  function label(){if(tg)tg.dataset.state=chs.some(navOpen)?'collapse':'expand'}
   // a row that links to another chapter: that chapter will be open on arrival
-  chs.forEach(function(d){var a=d.querySelector('summary a');if(a)a.addEventListener('click',function(){st[d.dataset.ch]=true;try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}})});
-  function save(){chs.forEach(function(d){st[d.dataset.ch]=d.open});try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}label()}
-  chs.forEach(function(d){d.addEventListener('toggle',save)});
-  if(tg)tg.addEventListener('click',function(){var any=chs.some(function(d){return d.open});chs.forEach(function(d){d.open=!any});save()});
+  chs.forEach(function(d){var a=d.querySelector('.nav-ch-h a');if(a)a.addEventListener('click',function(){st[d.dataset.ch]=true;try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}})});
+  function save(){chs.forEach(function(d){st[d.dataset.ch]=navOpen(d)});try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}label()}
+  // a click anywhere on the row but its link toggles the list (the button's Enter and Space arrive as clicks); find-in-page opens a closed list it lands in
+  chs.forEach(function(d){d.querySelector('.nav-ch-h').addEventListener('click',function(e){if(e.target.closest('a'))return;navSet(d,!navOpen(d));save()});
+    d.querySelector('.nav-ch-c').addEventListener('beforematch',function(){navSet(d,true);save()})});
+  if(tg)tg.addEventListener('click',function(){var any=chs.some(navOpen);chs.forEach(function(d){navSet(d,!any)});save()});
   label();
   // sidebar scrollbar only while scrolling
   var sb=document.querySelector('.sidebar'),sbt;

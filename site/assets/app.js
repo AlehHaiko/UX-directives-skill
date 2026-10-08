@@ -33,7 +33,7 @@
   // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
   function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
     [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,script'))n.inert=open});
-    if(open){var f=side.querySelector('a[href],button,summary');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
+    if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
@@ -46,12 +46,16 @@
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};
   try{st=JSON.parse(localStorage.getItem('bb-nav')||'{}')}catch(e){}
-  function label(){if(tg)tg.dataset.state=chs.some(function(d){return d.open})?'collapse':'expand'}
+  function navOpen(d){return d.querySelector('.chev').getAttribute('aria-expanded')==='true'}
+  function navSet(d,v){d.querySelector('.chev').setAttribute('aria-expanded',v);var p=d.querySelector('.nav-ch-c');if(v)p.removeAttribute('hidden');else p.setAttribute('hidden','until-found')}
+  function label(){if(tg)tg.dataset.state=chs.some(navOpen)?'collapse':'expand'}
   // a row that links to another chapter: that chapter will be open on arrival
-  chs.forEach(function(d){var a=d.querySelector('summary a');if(a)a.addEventListener('click',function(){st[d.dataset.ch]=true;try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}})});
-  function save(){chs.forEach(function(d){st[d.dataset.ch]=d.open});try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}label()}
-  chs.forEach(function(d){d.addEventListener('toggle',save)});
-  if(tg)tg.addEventListener('click',function(){var any=chs.some(function(d){return d.open});chs.forEach(function(d){d.open=!any});save()});
+  chs.forEach(function(d){var a=d.querySelector('.nav-ch-h a');if(a)a.addEventListener('click',function(){st[d.dataset.ch]=true;try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}})});
+  function save(){chs.forEach(function(d){st[d.dataset.ch]=navOpen(d)});try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}label()}
+  // a click anywhere on the row but its link toggles the list (the button's Enter and Space arrive as clicks); find-in-page opens a closed list it lands in
+  chs.forEach(function(d){d.querySelector('.nav-ch-h').addEventListener('click',function(e){if(e.target.closest('a'))return;navSet(d,!navOpen(d));save()});
+    d.querySelector('.nav-ch-c').addEventListener('beforematch',function(){navSet(d,true);save()})});
+  if(tg)tg.addEventListener('click',function(){var any=chs.some(navOpen);chs.forEach(function(d){navSet(d,!any)});save()});
   label();
   // sidebar scrollbar only while scrolling
   var sb=document.querySelector('.sidebar'),sbt;
