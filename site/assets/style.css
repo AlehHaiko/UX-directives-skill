@@ -158,7 +158,9 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
 .nav-ch-c:not([hidden]){block-size:auto}
-.nav-ch-h:hover,.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
+.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}
+/* the row's hover fill only where there is a hover: on touch it would stay on the row last tapped */
+@media (hover:hover){.nav-ch-h:hover{background:var(--ch-hov)}}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
