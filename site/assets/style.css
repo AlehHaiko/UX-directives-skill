@@ -377,7 +377,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .search input{height:44px;padding:0 10px 0 32px}.search.has-val input{padding-right:44px}
   .search-ic{top:13px}
   .search-x{width:44px;height:44px}.search-x::before{inset:9px}
-  .results{top:50px}
+  /* the list leaves the field's column: under the header, the screen's width less 16px gutters, as tall as the screen allows.
+     Fixed resolves against the header (its backdrop-filter makes it the containing block) or the viewport: the same box, the header sticks at 0 */
+  .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
   .main{padding:16px 16px 64px}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
