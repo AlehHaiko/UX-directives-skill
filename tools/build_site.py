@@ -759,8 +759,6 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
   .nav-ch[data-here] .chev{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
   .chev:active,.nav-ch[data-here] .chev:active,.nav-ch[data-here] .nav-ch-h:active .chev{--chev-bg:var(--ch-live);--chev-bd:var(--ch-deep)}
   .chev:active::before,.nav-ch[data-here] .nav-ch-h:active .chev::before{opacity:1}
-  /* a subcategory's chapter, folded: the current item is out of sight, so its chapter's row carries the mark */
-  .nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]){background:var(--ch-sel)}
 }
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
@@ -788,6 +786,23 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
 .sidebar>.nav-sec a:hover,.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
 .sidebar>.nav-sec a.is-active{font-weight:700}
+@media (hover:none){
+  /* one geometry for every filled shape in the menu, taken from the chevron's box (above): 1.5px clear of its row's top and bottom
+     (the box in a one-line row), 6px corners, and the box's right edge. Rows keep their height and text its place:
+     what a shape gives up in padding it takes back as margin */
+  .nav-ch li a,.nav-ch .nav-cur,.sidebar>.nav-sec a{margin-block:1.5px;padding-block:2.5px}
+  .nav-ch li{display:flow-root}  /* the margins stay inside the row: rows do not move closer */
+  /* under the current subcategory: the list's 2px and the pill's 1.5px would merge into 2px; its 4px below goes to the row,
+     where it merges with what follows as it did */
+  .nav-ch .nav-cur+.nav-sec{margin:3.5px 0 0}.nav-ch li:has(>.nav-sec){margin-bottom:4px}
+  /* a title and the button beside it are two objects: the title's fill stops 3px short of the button.
+     The current chapter's fill moves from the row to its title; the title's text keeps its width */
+  .nav-ch-h:has(.nav-ch-t[aria-current]){background:none}
+  .nav-ch-t[aria-current],.nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]) .nav-ch-t{background:var(--ch-sel);margin:1.5px -3px 1.5px 0;padding:4.5px 3px 4.5px 8px}
+  /* (the second selector: a subcategory's chapter, folded. The current item is out of sight, so its chapter's title carries the mark) */
+  /* "Contents" and "Expand all" are such a pair too: the pill is as tall as that button, level with it, and stops 3px short of it */
+  .nav-home{margin:calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) -5px calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) 0;padding:calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 13px calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 8px}
+}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
