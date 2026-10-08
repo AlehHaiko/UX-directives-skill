@@ -152,6 +152,11 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
 /* under a chapter row the sections stand where they stand under a subcategory: the list's 16px and their own 12px */
 .nav-ch>.nav-sec{padding-left:28px}
+/* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself */
+.sidebar>.nav-sec{margin:-4px 0 6px}
+.sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
+.sidebar>.nav-sec a:hover,.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
+.sidebar>.nav-sec a.is-active{font-weight:700}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}

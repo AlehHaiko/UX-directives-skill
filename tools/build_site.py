@@ -262,7 +262,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     # nav_sec: the page's "On this page" items, repeated under the current menu item where that list is hidden (style.css, .nav-sec)
-    # a chapter page's go under the chapter row, outside the list the chevron folds
+    # a chapter page's go under the chapter row, outside the list the chevron folds; the home page's under "Contents"
     sec = f'<ol class="nav-sec">{nav_sec}</ol>' if nav_sec else ""
     nav = []
     for c in chapters:
@@ -323,7 +323,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <div class="shell">
   <nav id="sidebar" class="sidebar" aria-label="Chapters">
     <div class="nav-head">{'<span class="nav-home is-cur" aria-current="page">Contents</span>' if current_file == 'index.html' else '<a class="nav-home" href="index.html">Contents</a>'}<button class="nav-toggle" type="button" data-state="collapse"><span class="l-c">Collapse all</span><span class="l-e">Expand all</span></button></div>
-    {''.join(nav)}
+    {sec if current_file == 'index.html' else ''}{''.join(nav)}
   </nav>
   <script>{NAV_RESTORE}</script>
   <main id="main" class="main">
@@ -494,13 +494,13 @@ def render_home(chapters, front):
         f'<span class="ch-card-d">{inline(c["intro"][0]) if c["intro"] else ""}</span>'
         f'<span class="card-foot"><span class="ch-card-c">{len(c["subs"])} subcategories</span>{GO}</span></a>' for c in chapters)
     sections = "".join(f'<section class="prose">{md_blocks("## " + n + chr(10) + b)}</section>' for n, b in front)
-    toc = '<ol><li><a href="#chapters">Chapters</a></li>' + "".join(f'<li><a href="#{slug(n)}">{n}</a></li>' for n, _ in front) + "</ol>"
+    items = '<li><a href="#chapters">Chapters</a></li>' + "".join(f'<li><a href="#{slug(n)}">{n}</a></li>' for n, _ in front)
     cv = HOME_COVER.format(arrows=cover_arrows((None, (f'1. {chapters[0]["title"]}', chapters[0]["file"]))))
     body = (f'<div class="hero"><p class="hero-k">{AUTHOR}</p><h1>{BOOK_TITLE}</h1><p class="hero-s">{BOOK_SUBTITLE}</p>'
             f'<p class="hero-stats"><span><b>9</b> chapters</span><span><b>{subs}</b> subcategories</span>'
             f'<span><b>{active}</b> directives</span><span class="muted">{total - active} repealed IDs</span></p></div>'
             f'<section><h2 id="chapters">Chapters</h2><div class="ch-grid">{grid}</div></section>' + sections)
-    return layout(BOOK_TITLE, body, chapters, "index.html", None, toc, cover_html=cv)
+    return layout(BOOK_TITLE, body, chapters, "index.html", None, f"<ol>{items}</ol>", cover_html=cv, nav_sec=items)
 
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
@@ -743,6 +743,11 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
 /* under a chapter row the sections stand where they stand under a subcategory: the list's 16px and their own 12px */
 .nav-ch>.nav-sec{padding-left:28px}
+/* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself */
+.sidebar>.nav-sec{margin:-4px 0 6px}
+.sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
+.sidebar>.nav-sec a:hover,.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
+.sidebar>.nav-sec a.is-active{font-weight:700}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
