@@ -16,7 +16,7 @@
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
   addEventListener('load',function(){setTimeout(function(){root.classList.add('smooth')},100)});
   // in-page links: smooth scroll (CSS) and move focus to the target
-  function focusTarget(){var el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
+  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
   var tb=document.querySelector('.theme-btn');
@@ -59,28 +59,31 @@
   // remember the menu's scroll position for the next page
   if(sb)addEventListener('pagehide',function(){try{sessionStorage.setItem('bb-nav-y',sb.scrollTop)}catch(e){}});
   // toc highlight: the last heading at or above the line anchors land on (scroll-margin-top, +1px for fractions)
-  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  // the same sections are listed twice: in "On this page" and, where that is hidden, under the menu's current item (.nav-sec)
+  var links=[].slice.call(document.querySelectorAll('.toc a,.nav-sec a'));
   if(links.length){
     var heads=[],picked=null,traf=0,tmk=document.querySelector('.dh-mark');
     var treq=function(){if(!traf)traf=requestAnimationFrame(mark)};
     links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      heads.push({a:a,el:el});if(location.hash==='#'+el.id)picked=a;
-      a.addEventListener('click',function(){picked=a;treq()})});
+      heads.push({a:a,el:el});if(location.hash==='#'+el.id)picked=el;
+      a.addEventListener('click',function(e){picked=el;treq();
+        // phones: a tap in the open menu closes it, which unlocks the page, and focus goes to the section
+        if(!(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)&&mobile.matches&&document.body.classList.contains('nav-open')&&a.closest('.nav-sec')){setNav(false,true);focusTarget(el)}})});
     // the directives heading is sticky: the mark before it keeps its natural place
     var topOf=function(el){return (el.id==='directives'&&tmk?tmk:el).getBoundingClientRect().top};
     var mark=function(){traf=0;if(!heads.length)return;
       var L=(parseFloat(getComputedStyle(heads[0].el).scrollMarginTop)||0)+1,cur=null;
-      heads.forEach(function(h){if(topOf(h.el)<=L)cur=h});
+      heads.forEach(function(h){if(topOf(h.el)<=L)cur=h.el});
       // at the end of the page the last headings cannot reach the line: the clicked one if it is on screen, else the last
       if(scrollY>0&&scrollY+innerHeight>=root.scrollHeight-1){var p=null;
-        heads.forEach(function(h){if(h.a===picked){var r=h.el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)p=h}});
-        cur=p||heads[heads.length-1]}
-      links.forEach(function(a){a.classList.toggle('is-active',!!cur&&cur.a===a)})};
+        heads.forEach(function(h){if(h.el===picked){var r=h.el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)p=h.el}});
+        cur=p||heads[heads.length-1].el}
+      heads.forEach(function(h){h.a.classList.toggle('is-active',h.el===cur)})};
     // a click is "just clicked" only until the reader scrolls by hand
     ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){picked=null},{passive:true})});
     addEventListener('scroll',treq,{passive:true});addEventListener('resize',treq);addEventListener('load',treq);mark();
   }
-  // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
+  // landing cue: a click in "On this page" or in the menu's list of sections marks the heading it lands on once the scroll stops (style.css, .cue)
   var toc=document.querySelector('.toc');
   if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
     // ring colour per theme: the chapter accent, darkened where the build found it below 3:1 on the page background
@@ -96,8 +99,8 @@
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
-    [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
+    links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
+      if(!a.closest('.nav-sec'))el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
         var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);

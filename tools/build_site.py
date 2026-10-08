@@ -255,15 +255,17 @@ def norm_base(path):
     return f"/{path}/" if path else "/"
 
 
-def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html="", base_href=None, noindex=False):
+def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc="", cover_html="", base_href=None, noindex=False, nav_sec=""):
     # Pages link to each other relatively and need no <base>. base_href is for a page served at any URL depth.
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
+    # nav_sec: the page's "On this page" items, repeated under the current menu item where that list is hidden (style.css, .nav-sec)
+    sec = f'<ol class="nav-sec">{nav_sec}</ol>' if nav_sec else ""
     nav = []
     for c in chapters:
         here = c["n"] == current_ch  # this page belongs to the chapter
         items = "".join(
-            (f'<li><span class="nav-cur" aria-current="page"><span class="num">{s["code"]}</span>{esc(s["name"])}</span></li>'
+            (f'<li><span class="nav-cur" aria-current="page"><span class="num">{s["code"]}</span>{esc(s["name"])}</span>{sec}</li>'
              if s["file"] == current_file else
              f'<li><a href="{s["file"]}"><span class="num">{s["code"]}</span>{esc(s["name"])}</a></li>')
             for s in c["subs"])
@@ -427,9 +429,9 @@ def render_sub(ch, s, prev, nxt, chapters):
                + call("indicators", "c-green", "<ul>" + "".join(f"<li>{inline(x)}</li>" for x in s["indicators"]) + "</ul>") + "</section>")
     out.append(f'<section>{sec_head("oneline", name)}{call("oneline", "c-peach", inline(s["oneline"]))}</section>')
     out.append(pager(prev, nxt))
-    toc = "<ol>" + "".join(f'<li><a href="#{k}">{t}</a></li>' for k, _, t, _ in SECTIONS) + "</ol>"
+    items = "".join(f'<li><a href="#{k}">{t}</a></li>' for k, _, t, _ in SECTIONS)
     title = f'{s["code"]} {name}—{BOOK_TITLE}'
-    return layout(title, "\n".join(out), chapters, s["file"], ch["n"], toc, s["governs"], cv)
+    return layout(title, "\n".join(out), chapters, s["file"], ch["n"], f"<ol>{items}</ol>", s["governs"], cv, nav_sec=items)
 
 
 def pager(prev, nxt):
@@ -730,6 +732,9 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
+/* the page's sections under the current item: shown only where "On this page" is hidden (see responsive) */
+.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 12px;font-size:13px}
+.nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
@@ -921,7 +926,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .tile:hover .go,.ch-card:hover .go{transform:translateX(5px)}
 
 /* responsive */
-@media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}}
+@media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}.nav-sec{display:block}}
 @media (max-width:860px){
   .shell,body.has-toc .shell{grid-template-columns:minmax(0,1fr)}
   :root{--cover-h:88px;--cover-full:88px}
@@ -982,7 +987,7 @@ JS = r"""
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
   addEventListener('load',function(){setTimeout(function(){root.classList.add('smooth')},100)});
   // in-page links: smooth scroll (CSS) and move focus to the target
-  function focusTarget(){var el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
+  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
   var tb=document.querySelector('.theme-btn');
@@ -1025,28 +1030,31 @@ JS = r"""
   // remember the menu's scroll position for the next page
   if(sb)addEventListener('pagehide',function(){try{sessionStorage.setItem('bb-nav-y',sb.scrollTop)}catch(e){}});
   // toc highlight: the last heading at or above the line anchors land on (scroll-margin-top, +1px for fractions)
-  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  // the same sections are listed twice: in "On this page" and, where that is hidden, under the menu's current item (.nav-sec)
+  var links=[].slice.call(document.querySelectorAll('.toc a,.nav-sec a'));
   if(links.length){
     var heads=[],picked=null,traf=0,tmk=document.querySelector('.dh-mark');
     var treq=function(){if(!traf)traf=requestAnimationFrame(mark)};
     links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      heads.push({a:a,el:el});if(location.hash==='#'+el.id)picked=a;
-      a.addEventListener('click',function(){picked=a;treq()})});
+      heads.push({a:a,el:el});if(location.hash==='#'+el.id)picked=el;
+      a.addEventListener('click',function(e){picked=el;treq();
+        // phones: a tap in the open menu closes it, which unlocks the page, and focus goes to the section
+        if(!(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)&&mobile.matches&&document.body.classList.contains('nav-open')&&a.closest('.nav-sec')){setNav(false,true);focusTarget(el)}})});
     // the directives heading is sticky: the mark before it keeps its natural place
     var topOf=function(el){return (el.id==='directives'&&tmk?tmk:el).getBoundingClientRect().top};
     var mark=function(){traf=0;if(!heads.length)return;
       var L=(parseFloat(getComputedStyle(heads[0].el).scrollMarginTop)||0)+1,cur=null;
-      heads.forEach(function(h){if(topOf(h.el)<=L)cur=h});
+      heads.forEach(function(h){if(topOf(h.el)<=L)cur=h.el});
       // at the end of the page the last headings cannot reach the line: the clicked one if it is on screen, else the last
       if(scrollY>0&&scrollY+innerHeight>=root.scrollHeight-1){var p=null;
-        heads.forEach(function(h){if(h.a===picked){var r=h.el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)p=h}});
-        cur=p||heads[heads.length-1]}
-      links.forEach(function(a){a.classList.toggle('is-active',!!cur&&cur.a===a)})};
+        heads.forEach(function(h){if(h.el===picked){var r=h.el.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)p=h.el}});
+        cur=p||heads[heads.length-1].el}
+      heads.forEach(function(h){h.a.classList.toggle('is-active',h.el===cur)})};
     // a click is "just clicked" only until the reader scrolls by hand
     ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){picked=null},{passive:true})});
     addEventListener('scroll',treq,{passive:true});addEventListener('resize',treq);addEventListener('load',treq);mark();
   }
-  // landing cue: a click in "On this page" marks the heading it lands on once the scroll stops (style.css, .cue)
+  // landing cue: a click in "On this page" or in the menu's list of sections marks the heading it lands on once the scroll stops (style.css, .cue)
   var toc=document.querySelector('.toc');
   if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
     // ring colour per theme: the chapter accent, darkened where the build found it below 3:1 on the page background
@@ -1062,8 +1070,8 @@ JS = r"""
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
-    [].forEach.call(toc.querySelectorAll('a'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
+    links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
+      if(!a.closest('.nav-sec'))el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
         var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);

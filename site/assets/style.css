@@ -148,6 +148,9 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
+/* the page's sections under the current item: shown only where "On this page" is hidden (see responsive) */
+.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 12px;font-size:13px}
+.nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
@@ -339,7 +342,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .tile:hover .go,.ch-card:hover .go{transform:translateX(5px)}
 
 /* responsive */
-@media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}}
+@media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}.nav-sec{display:block}}
 @media (max-width:860px){
   .shell,body.has-toc .shell{grid-template-columns:minmax(0,1fr)}
   :root{--cover-h:88px;--cover-full:88px}
