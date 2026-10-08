@@ -162,13 +162,16 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
-/* the page's sections under the current item: shown only where "On this page" is hidden (see responsive) */
-.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 12px;font-size:13px}
+/* the page's sections under the current item: shown only where "On this page" is hidden (see responsive)
+   their text starts in a column the menu already has. Under a subcategory: the subcategory names' column,
+   past the number (.num: 2.4em of 12px) and the 8px gap */
+.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 calc(2.4 * 12px + 8px);font-size:13px}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
-/* under a chapter row the sections stand where they stand under a subcategory: the list's 16px and their own 12px */
-.nav-ch>.nav-sec{padding-left:28px}
-/* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself */
-.sidebar>.nav-sec{margin:-4px 0 6px}
+/* under a chapter row: the same column, reached without the subcategory list's 16px */
+.nav-ch>.nav-sec{padding-left:calc(16px + 2.4 * 12px + 8px)}
+/* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself,
+   their text in the chapter numbers' column */
+.sidebar>.nav-sec{margin:-4px 0 6px;padding-left:0}
 .sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
 .sidebar>.nav-sec a:hover,.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
 .sidebar>.nav-sec a.is-active{font-weight:700}
