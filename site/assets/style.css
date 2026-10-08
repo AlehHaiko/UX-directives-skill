@@ -54,7 +54,7 @@ a{color:var(--link);text-decoration:none}
 [tabindex="-1"]:focus{outline:none}
 
 /* top bar */
-.top{position:sticky;top:0;z-index:30;height:var(--top);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:30;height:var(--top);background:var(--bg);border-bottom:1px solid var(--line)}
 /* header content sits on the same 1440px grid as the page: menu button over the sidebar, theme button over the toc */
 .top-in{height:100%;max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px}
 .brand{color:var(--text);font-weight:650;letter-spacing:-.01em;white-space:nowrap}@media (hover:hover){.brand:hover{text-decoration:none}}
@@ -444,7 +444,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .search-ic{top:13px}
   .search-x{width:44px;height:44px}.search-x::before{inset:9px}
   /* the list leaves the field's column: under the header, the screen's width less 16px gutters, as tall as the screen allows.
-     Fixed resolves against the header (its backdrop-filter makes it the containing block) or the viewport: the same box, the header sticks at 0 */
+     Fixed resolves against the viewport: the header sticks at 0, so the list starts 6px under it */
   .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
   .main{padding:16px 16px 64px}
   .pager{grid-template-columns:1fr}
