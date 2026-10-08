@@ -21,7 +21,8 @@
     "screen reader": ["screen reader", "accessib"],
     "dark mode": ["contrast", "color"],
     "dark theme": ["contrast", "color"],
-    "light mode": ["contrast", "color"]
+    "light mode": ["contrast", "color"],
+    "drop down": ["options"]
   },
   "words": {
     "a11y": ["accessib"],
@@ -53,6 +54,19 @@
     "assistant": ["ai"],
     "agent": ["ai"],
     "copilot": ["ai"],
-    "ml": ["ai", "learning"]
+    "ml": ["ai", "learning"],
+    "button": ["affordance", "interactive", "target"],
+    "menu": ["navigation"],
+    "icon": ["signifier"],
+    "font": ["typograph", "readab", "legib"],
+    "cookie": ["consent", "privacy"],
+    "checkbox": ["input", "check"],
+    "checkboxes": ["input", "check"],
+    "dropdown": ["options"],
+    "drop-down": ["options"],
+    "tab": ["navigation", "view"],
+    "placeholder": ["input", "format"],
+    "dashboard": ["densit"],
+    "table": ["densit", "compar"]
   }
 }
