@@ -3,22 +3,25 @@
 
 Source of truth: ux-directives/references/*.md (the same files the skill uses).
 Run from the repository root:
-    python3 tools/build_site.py [--base /path/]
+    python3 tools/build_site.py [--base /path/] [--out PATH]
 --base is the URL path the site is served from (default "/").
-Writes the HTML pages and 404.html to site/ and refreshes site/assets/. No dependencies.
-Favicons in site/assets/ are static files and are not touched.
+--out is the folder the site is written to (default site/).
+Writes the HTML pages and 404.html to the output folder and refreshes its assets/. No dependencies.
+Favicons in site/assets/ are static files and are not touched; a build to another folder copies them there.
 """
 import argparse
 import html
 import json
 import math
 import re
+import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REF = ROOT / "ux-directives" / "references"
-HERE = ROOT / "site"  # output directory (the Vercel root)
-ASSETS = HERE / "assets"
+SITE = ROOT / "site"  # default output directory (the Vercel root); home of the hand-kept favicons
+FAVICONS = ("favicon.ico", "favicon-32.png", "apple-touch-icon.png")
 
 BOOK_TITLE = "The Blue Book of UX Directives"
 BOOK_SUBTITLE = "A Uniform Code for Human-Centered Digital Systems"
@@ -531,9 +534,18 @@ DIR_INDEX = {}
 BASE = "/"  # URL path the site is served from; set by --base
 
 
-def main(base="/"):
+def main(base="/", out=None):
     global BASE
     BASE = norm_base(base)
+    HERE = Path(out).expanduser().resolve() if out else SITE
+    ASSETS = HERE / "assets"
+    # an existing folder is taken for an earlier build only by its index.html; anything else is left alone
+    if HERE.exists() and not HERE.is_dir():
+        sys.exit(f"Error: {HERE} is not a folder. Nothing was written.")
+    if HERE.is_dir() and any(HERE.iterdir()) and not (HERE / "index.html").is_file():
+        sys.exit(f"Error: {HERE} is not empty and has no index.html, so it is not an earlier build of this site. "
+                 "Nothing was written. Give --out an empty or new folder.")
+    HERE.mkdir(parents=True, exist_ok=True)
     chapters = [parse_chapter(REF / f"chapter_{i}.md") for i in range(1, 10)]
     for c in chapters:
         for s in c["subs"]:
@@ -580,6 +592,9 @@ def main(base="/"):
                 idx.append({"t": "d", "c": c["n"], "id": d["id"], "title": title, "body": body,
                             "url": s["file"] + "#" + d["id"].replace("/", "-"), "sub": s["code"] + " " + s["name"]})
     ASSETS.mkdir(exist_ok=True)
+    if HERE != SITE.resolve():  # the favicons are kept by hand in site/assets/; any other folder gets copies
+        for name in FAVICONS:
+            shutil.copyfile(SITE / "assets" / name, ASSETS / name)
     # the search vocabulary (spelling, phrases, synonyms) is data: tools/search_vocab.json
     vocab = json.loads((ROOT / "tools" / "search_vocab.json").read_text(encoding="utf-8"))
     (ASSETS / "search-index.js").write_text(
@@ -1342,4 +1357,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Build the static site for The Blue Book of UX Directives.")
     ap.add_argument("--base", default="/", metavar="PATH",
                     help='URL path the site is served from, for example "/book/" (default: "/")')
-    main(ap.parse_args().base)
+    ap.add_argument("--out", default=None, metavar="PATH",
+                    help="folder the site is written to (default: site/)")
+    args = ap.parse_args()
+    main(args.base, args.out)

@@ -21,6 +21,8 @@ Rebuild from the repository root (Python 3, no dependencies):
 python3 tools/build_site.py
 ```
 
+`--out PATH` writes the complete site (pages, assets and copies of the favicons) to another folder instead of `site/`; it combines with `--base` and refuses a non-empty folder that has no `index.html`.
+
 The build prints the page count (72 pages: 1 home, 9 chapters, 62 subcategories). If it changes, a chapter or subcategory heading was added, renamed or removed.
 
 ## After changing the Markdown
