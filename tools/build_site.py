@@ -304,6 +304,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <span class="search-ic">{ICON_SEARCH}</span>
     <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" role="combobox" aria-autocomplete="list" aria-controls="results" aria-expanded="false">
     <kbd>/</kbd>
+    <button type="button" class="search-x" tabindex="-1" aria-label="Clear search">×</button>
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
@@ -650,6 +651,11 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* "/" focuses search from anywhere; the hint is plain text and hides while typing */
 .search kbd{position:absolute;right:12px;top:8px;font-size:13px;color:var(--ph,#6b6b6b);line-height:20px;pointer-events:none;transition:opacity .2s var(--soft)}
 .search:focus-within kbd,.search.has-val kbd{opacity:0}
+/* clear button in the "/" slot, only while the field has text; the look is .r-x, the hit area is the field height */
+.search-x{position:absolute;z-index:0;top:0;right:0;width:36px;height:36px;display:none;padding:0;border:0;background:transparent;color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+.search.has-val .search-x{display:block}
+.search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
+.search-x:hover::before{background:var(--bg)}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
 .results li a:hover,.results li[aria-selected="true"] a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
@@ -932,7 +938,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .top-in{padding:0 16px;gap:10px}
   .brand-t{display:inline-block;max-width:34vw;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
   .search{width:auto;flex:1}.search kbd{display:none}
-  .search input{padding:0 10px 0 32px}
+  .search input{padding:0 10px 0 32px}.search.has-val input{padding-right:36px}
   .main{padding:16px 16px 64px}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
@@ -1195,6 +1201,10 @@ JS = r"""
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
+  // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent
+  var qx=q.parentNode.querySelector('.search-x');
+  if(qx){qx.addEventListener('mousedown',function(e){e.preventDefault()});
+    qx.addEventListener('click',function(){q.value='';say('');q.focus({preventScroll:true});refresh()})}
   q.addEventListener('keydown',function(e){
     if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
     else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
