@@ -373,7 +373,11 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .top-in{padding:0 16px;gap:10px}
   .brand-t{display:inline-block;max-width:34vw;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
   .search{width:auto;flex:1}.search kbd{display:none}
-  .search input{padding:0 10px 0 32px}.search.has-val input{padding-right:36px}
+  /* touch targets: the field and its clear button are 44px tall; the hover square of the button stays 26px */
+  .search input{height:44px;padding:0 10px 0 32px}.search.has-val input{padding-right:44px}
+  .search-ic{top:13px}
+  .search-x{width:44px;height:44px}.search-x::before{inset:9px}
+  .results{top:50px}
   .main{padding:16px 16px 64px}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
