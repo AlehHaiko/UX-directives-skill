@@ -291,7 +291,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="expect" href="#page-ready" blocking="render">
-<script>try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>
+<script>document.documentElement.classList.add('cvc');try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>
 </head>
 <body class="has-toc">
 <a class="skip" href="#main">Skip to content</a>
@@ -364,7 +364,7 @@ def cover(ch, s=None, nav=(None, None)):
                 f'<span class="cv-1"><span class="cv-n">{ch["n"]}.</span> {esc(ch["title"])}</span>{cover_arrows(nav)}</div></div>')
     return (f'<div class="cover cover-css" style="{chapter_vars(ch["n"])}"><div class="cover-in">'
             f'<span class="cv-1"><span class="cv-n">{ch["n"]}.</span> {esc(ch["title"])}</span>'
-            f'<h1 class="cv-2"><span class="cv-n">{s["num"]}.</span> {esc(s["name"])}</h1>{cover_arrows(nav)}</div></div>')
+            f'<h1 class="cv-2"><span class="cv-n"><span class="cv-c" aria-hidden="true">{ch["n"]}.</span>{s["num"]}<span class="cv-d">.</span></span> {esc(s["name"])}</h1>{cover_arrows(nav)}</div></div>')
 
 
 # Emoji sit inside the colored blocks (left column), not in the section headings.
@@ -752,7 +752,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .cv-1{color:var(--ch-light);font-size:15px;text-transform:uppercase;letter-spacing:.12em;font-weight:500;line-height:1}
 .cover-ch .cv-1{margin:0;font-size:24px;letter-spacing:.08em;line-height:1;text-transform:uppercase}
 .cv-2{margin:0;color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
-.cv-n{font-family:var(--mono);font-weight:500}
+.cv-n{font-family:var(--mono);font-weight:500}.cv-c{display:none}
 .cover-home{background:#1829c4}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 .hm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -924,7 +924,20 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}}
 @media (max-width:860px){
   .shell,body.has-toc .shell{grid-template-columns:minmax(0,1fr)}
-  :root{--cover-h:88px}
+  :root{--cover-h:88px;--cover-full:88px}
+  /* condensed banner: once the page is scrolled the banner is one 40px line with the page's own name.
+     --cover-h is the condensed height (the sticky heading and anchors clear that); the banner keeps its full
+     88px in the flow (height + margin), so the text under it does not move when it changes state */
+  :root.cvc{--cover-h:40px}
+  .cover{height:var(--cover-full);transition:height .18s ease,margin-bottom .18s ease}
+  .cover.is-min{height:var(--cover-h);margin-bottom:calc(var(--cover-full) - var(--cover-h))}
+  .cover.is-min .cover-in{padding:0 16px}
+  .cover.is-min .cv-arr,.cover.is-min .hm-mark,.cover:not(.cover-ch).is-min .cv-1{display:none}
+  .cover.is-min .cv-1,.cover.is-min .cv-2,.cover.is-min .hm-t{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+  .cover.is-min .cv-2{font-size:17px}.cover-ch.is-min .cv-1{font-size:13px}.cover.is-min .hm-t{font-size:12px}
+  .cover.is-min .hm{padding:0 16px}
+  /* "2. Discoverability" reads "2.2 Discoverability": the chapter number appears, the dot after the subcategory number takes no room */
+  .cover.is-min .cv-c{display:inline}.cover.is-min .cv-d{font-size:0}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:15px}.cv-next::before{right:6px}.cv-next svg{right:15px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
@@ -954,6 +967,13 @@ JS = r"""
   var root=document.documentElement;
   // sticky cover: --cover-h comes from CSS alone, so it follows the width; land a #id clear of it
   var cv=document.querySelector('body>.cover');
+  // narrow screens: the banner condenses to one line once the page has scrolled by the height it gives up
+  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows has focus
+  if(cv){var narrow=matchMedia('(max-width: 860px)'),craf=0;
+    var cmin=function(){craf=0;var cs=getComputedStyle(root),t=parseFloat(cs.getPropertyValue('--cover-full'))-parseFloat(cs.getPropertyValue('--cover-h'));
+      cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
+    var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
+    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq)}
   if(location.hash){var tg=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(tg)setTimeout(function(){tg.scrollIntoView({behavior:'instant'})},0)}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});

@@ -3,6 +3,13 @@
   var root=document.documentElement;
   // sticky cover: --cover-h comes from CSS alone, so it follows the width; land a #id clear of it
   var cv=document.querySelector('body>.cover');
+  // narrow screens: the banner condenses to one line once the page has scrolled by the height it gives up
+  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows has focus
+  if(cv){var narrow=matchMedia('(max-width: 860px)'),craf=0;
+    var cmin=function(){craf=0;var cs=getComputedStyle(root),t=parseFloat(cs.getPropertyValue('--cover-full'))-parseFloat(cs.getPropertyValue('--cover-h'));
+      cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
+    var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
+    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq)}
   if(location.hash){var tg=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(tg)setTimeout(function(){tg.scrollIntoView({behavior:'instant'})},0)}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
