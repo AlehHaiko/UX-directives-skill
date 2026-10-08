@@ -650,7 +650,7 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 /* "/" focuses search from anywhere; the hint is plain text and hides while typing */
 .search kbd{position:absolute;right:12px;top:8px;font-size:13px;color:var(--ph,#6b6b6b);line-height:20px;pointer-events:none;transition:opacity .2s var(--soft)}
 .search:focus-within kbd,.search.has-val kbd{opacity:0}
-.results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
 .results li a:hover,.results li[aria-selected="true"] a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
 .results .r-id{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:8px}
