@@ -20,9 +20,9 @@
 @supports (transition-timing-function:linear(0, 1)){:root{
   --spring:linear(0, 0.042, 0.145, 0.282, 0.432, 0.579, 0.712, 0.825, 0.916, 0.985, 1.033, 1.063, 1.079, 1.084, 1.08, 1.072, 1.06, 1.048, 1.035, 1.024, 1.015, 1.007, 1.001, 0.997, 0.995, 0.993, 0.993, 0.993, 0.994, 0.995, 0.996, 0.997, 1);  /* damped spring, ~8% overshoot */
   --soft:linear(0, 0.029, 0.099, 0.189, 0.285, 0.381, 0.471, 0.552, 0.624, 0.687, 0.741, 0.787, 0.825, 0.857, 0.884, 0.906, 0.924, 0.939, 0.951, 0.96, 0.968, 0.975, 0.98, 0.984, 0.987, 0.99, 0.992, 0.994, 0.995, 0.996, 0.997, 0.997, 1);}}  /* critically damped spring, no overshoot */
-*{box-sizing:border-box;--ch-sel:var(--ch-sel-l);--ch-hov:var(--ch-hov-l)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d)}}
-:root[data-theme="dark"] *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d)}
+*{box-sizing:border-box;--ch-sel:var(--ch-sel-l);--ch-hov:var(--ch-hov-l);--ch-live:var(--ch-live-l)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d)}}
+:root[data-theme="dark"] *{--ch-sel:var(--ch-sel-d);--ch-hov:var(--ch-hov-d);--ch-live:var(--ch-live-d)}
 @media (prefers-reduced-motion:no-preference){html.smooth{scroll-behavior:smooth}@view-transition{navigation:auto}}
 .top{view-transition-name:top}.sidebar{view-transition-name:sidebar}
 body>.cover{view-transition-name:cover}.cover .cv-1{view-transition-name:cv-ch}.cover .cv-2{view-transition-name:cv-sub}
@@ -137,9 +137,16 @@ a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .nav-ch-t[aria-current]{font-weight:700}
 /* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
 .chev{appearance:none;border:0;margin:0;padding:0;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
-.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring)}
+/* the glyph is the text colour, a little lighter at rest; the button's states are its block's background alone */
+.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.75;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring),opacity .35s var(--soft)}
 .chev[aria-expanded="true"]::before{transform:translateY(-1px) rotate(45deg)}
-.nav-ch-h:has(a) .chev:hover{background:var(--ch-sel)}
+@media (hover:hover){
+  /* neighbour: pointer or keyboard focus on the title next to it (a link to another chapter) */
+  .nav-ch-h:has(a.nav-ch-t:hover) .chev,.nav-ch-h:has(a.nav-ch-t:focus-visible) .chev{background:var(--ch-sel)}
+  /* live: pointer or focus on the chevron itself; pointer on the current chapter's row, where the title folds the list too */
+  .chev:hover,.chev:focus-visible,.nav-ch[data-here] .nav-ch-h:hover .chev{background:var(--ch-live)}
+  .chev:hover::before,.chev:focus-visible::before,.nav-ch[data-here] .nav-ch-h:hover .chev::before{opacity:1}
+}
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
 .nav-ch-c:not([hidden]){block-size:auto}
