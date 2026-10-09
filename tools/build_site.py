@@ -1391,7 +1391,7 @@ JS = r"""
   function fixLi(fix){return '<li role="option" id="r0" class="r-fix" data-q="'+escH(fix).replace(/"/g,'&quot;')+'"><a href="#">Did you mean <span class="r-t">'+escH(fix)+'</span>?</a></li>'}
   function applyFix(li){q.value=li.getAttribute('data-q');q.parentNode.classList.add('has-val');run();q.focus({preventScroll:true})}
   function run(){
-    var v=norm(q.value.trim());res.innerHTML='';sel=-1;off=0;
+    var v=norm(q.value.trim());res.innerHTML='';sel=-1;off=0;q.removeAttribute('aria-activedescendant');
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var gs=groups(v),terms=[].concat.apply([],gs),scored=[],some=[],any=false;
     idx.forEach(function(x){
@@ -1440,7 +1440,7 @@ JS = r"""
   function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
   function showHist(){
-    var h=hist();res.innerHTML='';sel=-1;off=0;items=[];say('');
+    var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
     var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
     h.forEach(function(x,i){
@@ -1482,7 +1482,7 @@ JS = r"""
     if(inField||e.ctrlKey||e.metaKey||e.altKey)return;
     if(e.key==='/'){e.preventDefault();q.focus({preventScroll:true})}
   });
-  document.addEventListener('click',function(e){if(!e.target.closest('.search')){res.hidden=true;q.setAttribute('aria-expanded','false')}});
+  document.addEventListener('click',function(e){if(!e.target.closest('.search'))close()});
   var ic=document.querySelector('.search-ic');
   q.addEventListener('focus',function(){if(ic){ic.classList.remove('pop');void ic.offsetWidth;ic.classList.add('pop')}refresh()});
   if(ic)ic.addEventListener('animationend',function(){ic.classList.remove('pop')});
