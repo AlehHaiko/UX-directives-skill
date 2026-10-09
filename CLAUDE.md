@@ -45,6 +45,21 @@ python3 tools/build_site.py && git diff --stat
 
 Healthy output: `Built 72 pages: 1 home, 9 chapters, 62 subcategories; 555 directive IDs indexed.` `site/` then holds 73 HTML files: the 72 pages plus `404.html`. The diff touches only the files the pass meant to change (a template or CSS/JS change rewrites all 72 pages and `site/assets/`; that is expected).
 
+**Link check (every pass, with the quick check).** From the repository root:
+
+```
+python3 tools/check_links.py
+```
+
+Healthy output, two lines:
+
+```
+pages 73, local links checked 8325, missing 0, anchors checked 1990, anchors missing 0, external skipped 1
+index links checked 617, missing 0, anchors checked 555, anchors missing 0
+```
+
+The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched. For a build made with `--base /ux/ --out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
+
 **Local preview.** `file://` loads pages without CSS and JS, so serve the folder:
 
 ```
