@@ -327,7 +327,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
-  <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span><span class="brand-m">{HM_MARK.format(stroke="currentColor")}<span class="sr">Contents</span></span></a>
+  <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span><span class="brand-m">{HM_MARK.format(stroke="currentColor")}<span class="sr">{BOOK_TITLE}</span></span></a>
   <div class="search">
     <label class="sr" for="q">Search directives</label>
     <span class="search-ic">{ICON_SEARCH}</span>
