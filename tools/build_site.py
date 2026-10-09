@@ -180,10 +180,11 @@ def parse_index():
 
 
 # ---------------------------------------------------------------- rendering
-# Theme toggle, on the panel icon's 20 grid and in its stroke: both about 16 units across
+# Theme toggle, on the panel icon's 20 grid and in its stroke: both 14.5 units across, about the centre.
+# The moon's body is 35% of its diameter at the widest; its tips are a quarter turn apart, opening to the upper right
 ICON_SUN = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3"/>'
             '<path d="M10 2.75v1.75M10 15.5v1.75M2.75 10h1.75M15.5 10h1.75M13.89 6.11l1.24-1.24M6.11 13.89l-1.24 1.24M6.11 6.11L4.87 4.87M13.89 13.89l1.24 1.24"/></svg>')
-ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.2 10.63A7.2 7.2 0 1 1 10.17 3.6a5.6 5.6 0 0 0 7.03 7.03z"/></svg>'
+ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.25 10A7.25 7.25 0 1 1 10 2.75A5.45 5.45 0 1 0 17.25 10z"/></svg>'
 # The cross of "clear" and "remove": the open burger's two lines (13 units long, crossed at 45 degrees)
 ICON_X = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg>'
 # Chapter chevron, drawn folded (pointing right); the open one is the same line turned a quarter (CSS)
