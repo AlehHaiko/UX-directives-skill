@@ -108,6 +108,8 @@ The UX Directives is a living doctrine. If you have feedback on specific directi
 
 ## License
 
+What can be given away without losing it must be free.
+
 MIT — see [LICENSE](./LICENSE)
 
 Favicon: the rocket emoji from [Noto Emoji](https://github.com/googlefonts/noto-emoji) by Google, used under its open-source license.
