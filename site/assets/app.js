@@ -327,7 +327,7 @@
   function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
-  function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
+  function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=sel<0?(d<0?lis.length-1:0):(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
   // it follows the field in the Tab order, and its Enter and Space arrive as clicks
