@@ -1306,7 +1306,7 @@ JS = r"""
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
-  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[];
+  var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
   function norm(s){return s.toLowerCase().replace(/[’']/g,'')}
   // result count for screen readers, announced once typing pauses
@@ -1349,9 +1349,11 @@ JS = r"""
       out.push(g.filter(function(m,j){return g.indexOf(m)===j}));
     }
     return out}
-  // ---- no results: suggest a correction (27/08)
+  // ---- no results, or only any-word matches: suggest a correction (27/08)
   // true if the query finds anything, counting the any-word fallback
   function finds(v){var gs=groups(v);return idx.some(function(x){return gs.some(function(g){return g.some(function(t){return at(x._h,t)})})})}
+  // true if some entry matches every word of the query
+  function findsAll(v){var gs=groups(v);return idx.some(function(x){return gs.every(function(g){return g.some(function(t){return at(x._h,t)})})})}
   // Damerau-Levenshtein distance (adjacent transpositions count as one edit)
   function dist(a,b){
     var m=a.length,n=b.length,p2,p=[],c,i,j;
@@ -1377,18 +1379,19 @@ JS = r"""
   // candidates that find nothing alone (they only work inside a vocabulary phrase), found on first use
   var dead;
   function deadWords(){if(!dead){dead={};for(var k in words)if(!words[k]&&!finds(k))dead[k]=1}return dead}
-  // the query with every word that alone finds nothing replaced by its nearest candidate; null unless that query finds results.
-  // If it finds nothing, the correction runs once more without the candidates that find nothing alone
-  function correct(raw){
+  // the query with every word that alone finds nothing replaced by its nearest candidate; null unless that query finds results
+  // (ok: the test it has to pass, finds by default). If it fails, the correction runs once more without the candidates that find nothing alone
+  function correct(raw,ok){
     function attempt(skip){
       var changed=false,out=raw.trim().split(/\s+/).map(function(w){
         var n=norm(w),fix=/^[a-z]+$/.test(n)&&!finds(n)&&nearest(n,skip);
         if(fix)changed=true;return fix||w}).join(' ');
-      return changed&&finds(norm(out))?out:null}
+      return changed&&(ok||finds)(norm(out))?out:null}
     return attempt()||attempt(deadWords())}
+  function fixLi(fix){return '<li role="option" id="r0" class="r-fix" data-q="'+escH(fix).replace(/"/g,'&quot;')+'"><a href="#">Did you mean <span class="r-t">'+escH(fix)+'</span>?</a></li>'}
   function applyFix(li){q.value=li.getAttribute('data-q');q.parentNode.classList.add('has-val');run();q.focus({preventScroll:true})}
   function run(){
-    var v=norm(q.value.trim());res.innerHTML='';sel=-1;
+    var v=norm(q.value.trim());res.innerHTML='';sel=-1;off=0;
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var gs=groups(v),terms=[].concat.apply([],gs),scored=[],some=[],any=false;
     idx.forEach(function(x){
@@ -1406,20 +1409,25 @@ JS = r"""
     scored.sort(function(a,b){return any&&b[2]-a[2]||b[0]-a[0]});
     items=scored.slice(0,30).map(function(p){return p[1]});
     var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
-    if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';say(count);
+    if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';
+    // any-word matches only: a typo in one word may hide an exact match. Suggest the correction if it matches every word
+    var anyFix=any&&correct(q.value,findsAll);
+    say(count+(anyFix?' Did you mean '+anyFix+'?':''));
     // nothing at all: say what happened, suggest a correction, offer a way out. The suggestion is an option
     // (arrows reach it, Enter or a click runs it); the two sentences are not. #q-status says the same text.
     if(!items.length){
       var fix=correct(q.value),l1='The book has no directive on “'+q.value.trim()+'”.',l3='Try a broader word, or browse the Contents.';
       say(l1+(fix?' Did you mean '+fix+'? ':' ')+l3);
       res.innerHTML='<li class="r-empty" role="presentation">'+escH(l1)+'</li>'
-        +(fix?'<li role="option" id="r0" class="r-fix" data-q="'+escH(fix).replace(/"/g,'&quot;')+'"><a href="#">Did you mean <span class="r-t">'+escH(fix)+'</span>?</a></li>':'')
+        +(fix?fixLi(fix):'')
         +'<li class="r-empty" role="presentation">Try a broader word, or browse the <a href="index.html">Contents</a>.</li>'}
     // the same count, visible: a heading row, not an option (arrows skip it; #q-status does the announcing);
     // the any-word notice is a sentence, so it takes the plain look of the no-match line (.r-empty)
-    else{var head=document.createElement('li');head.className=any?'r-empty':'r-head';head.setAttribute('role','presentation');head.setAttribute('aria-hidden','true');head.textContent=count;res.appendChild(head)}
+    else{var head=document.createElement('li');head.className=any?'r-empty':'r-head';head.setAttribute('role','presentation');head.setAttribute('aria-hidden','true');head.textContent=count;res.appendChild(head);
+      // the suggestion follows the any-word notice as the first option; the results are numbered after it
+      if(anyFix){res.insertAdjacentHTML('beforeend',fixLi(anyFix));off=1}}
     items.forEach(function(x,i){
-      var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='rc'+x.c;
+      var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+(i+off);li.className='rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+hl(x.id,terms)+'</span><span class="r-t">'+hl(x.title,terms)+'</span><span class="r-b">'+hl(x.body,terms)+(x.sub?' · '+hl(x.sub,terms):'')+'</span></a>';
       res.appendChild(li);
     });
@@ -1432,7 +1440,7 @@ JS = r"""
   function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
   function showHist(){
-    var h=hist();res.innerHTML='';sel=-1;items=[];say('');
+    var h=hist();res.innerHTML='';sel=-1;off=0;items=[];say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
     var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
     h.forEach(function(x,i){
@@ -1449,7 +1457,7 @@ JS = r"""
   }
   function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
-  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
+  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
@@ -1461,7 +1469,7 @@ JS = r"""
     if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
     else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
     // Enter on a closed list reopens the results for the current query; on an open list it follows the selection
-    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li&&li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}if(li){var a=li.querySelector('a');if(!li.classList.contains('r-hist')&&items[sel<0?0:sel])remember(items[sel<0?0:sel]);location.href=a.href}}
+    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li&&li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}if(li){var a=li.querySelector('a'),it=items[(sel<0?0:sel)-off];if(!li.classList.contains('r-hist')&&it)remember(it);location.href=a.href}}
     // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
     else if(e.key==='Escape'){
       if(!res.hidden){e.preventDefault();close()}
