@@ -734,9 +734,12 @@ a{color:var(--link);text-decoration:none}
   font-size:12px;font-weight:500;line-height:1.35;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px) scale(.94);
   transition:opacity .15s var(--soft),transform .15s var(--soft),visibility 0s .15s}
 .tip.up{transform:translateY(4px) scale(.94)}
+/* beside a chapter chevron, so the chevron below stays free: to its right (.at-r), to its left (.at-l) when the right has no room */
+.tip.at-r{transform:translateX(-4px) scale(.94)}.tip.at-l{transform:translateX(4px) scale(.94)}
 .tip.on{opacity:1;visibility:visible;transform:none;transition:opacity .18s var(--soft),transform .4s var(--spring),visibility 0s}
 /* the gap to the control belongs to the tooltip, so the pointer can cross it */
 .tip::before{content:"";position:absolute;left:0;right:0;top:-7px;height:7px}.tip.up::before{top:auto;bottom:-7px}
+.tip.at-r::before,.tip.at-l::before{top:0;bottom:0;width:7px;height:auto}.tip.at-r::before{left:-7px;right:auto}.tip.at-l::before{left:auto;right:-7px}
 :root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 
@@ -1077,7 +1080,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
-  .tip,.tip.up{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
+  .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
 
@@ -1136,11 +1139,15 @@ JS = r"""
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
-  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below
+  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below.
+  // A chapter chevron has the next chevron right under it: its tooltip stands beside it, on the right, or on the left when the right has no room;
+  // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above)
   function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
-    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8))),
-      up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8,y=Math.round(up?r.top-6-h:r.bottom+6);
-    tip.classList.toggle('up',up);tip.style.left=x+'px';tip.style.top=y+'px';tip.style.transformOrigin=(cx-x)+'px '+(up?'100%':'0')}
+    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,side=tipOwn.matches('.chev'),x,y,up=false,sl=false;
+    if(side){sl=r.right+6+w>vw-8;x=Math.round(sl?r.left-6-w:r.right+6);y=Math.round(Math.max(0,Math.min(r.top+r.height/2-h/2,innerHeight-h)))}
+    else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
+    tip.classList.toggle('up',up);tip.classList.toggle('at-r',side&&!sl);tip.classList.toggle('at-l',sl);tip.style.left=x+'px';tip.style.top=y+'px';
+    tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
   // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
   function tipText(el){return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')}
   function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
