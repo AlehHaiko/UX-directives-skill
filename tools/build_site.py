@@ -1122,6 +1122,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 /* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text.
    Touch target: the link takes taps 4px beyond its 36px box on every side, 44x44; the drawn emblem and the focus ring keep their size */
 @media (max-width:520px){.brand{flex:none;border-radius:8px;position:relative}.brand::after{content:"";position:absolute;inset:-4px}.brand-t{display:none}.brand-m{display:grid}.top-in{gap:8px}}
+/* the menu and theme buttons take taps the same way: 4px beyond their 36px boxes, 44x44. The menu button's area ends where the emblem's begins;
+   the theme button's is 4px clear of the search field. The drawn icons, the boxes and the focus rings keep their size */
+@media (max-width:520px){.menu-btn,.theme-btn{position:relative}.menu-btn::after,.theme-btn::after{content:"";position:absolute;inset:-4px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
