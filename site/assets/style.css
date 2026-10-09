@@ -199,6 +199,13 @@ a{color:var(--link);text-decoration:none}
   .chev{padding:calc(6px + 14px * 1.3 / 2 - 7.8px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line);--chev-bd:var(--line)}
   .chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--chev-bd);border-radius:6px;background:var(--chev-bg);transition:background-color .35s var(--soft),border-color .35s var(--soft)}
   .chev svg{position:relative;z-index:1}
+  /* a finger's target: a chapter row is at least 44px high, its title and box as they are, in the middle of it (a two-line row
+     is higher already). The title link and the button take taps over the row's whole height, the button over 44px of width:
+     its own 34px and 10px of the menu's 12px padding to its right. Nothing drawn moves but the one-line rows apart */
+  .nav-ch-h{min-height:44px;flex-wrap:wrap;align-content:center}
+  a.nav-ch-t{position:relative}
+  a.nav-ch-t::before,.chev::before{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,44px);transform:translateY(-50%)}
+  .chev::before{right:-10px}
   .chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
   .chev[aria-expanded="true"]{--chev-bg:var(--ch-hov);--chev-bd:var(--ch-sel)}
   .nav-ch[data-here] .chev[aria-expanded="true"]{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
