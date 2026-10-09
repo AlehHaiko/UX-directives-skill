@@ -357,6 +357,9 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 
 
 GO = '<span class="go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>'
+# the same arrow inside a line of text (pager, section headings), and its mirror
+ARROW_R = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+ARROW_L = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>'
 CHEV_L = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>'
 CHEV_R = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
 
@@ -407,7 +410,7 @@ def call(key, cls, inner):
 
 def sec_head(key, name):
     _, emoji, title, arrow = next(x for x in SECTIONS if x[0] == key)
-    tail = f' <span class="arrow" aria-hidden="true">→</span> <span class="to">{esc(name)}</span>' if arrow else ""
+    tail = f' <span class="arrow" aria-hidden="true">{ARROW_R}</span> <span class="to">{esc(name)}</span>' if arrow else ""
     em = f'<span class="em" aria-hidden="true">{HEAD_EMOJI[key]}</span> ' if key in HEAD_EMOJI else ""
     return f'<h2 id="{key}">{em}{title}{tail}</h2>'
 
@@ -415,8 +418,8 @@ def sec_head(key, name):
 def render_sub(ch, s, prev, nxt, chapters):
     name = s["name"]
     cv = cover(ch, s, (prev, nxt))
-    out = [f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> '
-           f'<a href="{ch["file"]}">{ch["n"]}. {esc(ch["title"])}</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{s["num"]}. {esc(name)}</span></p>'
+    out = [f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">{CHEV_R}</span> '
+           f'<a href="{ch["file"]}">{ch["n"]}. {esc(ch["title"])}</a> <span class="sep" aria-hidden="true">{CHEV_R}</span> <span class="crumb-cur" aria-current="page">{s["num"]}. {esc(name)}</span></p>'
            f'{crumb_nav(ch, prev, nxt)}</div><p class="lede">{inline(s["governs"])}</p></div>']
     out.append(f'<section>{sec_head("ask", name)}<blockquote class="q">{inline(s["ask"])}</blockquote></section>')
     out.append(f'<section>{sec_head("mission", name)}{call("mission", "c-peach", inline(s["mission"]))}</section>')
@@ -462,8 +465,8 @@ def pager(prev, nxt):
         if not p:
             return f'<span class="{cls} empty"></span>'
         lbl, href, n = p
-        d = ('<span class="pg-dir"><span class="pg-ar">←</span> Previous</span>' if arrow_left
-             else '<span class="pg-dir">Next <span class="pg-ar">→</span></span>')
+        d = ('<span class="pg-dir"><span class="pg-ar">' + ARROW_L + '</span> Previous</span>' if arrow_left
+             else '<span class="pg-dir">Next <span class="pg-ar">' + ARROW_R + '</span></span>')
         inner = d + f'<span class="pg-t">{esc(lbl)}</span>'
         return f'<a class="{cls}" href="{href}" style="{chapter_vars(n)}">{inner}</a>'
     return f'<nav class="pager" aria-label="Pages">{link(prev, "pg prev", True)}{link(nxt, "pg next", False)}</nav>'
@@ -479,7 +482,7 @@ def render_chapter(ch, prev, nxt, chapters):
     # the intro's first line is the page h1, styled like a subcategory's "Governs" line (p.lede; that page's h1 is the banner name)
     intro = "".join(f"<h1>{inline(x)}</h1>" if i == 0 else f"<p>{inline(x)}</p>" for i, x in enumerate(ch["intro"]))
     cv = cover(ch, None, (prev, nxt))
-    body = (f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">❯</span> <span class="crumb-cur" aria-current="page">{ch["n"]}. {esc(ch["title"])}</span></p>'
+    body = (f'<div class="page-head"><div class="crumbs-row"><p class="crumbs"><a href="index.html">Contents</a> <span class="sep" aria-hidden="true">{CHEV_R}</span> <span class="crumb-cur" aria-current="page">{ch["n"]}. {esc(ch["title"])}</span></p>'
             f'{crumb_nav(ch, prev, nxt)}</div>'
             f'{intro}</div>'
             f'<section><h2 id="mission">Mission statement</h2>{call("mission", "c-peach", inline(ch["mission"]))}</section>'
@@ -914,7 +917,12 @@ a{color:var(--link);text-decoration:none}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
-.cn.is-off{opacity:.25}.crumbs .sep{margin:0 6px;color:var(--arrow);font-size:.85em}.crumbs a{color:var(--muted)}
+.cn.is-off{opacity:.25}.crumbs .sep{margin:0 6px;color:var(--arrow);font-size:.85em}
+/* arrows inside a line of text: the card arrow's line, 1.5px at each size; side margins keep the width the glyph had */
+.crumbs .sep svg,h2 .arrow svg,.pg-ar svg{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.15em}
+.crumbs .sep svg{width:11px;height:11px;margin:0 -2.685px;stroke-width:3.2727}
+h2 .arrow svg{width:22px;height:22px;margin:0 -1.135px;stroke-width:1.6364}
+.pg-ar svg{width:12px;height:12px;margin:0 -.49px;stroke-width:3}.crumbs a{color:var(--muted)}
 h1,.lede{font-size:clamp(28px,4.2vw,40px);line-height:1.15;letter-spacing:-.02em;margin:40px 0 18px;font-weight:700}
 h2{font-size:22px;line-height:1.3;margin:36px 0 12px;letter-spacing:-.01em;font-weight:650;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
 h2 .em{font-size:20px}h2 .arrow{color:var(--arrow);font-weight:500}h2 .to{font-weight:650}
