@@ -320,7 +320,8 @@
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
-  // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent
+  // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
+  // it follows the field in the Tab order, and its Enter and Space arrive as clicks
   var qx=q.parentNode.querySelector('.search-x');
   if(qx){qx.addEventListener('mousedown',function(e){e.preventDefault()});
     qx.addEventListener('click',function(){q.value='';say('');q.focus({preventScroll:true});refresh()})}

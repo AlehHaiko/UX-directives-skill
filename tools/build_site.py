@@ -334,7 +334,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <span class="search-ic">{ICON_SEARCH}</span>
     <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" role="combobox" aria-autocomplete="list" aria-controls="results" aria-expanded="false">
     <kbd>/</kbd>
-    <button type="button" class="search-x" tabindex="-1" aria-label="Clear search">{ICON_X}</button>
+    <button type="button" class="search-x" aria-label="Clear search">{ICON_X}</button>
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
@@ -707,6 +707,8 @@ a{color:var(--link);text-decoration:none}
 .search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
 @media (hover:hover){.search-x:hover::before{background:var(--bg)}}
+/* the focus ring goes around the 26px square, inside the field */
+.search-x:focus-visible{outline:none}.search-x:focus-visible::before{outline:2px solid var(--link);outline-offset:2px}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
 @media (hover:hover){.results li a:hover{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
@@ -1450,7 +1452,8 @@ JS = r"""
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li);if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
-  // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent
+  // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
+  // it follows the field in the Tab order, and its Enter and Space arrive as clicks
   var qx=q.parentNode.querySelector('.search-x');
   if(qx){qx.addEventListener('mousedown',function(e){e.preventDefault()});
     qx.addEventListener('click',function(){q.value='';say('');q.focus({preventScroll:true});refresh()})}
