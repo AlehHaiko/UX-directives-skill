@@ -180,6 +180,10 @@ def parse_index():
 
 
 # ---------------------------------------------------------------- rendering
+# Theme toggle, on the panel icon's 20 grid and in its stroke: both about 16 units across
+ICON_SUN = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3"/>'
+            '<path d="M10 2.75v1.75M10 15.5v1.75M2.75 10h1.75M15.5 10h1.75M13.89 6.11l1.24-1.24M6.11 13.89l-1.24 1.24M6.11 6.11L4.87 4.87M13.89 13.89l1.24 1.24"/></svg>')
+ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.2 10.63A7.2 7.2 0 1 1 10.17 3.6a5.6 5.6 0 0 0 7.03 7.03z"/></svg>'
 ICON_SEARCH = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
 
 
@@ -325,7 +329,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
-  <button class="theme-btn" aria-label="Switch to dark theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
+  <button class="theme-btn" aria-label="Switch to dark theme"><span class="sun">{ICON_SUN}</span><span class="moon">{ICON_MOON}</span></button>
 </div></header>
 {cover_html}
 <div class="shell">
@@ -720,8 +724,9 @@ a{color:var(--link);text-decoration:none}
 @keyframes bb-turn{from{transform:rotate(-120deg) scale(.5);opacity:0}}
 :root[data-theme="dark"] .theme-btn .sun{display:none}:root[data-theme="dark"] .theme-btn .moon{display:inline-block}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn .sun{display:none}:root:not([data-theme="light"]) .theme-btn .moon{display:inline-block}}
-.menu-btn{display:grid;place-items:center;padding:0}
+.theme-btn,.menu-btn{display:grid;place-items:center;padding:0}
 .menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.theme-btn svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .ic-panel .col{fill:currentColor;stroke:none;transform-box:fill-box;transform-origin:left center;transition:transform .5s var(--spring),opacity .3s var(--soft)}
 .ic-burger{display:none}.ic-burger path{transform-box:fill-box;transform-origin:center;transition:transform .5s var(--spring),opacity .2s var(--soft)}
 /* shown: filled column; hidden: empty column that slides out on hover as a preview */

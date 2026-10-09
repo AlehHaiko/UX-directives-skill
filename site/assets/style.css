@@ -109,8 +109,9 @@ a{color:var(--link);text-decoration:none}
 @keyframes bb-turn{from{transform:rotate(-120deg) scale(.5);opacity:0}}
 :root[data-theme="dark"] .theme-btn .sun{display:none}:root[data-theme="dark"] .theme-btn .moon{display:inline-block}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn .sun{display:none}:root:not([data-theme="light"]) .theme-btn .moon{display:inline-block}}
-.menu-btn{display:grid;place-items:center;padding:0}
+.theme-btn,.menu-btn{display:grid;place-items:center;padding:0}
 .menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.theme-btn svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .ic-panel .col{fill:currentColor;stroke:none;transform-box:fill-box;transform-origin:left center;transition:transform .5s var(--spring),opacity .3s var(--soft)}
 .ic-burger{display:none}.ic-burger path{transform-box:fill-box;transform-origin:center;transition:transform .5s var(--spring),opacity .2s var(--soft)}
 /* shown: filled column; hidden: empty column that slides out on hover as a preview */
