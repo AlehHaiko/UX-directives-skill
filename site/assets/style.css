@@ -108,11 +108,24 @@ a{color:var(--link);text-decoration:none}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
-.theme-btn span{display:inline-block}.theme-btn .moon{display:none}
+.theme-btn span{display:inline-block}
 .theme-btn.turn span{animation:bb-turn .6s var(--spring)}
 @keyframes bb-turn{from{transform:rotate(-120deg) scale(.5);opacity:0}}
-:root[data-theme="dark"] .theme-btn .sun{display:none}:root[data-theme="dark"] .theme-btn .moon{display:inline-block}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn .sun{display:none}:root:not([data-theme="light"]) .theme-btn .moon{display:inline-block}}
+/* --dk: the theme (0 light, 1 dark); --m: what the icon draws (0 sun, 1 moon) */
+.theme-btn{--dk:0;--m:var(--dk)}
+:root[data-theme="dark"] .theme-btn{--dk:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn{--dk:1}}
+/* hover previews the click: the icon turns into the other theme's; after a click, not until the pointer has left */
+@media (hover:hover){.theme-btn:hover:not(.pv-off){--m:calc(1 - var(--dk))}}
+/* sun to moon in .5s: rays draw in, the disc grows, the cutting circle arrives, the exact moon takes over; moon to sun in .45s, in reverse */
+.th-rays,.th-disc,.th-cut{transform-box:view-box;transform-origin:10px 10px}
+.th-rays{opacity:calc(1 - var(--m));transform:scale(calc(1 - .6*var(--m)));transition:transform .25s var(--spring) calc((1 - var(--m))*.2s),opacity .2s var(--soft) calc((1 - var(--m))*.2s)}
+.th-disc{vector-effect:non-scaling-stroke;opacity:calc(1 - var(--m));transform:scale(calc(1 + 1.4167*var(--m)));transition:transform .3s var(--soft) calc((1 - var(--m))*.1s),opacity 0s calc(var(--m)*.5s)}
+.th-cut{opacity:calc(1 - var(--m));transform:translate(calc((1 - var(--m))*12px),calc((1 - var(--m))*-12px));transition:transform calc(.3s + var(--m)*.1s) var(--soft) calc(var(--m)*.1s),opacity 0s calc(var(--m)*.5s)}
+.th-cf{fill:var(--bg);stroke:none}
+.th-moon{opacity:var(--m);transition:opacity 0s calc(var(--m)*.5s)}
+/* a click swaps the icon at once, under the turn */
+.theme-btn.turn .ic-theme *{transition:none}
 .theme-btn,.menu-btn{display:grid;place-items:center;padding:0}
 .menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .theme-btn svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -482,7 +495,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
-  .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
+  .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
+  /* the theme icon keeps a fade between sun and moon and loses the morph */
+  .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b}

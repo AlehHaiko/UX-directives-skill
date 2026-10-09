@@ -180,11 +180,15 @@ def parse_index():
 
 
 # ---------------------------------------------------------------- rendering
-# Theme toggle, on the panel icon's 20 grid and in its stroke: both 14.5 units across, about the centre.
-# The moon's body is 35% of its diameter at the widest; its tips are a quarter turn apart, opening to the upper right
-ICON_SUN = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3"/>'
-            '<path d="M10 2.75v1.75M10 15.5v1.75M2.75 10h1.75M15.5 10h1.75M13.89 6.11l1.24-1.24M6.11 13.89l-1.24 1.24M6.11 6.11L4.87 4.87M13.89 13.89l1.24 1.24"/></svg>')
-ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.25 10A7.25 7.25 0 1 1 10 2.75A5.45 5.45 0 1 0 17.25 10z"/></svg>'
+# Theme toggle: one icon on the panel icon's 20 grid and in its stroke, drawn as the sun or as the moon (both 14.5 units across,
+# about the centre). The sun is the rays and the disc; the moon is the last path: its body is 35% of its diameter at the widest,
+# its tips a quarter turn apart, opening to the upper right. Between the two the disc grows to the moon's outer circle and the
+# cutting circle slides in from the upper right: its disc, filled with the header's background, hides the outer circle under it,
+# and its line shows only inside the outer circle (the clip); the exact moon path takes over when it has arrived (CSS, --m)
+ICON_THEME = ('<svg class="ic-theme" viewBox="0 0 20 20" aria-hidden="true"><defs><clipPath id="th-clip"><circle cx="10" cy="10" r="7.25"/></clipPath></defs>'
+              '<path class="th-rays" d="M10 2.75v1.75M10 15.5v1.75M2.75 10h1.75M15.5 10h1.75M13.89 6.11l1.24-1.24M6.11 13.89l-1.24 1.24M6.11 6.11L4.87 4.87M13.89 13.89l1.24 1.24"/>'
+              '<circle class="th-disc" cx="10" cy="10" r="3"/><circle class="th-cut th-cf" cx="12.316" cy="7.684" r="5.45"/><g clip-path="url(#th-clip)"><circle class="th-cut" cx="12.316" cy="7.684" r="5.45"/></g>'
+              '<path class="th-moon" d="M17.25 10A7.25 7.25 0 1 1 10 2.75A5.45 5.45 0 1 0 17.25 10z"/></svg>')
 # The cross of "clear" and "remove": the open burger's two lines (13 units long, crossed at 45 degrees)
 ICON_X = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg>'
 # Chapter chevron, drawn folded (pointing right); the open one is the same line turned a quarter (CSS)
@@ -334,7 +338,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
-  <button class="theme-btn" aria-label="Switch to dark theme"><span class="sun">{ICON_SUN}</span><span class="moon">{ICON_MOON}</span></button>
+  <button class="theme-btn" aria-label="Switch to dark theme"><span>{ICON_THEME}</span></button>
 </div></header>
 {cover_html}
 <div class="shell">
@@ -731,11 +735,24 @@ a{color:var(--link);text-decoration:none}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
-.theme-btn span{display:inline-block}.theme-btn .moon{display:none}
+.theme-btn span{display:inline-block}
 .theme-btn.turn span{animation:bb-turn .6s var(--spring)}
 @keyframes bb-turn{from{transform:rotate(-120deg) scale(.5);opacity:0}}
-:root[data-theme="dark"] .theme-btn .sun{display:none}:root[data-theme="dark"] .theme-btn .moon{display:inline-block}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn .sun{display:none}:root:not([data-theme="light"]) .theme-btn .moon{display:inline-block}}
+/* --dk: the theme (0 light, 1 dark); --m: what the icon draws (0 sun, 1 moon) */
+.theme-btn{--dk:0;--m:var(--dk)}
+:root[data-theme="dark"] .theme-btn{--dk:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn{--dk:1}}
+/* hover previews the click: the icon turns into the other theme's; after a click, not until the pointer has left */
+@media (hover:hover){.theme-btn:hover:not(.pv-off){--m:calc(1 - var(--dk))}}
+/* sun to moon in .5s: rays draw in, the disc grows, the cutting circle arrives, the exact moon takes over; moon to sun in .45s, in reverse */
+.th-rays,.th-disc,.th-cut{transform-box:view-box;transform-origin:10px 10px}
+.th-rays{opacity:calc(1 - var(--m));transform:scale(calc(1 - .6*var(--m)));transition:transform .25s var(--spring) calc((1 - var(--m))*.2s),opacity .2s var(--soft) calc((1 - var(--m))*.2s)}
+.th-disc{vector-effect:non-scaling-stroke;opacity:calc(1 - var(--m));transform:scale(calc(1 + 1.4167*var(--m)));transition:transform .3s var(--soft) calc((1 - var(--m))*.1s),opacity 0s calc(var(--m)*.5s)}
+.th-cut{opacity:calc(1 - var(--m));transform:translate(calc((1 - var(--m))*12px),calc((1 - var(--m))*-12px));transition:transform calc(.3s + var(--m)*.1s) var(--soft) calc(var(--m)*.1s),opacity 0s calc(var(--m)*.5s)}
+.th-cf{fill:var(--bg);stroke:none}
+.th-moon{opacity:var(--m);transition:opacity 0s calc(var(--m)*.5s)}
+/* a click swaps the icon at once, under the turn */
+.theme-btn.turn .ic-theme *{transition:none}
 .theme-btn,.menu-btn{display:grid;place-items:center;padding:0}
 .menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .theme-btn svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -1105,7 +1122,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
-  .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
+  .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
+  /* the theme icon keeps a fade between sun and moon and loses the morph */
+  .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
 
@@ -1135,10 +1154,15 @@ JS = r"""
   // the button names the theme a click switches to
   function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t)}
   if(tb){tb.addEventListener('click',function(){
+    if(tb.matches(':hover'))tb.classList.add('pv-off');
     root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
-  });sysDark.addEventListener('change',themeLabel);themeLabel()}
+  });
+    // the hover preview comes back once the pointer has left; the icon morphs again once the turn is over
+    tb.addEventListener('pointerleave',function(){tb.classList.remove('pv-off')});
+    tb.addEventListener('animationend',function(e){if(e.animationName==='bb-turn')tb.classList.remove('turn')});
+    sysDark.addEventListener('change',themeLabel);themeLabel()}
   // mobile nav
   var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');

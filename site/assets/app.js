@@ -24,10 +24,15 @@
   // the button names the theme a click switches to
   function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t)}
   if(tb){tb.addEventListener('click',function(){
+    if(tb.matches(':hover'))tb.classList.add('pv-off');
     root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
-  });sysDark.addEventListener('change',themeLabel);themeLabel()}
+  });
+    // the hover preview comes back once the pointer has left; the icon morphs again once the turn is over
+    tb.addEventListener('pointerleave',function(){tb.classList.remove('pv-off')});
+    tb.addEventListener('animationend',function(e){if(e.animationName==='bb-turn')tb.classList.remove('turn')});
+    sysDark.addEventListener('change',themeLabel);themeLabel()}
   // mobile nav
   var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
