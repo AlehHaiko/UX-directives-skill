@@ -313,7 +313,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <body class="has-toc">
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="top-in">
-  <button class="menu-btn" aria-label="Hide panel" title="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
+  <button class="menu-btn" aria-label="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
   <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span></a>
   <a class="brand-m" href="index.html" aria-label="Contents">{HM_MARK.format(stroke="currentColor")}</a>
   <div class="search">
@@ -325,7 +325,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
-  <button class="theme-btn" aria-label="Switch to dark theme" title="Switch to dark theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
+  <button class="theme-btn" aria-label="Switch to dark theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
 </div></header>
 {cover_html}
 <div class="shell">
@@ -358,9 +358,9 @@ def cover_arrows(nav):
     prev, nxt = nav
     out = ""
     if prev:
-        out += f'<a class="cv-arr cv-prev" href="{prev[1]}" title="Previous: {esc(prev[0])}" aria-label="Previous: {esc(prev[0])}">{CHEV_L}</a>'
+        out += f'<a class="cv-arr cv-prev" href="{prev[1]}" aria-label="Previous: {esc(prev[0])}">{CHEV_L}</a>'
     if nxt:
-        out += f'<a class="cv-arr cv-next" href="{nxt[1]}" title="Next: {esc(nxt[0])}" aria-label="Next: {esc(nxt[0])}">{CHEV_R}</a>'
+        out += f'<a class="cv-arr cv-next" href="{nxt[1]}" aria-label="Next: {esc(nxt[0])}">{CHEV_R}</a>'
     return out
 
 
@@ -369,7 +369,7 @@ def crumb_nav(ch, prev, nxt):
     def btn(p, cls, svg, word):
         if not p:
             return f'<span class="cn {cls} is-off" aria-hidden="true">{svg}</span>'
-        return f'<a class="cn {cls}" href="{p[1]}" title="{word}: {esc(p[0])}" aria-label="{word}: {esc(p[0])}">{svg}</a>'
+        return f'<a class="cn {cls}" href="{p[1]}" aria-label="{word}: {esc(p[0])}">{svg}</a>'
     return (f'<nav class="cnav" aria-label="Previous and next page" style="{chapter_vars(ch["n"])}">'
             + btn(prev, "cn-prev", CHEV_L, "Previous") + btn(nxt, "cn-next", CHEV_R, "Next") + '</nav>')
 
@@ -1105,7 +1105,7 @@ JS = r"""
   var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
   function isDark(){return root.dataset.theme?root.dataset.theme==='dark':sysDark.matches}
   // the button names the theme a click switches to
-  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t);tb.title=t}
+  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t)}
   if(tb){tb.addEventListener('click',function(){
     root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
@@ -1121,7 +1121,7 @@ JS = r"""
     if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close panel':'Open panel'):(open?'Hide panel':'Show panel');
-    mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
+    mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t)}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
   if(mb){mb.addEventListener('click',function(){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
     scrim.addEventListener('click',function(){setNav(false)});
@@ -1364,7 +1364,7 @@ JS = r"""
     h.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
-        +'<button type="button" class="r-x" aria-label="Remove from history" title="Remove">×</button>';
+        +'<button type="button" class="r-x" aria-label="Remove from history">×</button>';
       li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));showHist();q.focus({preventScroll:true})});
       res.appendChild(li);items.push(x);
     });

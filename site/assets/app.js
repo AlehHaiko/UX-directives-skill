@@ -22,7 +22,7 @@
   var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
   function isDark(){return root.dataset.theme?root.dataset.theme==='dark':sysDark.matches}
   // the button names the theme a click switches to
-  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t);tb.title=t}
+  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t)}
   if(tb){tb.addEventListener('click',function(){
     root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
@@ -38,7 +38,7 @@
     if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close panel':'Open panel'):(open?'Hide panel':'Show panel');
-    mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
+    mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t)}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
   if(mb){mb.addEventListener('click',function(){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
     scrim.addEventListener('click',function(){setNav(false)});
@@ -281,7 +281,7 @@
     h.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
-        +'<button type="button" class="r-x" aria-label="Remove from history" title="Remove">×</button>';
+        +'<button type="button" class="r-x" aria-label="Remove from history">×</button>';
       li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));showHist();q.focus({preventScroll:true})});
       res.appendChild(li);items.push(x);
     });
