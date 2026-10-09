@@ -184,6 +184,8 @@ def parse_index():
 ICON_SUN = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3"/>'
             '<path d="M10 2.75v1.75M10 15.5v1.75M2.75 10h1.75M15.5 10h1.75M13.89 6.11l1.24-1.24M6.11 13.89l-1.24 1.24M6.11 6.11L4.87 4.87M13.89 13.89l1.24 1.24"/></svg>')
 ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.2 10.63A7.2 7.2 0 1 1 10.17 3.6a5.6 5.6 0 0 0 7.03 7.03z"/></svg>'
+# The cross of "clear" and "remove": the open burger's two lines (13 units long, crossed at 45 degrees)
+ICON_X = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg>'
 ICON_SEARCH = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
 
 
@@ -325,7 +327,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <span class="search-ic">{ICON_SEARCH}</span>
     <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" role="combobox" aria-autocomplete="list" aria-controls="results" aria-expanded="false">
     <kbd>/</kbd>
-    <button type="button" class="search-x" tabindex="-1" aria-label="Clear search">×</button>
+    <button type="button" class="search-x" tabindex="-1" aria-label="Clear search">{ICON_X}</button>
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
@@ -687,8 +689,10 @@ a{color:var(--link);text-decoration:none}
 .search kbd{position:absolute;right:12px;top:8px;font-size:13px;color:var(--ph,#6b6b6b);line-height:20px;pointer-events:none;transition:opacity .2s var(--soft)}
 .search:focus-within kbd,.search.has-val kbd{opacity:0}
 /* clear button in the "/" slot, only while the field has text; the look is .r-x, the hit area is the field height */
-.search-x{position:absolute;z-index:0;top:0;right:0;width:36px;height:36px;display:none;padding:0;border:0;background:transparent;color:var(--text);font-size:18px;line-height:1;cursor:pointer}
-.search.has-val .search-x{display:block}
+.search-x{position:absolute;z-index:0;top:0;right:0;width:36px;height:36px;display:none;place-items:center;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer}
+.search.has-val .search-x{display:grid}
+/* one cross for both buttons, sized to their 26px square; 1.875 units of the 20 grid are 1.5px at 16px */
+.search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
 @media (hover:hover){.search-x:hover::before{background:var(--bg)}}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
@@ -713,7 +717,7 @@ a{color:var(--link);text-decoration:none}
 .results li{position:relative}
 .results .r-head{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .results .r-q{display:block;margin-top:4px;font-size:12px;font-family:var(--mono)}
-.results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+.results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer}
 @media (hover:hover){.results .r-x:hover{background:var(--bg-soft)}}
 .results .r-hist a{padding-right:38px}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
@@ -1392,7 +1396,7 @@ JS = r"""
     h.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
-        +'<button type="button" class="r-x" aria-label="Remove from history">×</button>';
+        +'<button type="button" class="r-x" aria-label="Remove from history"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg></button>';
       li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));showHist();q.focus({preventScroll:true})});
       res.appendChild(li);items.push(x);
     });

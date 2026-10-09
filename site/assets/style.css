@@ -72,8 +72,10 @@ a{color:var(--link);text-decoration:none}
 .search kbd{position:absolute;right:12px;top:8px;font-size:13px;color:var(--ph,#6b6b6b);line-height:20px;pointer-events:none;transition:opacity .2s var(--soft)}
 .search:focus-within kbd,.search.has-val kbd{opacity:0}
 /* clear button in the "/" slot, only while the field has text; the look is .r-x, the hit area is the field height */
-.search-x{position:absolute;z-index:0;top:0;right:0;width:36px;height:36px;display:none;padding:0;border:0;background:transparent;color:var(--text);font-size:18px;line-height:1;cursor:pointer}
-.search.has-val .search-x{display:block}
+.search-x{position:absolute;z-index:0;top:0;right:0;width:36px;height:36px;display:none;place-items:center;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer}
+.search.has-val .search-x{display:grid}
+/* one cross for both buttons, sized to their 26px square; 1.875 units of the 20 grid are 1.5px at 16px */
+.search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
 @media (hover:hover){.search-x:hover::before{background:var(--bg)}}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
@@ -98,7 +100,7 @@ a{color:var(--link);text-decoration:none}
 .results li{position:relative}
 .results .r-head{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .results .r-q{display:block;margin-top:4px;font-size:12px;font-family:var(--mono)}
-.results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+.results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer}
 @media (hover:hover){.results .r-x:hover{background:var(--bg-soft)}}
 .results .r-hist a{padding-right:38px}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
