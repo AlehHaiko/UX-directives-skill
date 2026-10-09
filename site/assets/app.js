@@ -19,13 +19,15 @@
   function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
-  var tb=document.querySelector('.theme-btn');
-  if(tb)tb.addEventListener('click',function(){
-    var dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme=dark?'light':'dark';
+  var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
+  function isDark(){return root.dataset.theme?root.dataset.theme==='dark':sysDark.matches}
+  // the button names the theme a click switches to
+  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t);tb.title=t}
+  if(tb){tb.addEventListener('click',function(){
+    root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
-  });
+  });sysDark.addEventListener('change',themeLabel);themeLabel()}
   // mobile nav
   var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
@@ -47,7 +49,7 @@
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  var TIP_SEL='.menu-btn',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand-m,.search-x,.r-x,.cv-arr,a.cn',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}

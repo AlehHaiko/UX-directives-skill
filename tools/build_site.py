@@ -315,7 +315,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Hide panel" title="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
   <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span></a>
-  <a class="brand-m" href="index.html" aria-label="Home">{HM_MARK.format(stroke="currentColor")}</a>
+  <a class="brand-m" href="index.html" aria-label="Contents">{HM_MARK.format(stroke="currentColor")}</a>
   <div class="search">
     <label class="sr" for="q">Search directives</label>
     <span class="search-ic">{ICON_SEARCH}</span>
@@ -325,7 +325,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
-  <button class="theme-btn" aria-label="Toggle color theme" title="Toggle color theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
+  <button class="theme-btn" aria-label="Switch to dark theme" title="Switch to dark theme"><span class="sun">☀︎</span><span class="moon">☾</span></button>
 </div></header>
 {cover_html}
 <div class="shell">
@@ -1102,13 +1102,15 @@ JS = r"""
   function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
-  var tb=document.querySelector('.theme-btn');
-  if(tb)tb.addEventListener('click',function(){
-    var dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme=dark?'light':'dark';
+  var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
+  function isDark(){return root.dataset.theme?root.dataset.theme==='dark':sysDark.matches}
+  // the button names the theme a click switches to
+  function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t);tb.title=t}
+  if(tb){tb.addEventListener('click',function(){
+    root.dataset.theme=isDark()?'light':'dark';themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
     try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
-  });
+  });sysDark.addEventListener('change',themeLabel);themeLabel()}
   // mobile nav
   var mb=document.querySelector('.menu-btn'),scrim=document.querySelector('.scrim'),side=document.getElementById('sidebar');
   var mobile=matchMedia('(max-width: 860px)');
@@ -1130,7 +1132,7 @@ JS = r"""
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  var TIP_SEL='.menu-btn',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand-m,.search-x,.r-x,.cv-arr,a.cn',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
