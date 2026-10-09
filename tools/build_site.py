@@ -1053,8 +1053,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .tile-count{font-size:12px;font-family:var(--mono)}
 .card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .go{display:grid;color:var(--ch-accent);transition:transform .5s var(--spring)}
-/* 23.4px in the footer row's 18px: the arrow stands out 2.7px above and below, inside the card's 16px padding */
-.go svg{width:23.4px;height:23.4px;margin:-2.7px 0;fill:none;stroke:currentColor;stroke-width:2.0513;stroke-linecap:round;stroke-linejoin:round}
+/* 20.7px at 1.75px in the footer row's 18px: the arrow stands out 1.35px above and below, inside the card's 16px padding */
+.go svg{width:20.7px;height:20.7px;margin:-1.35px 0;fill:none;stroke:currentColor;stroke-width:2.029;stroke-linecap:round;stroke-linejoin:round}
 @media (hover:hover){.tile:hover .go,.ch-card:hover .go{transform:translateX(5px)}}
 
 /* responsive */
