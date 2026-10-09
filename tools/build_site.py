@@ -1265,9 +1265,13 @@ JS = r"""
   // the chapter title (BB_CHAPTERS, by chapter number x.c) is searched but never shown
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(chTitles[x.c]||''))});
   // the book's words with their frequencies, most frequent first: counted once from the text the matcher searches,
-  // split where at() sees a word start; the search suggests the nearest one for a misspelled query word
-  (function(){var f={};
+  // split where at() sees a word start; the search suggests the nearest one for a misspelled query word.
+  // The vocabulary's word keys and the words of its phrase keys are candidates too, with frequency 0 unless the book has them
+  (function(){var f={},k;
     idx.forEach(function(x){x._h.split(/[^a-z0-9]+/).forEach(function(w){if(w.length>1&&/^[a-z]+$/.test(w))f[w]=(f[w]||0)+1})});
+    function add(w){if(/^[a-z]+$/.test(w)&&!f[w])f[w]=0}
+    for(k in vocab.words||{})add(k);
+    for(k in vocab.phrases||{})k.split(' ').forEach(add);
     Object.keys(f).sort(function(a,b){return f[b]-f[a]||(a<b?-1:1)}).forEach(function(w){words[w]=f[w]})})();
   function escH(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
   // a term matches only where a word starts: at the start of the text or after a non-alphanumeric character
@@ -1310,17 +1314,27 @@ JS = r"""
       p2=p;p=c;
     }
     return p[n]}
-  // the nearest word of the book: 1 edit for words up to 5 letters, 2 for longer; the list is most frequent first, so a tie keeps the more frequent
-  function nearest(w){
-    var lim=w.length>5?2:1,best=null,bd=lim+1,k,d;
-    for(k in words){if(Math.abs(k.length-w.length)>lim)continue;d=dist(w,k);if(d<bd){bd=d;best=k}}
+  // the nearest candidate: 1 edit for words up to 5 letters, 2 for longer. At equal distance a candidate that starts with
+  // the typed word wins; the list is most frequent first, so any other tie keeps the more frequent. skip: candidates left out
+  function nearest(w,skip){
+    var lim=w.length>5?2:1,best=null,bd=lim+1,bp=false,k,d,pre;
+    for(k in words){
+      if(skip&&skip[k]||Math.abs(k.length-w.length)>lim)continue;
+      d=dist(w,k);pre=k.indexOf(w)===0;
+      if(d<bd||d===bd&&pre&&!bp){bd=d;bp=pre;best=k}}
     return best}
-  // the query with every word that alone finds nothing replaced by its nearest word; null unless that query finds results
+  // candidates that find nothing alone (they only work inside a vocabulary phrase), found on first use
+  var dead;
+  function deadWords(){if(!dead){dead={};for(var k in words)if(!words[k]&&!finds(k))dead[k]=1}return dead}
+  // the query with every word that alone finds nothing replaced by its nearest candidate; null unless that query finds results.
+  // If it finds nothing, the correction runs once more without the candidates that find nothing alone
   function correct(raw){
-    var changed=false,out=raw.trim().split(/\s+/).map(function(w){
-      var n=norm(w),fix=/^[a-z]+$/.test(n)&&!finds(n)&&nearest(n);
-      if(fix)changed=true;return fix||w}).join(' ');
-    return changed&&finds(norm(out))?out:null}
+    function attempt(skip){
+      var changed=false,out=raw.trim().split(/\s+/).map(function(w){
+        var n=norm(w),fix=/^[a-z]+$/.test(n)&&!finds(n)&&nearest(n,skip);
+        if(fix)changed=true;return fix||w}).join(' ');
+      return changed&&finds(norm(out))?out:null}
+    return attempt()||attempt(deadWords())}
   function applyFix(li){q.value=li.getAttribute('data-q');q.parentNode.classList.add('has-val');run();q.focus({preventScroll:true})}
   function run(){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;
