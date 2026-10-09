@@ -327,8 +327,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
-  <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span></a>
-  <a class="brand-m" href="index.html" aria-label="Contents">{HM_MARK.format(stroke="currentColor")}</a>
+  <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span><span class="brand-m">{HM_MARK.format(stroke="currentColor")}<span class="sr">Contents</span></span></a>
   <div class="search">
     <label class="sr" for="q">Search directives</label>
     <span class="search-ic">{ICON_SEARCH}</span>
@@ -685,7 +684,7 @@ a{color:var(--link);text-decoration:none}
 /* header content sits on the same 1440px grid as the page: menu button over the sidebar, theme button over the toc */
 .top-in{height:100%;max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px}
 .brand{color:var(--text);font-weight:650;letter-spacing:-.01em;white-space:nowrap}@media (hover:hover){.brand:hover{text-decoration:none}}
-.brand-m{display:none;flex:none;place-items:center;width:36px;height:36px;border-radius:8px;color:var(--text)}.brand-m .hm-mark{width:24px}
+.brand-m{display:none;place-items:center;width:36px;height:36px}.brand-m .hm-mark{width:24px}
 .search{position:relative;margin-left:auto;width:min(420px,45vw)}
 .search input{width:100%;height:36px;border:1px solid var(--line);background:var(--bg-soft);color:var(--text);border-radius:8px;padding:0 36px 0 34px;font:inherit;font-size:14px}
 .search input::-webkit-search-cancel-button{display:none}
@@ -1120,8 +1119,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
 }
-/* phones: the field gets the title's room; the emblem stands in for it as the home link */
-@media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
+/* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text */
+@media (max-width:520px){.brand{flex:none;border-radius:8px}.brand-t{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
@@ -1183,13 +1182,13 @@ JS = r"""
     mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();
     // the icon's hover preview is off from a click until the pointer leaves
     mb.addEventListener('pointerleave',function(){mb.classList.remove('pv-off')});}
-  // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
+  // tooltips: one styled label under an icon-only control; its text is the control's aria-label (the home link's: its emblem's hidden text, while the emblem shows).
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand-m,.search-x,.r-x,.cv-arr,a.cn,.chev',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
-  function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
+  function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
   // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below.
   // A chapter chevron has the next chevron right under it: its tooltip stands beside it, on the right, or on the left when the right has no room;
   // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above)
@@ -1200,7 +1199,8 @@ JS = r"""
     tip.classList.toggle('up',up);tip.classList.toggle('at-r',side&&!sl);tip.classList.toggle('at-l',sl);tip.style.left=x+'px';tip.style.top=y+'px';
     tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
   // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
-  function tipText(el){return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')}
+  function tipText(el){if(el.matches('.brand')){var m=el.querySelector('.brand-m');return m&&m.offsetWidth?m.textContent:''}
+    return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')}
   function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
   function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
   // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip

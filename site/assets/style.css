@@ -58,7 +58,7 @@ a{color:var(--link);text-decoration:none}
 /* header content sits on the same 1440px grid as the page: menu button over the sidebar, theme button over the toc */
 .top-in{height:100%;max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:16px;padding:0 20px}
 .brand{color:var(--text);font-weight:650;letter-spacing:-.01em;white-space:nowrap}@media (hover:hover){.brand:hover{text-decoration:none}}
-.brand-m{display:none;flex:none;place-items:center;width:36px;height:36px;border-radius:8px;color:var(--text)}.brand-m .hm-mark{width:24px}
+.brand-m{display:none;place-items:center;width:36px;height:36px}.brand-m .hm-mark{width:24px}
 .search{position:relative;margin-left:auto;width:min(420px,45vw)}
 .search input{width:100%;height:36px;border:1px solid var(--line);background:var(--bg-soft);color:var(--text);border-radius:8px;padding:0 36px 0 34px;font:inherit;font-size:14px}
 .search input::-webkit-search-cancel-button{display:none}
@@ -493,8 +493,8 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
 }
-/* phones: the field gets the title's room; the emblem stands in for it as the home link */
-@media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
+/* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text */
+@media (max-width:520px){.brand{flex:none;border-radius:8px}.brand-t{display:none}.brand-m{display:grid}.top-in{gap:8px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
