@@ -188,7 +188,7 @@ ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.2 10.63A7.
 ICON_X = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg>'
 # Chapter chevron, drawn folded (pointing right); the open one is the same line turned a quarter (CSS)
 ICON_CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="4.25 2.5 7.75 6 4.25 9.5"/></svg>'
-ICON_SEARCH = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+ICON_SEARCH = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4.5 4.5"/></svg>'
 
 
 # ---- selection and hover tints
@@ -688,6 +688,8 @@ a{color:var(--link);text-decoration:none}
 .search input::placeholder{color:var(--ph,#6b6b6b);opacity:1}  /* the one grey text on the site */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .search input{--ph:#9b9b99}}:root[data-theme="dark"] .search input{--ph:#9b9b99}
 .search-ic{position:absolute;left:10px;top:9px;width:18px;height:18px;color:var(--muted);pointer-events:none}
+/* 1.6667 units of the 20 grid are 1.5px at 18px */
+.search-ic svg{fill:none;stroke:currentColor;stroke-width:1.6667;stroke-linecap:round;stroke-linejoin:round}
 .search-ic.pop{animation:bb-pop .55s var(--spring)}
 @keyframes bb-pop{35%{transform:scale(1.3)}}
 /* "/" focuses search from anywhere; the hint is plain text and hides while typing */
@@ -734,7 +736,7 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .theme-btn .sun{display:none}:root[data-theme="dark"] .theme-btn .moon{display:inline-block}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme-btn .sun{display:none}:root:not([data-theme="light"]) .theme-btn .moon{display:inline-block}}
 .theme-btn,.menu-btn{display:grid;place-items:center;padding:0}
-.menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.menu-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .theme-btn svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .ic-panel .col{fill:currentColor;stroke:none;transform-box:fill-box;transform-origin:left center;transition:transform .5s var(--spring),opacity .3s var(--soft)}
 .ic-burger{display:none}.ic-burger path{transform-box:fill-box;transform-origin:center;transition:transform .5s var(--spring),opacity .2s var(--soft)}
@@ -894,7 +896,7 @@ a{color:var(--link);text-decoration:none}
 .cv-prev::after{background:radial-gradient(ellipse 260px 110px at 40px 50%,var(--glow),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px);mask-image:linear-gradient(90deg,transparent,#000 48px)}
 .cv-next::after{background:radial-gradient(ellipse 260px 110px at calc(100% - 40px) 50%,var(--glow),transparent);-webkit-mask-image:linear-gradient(270deg,transparent,#000 48px);mask-image:linear-gradient(270deg,transparent,#000 48px)}
 @media (hover:hover){.cv-arr:hover::after{opacity:1}}
-.cv-arr svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cv-arr svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6364;stroke-linecap:round;stroke-linejoin:round}
 .cv-prev{left:10px}.cv-next{right:10px}
 @media (hover:hover){.cover:hover .cv-arr{opacity:1}}
 .cv-arr:focus-visible{opacity:1}
@@ -915,7 +917,7 @@ a{color:var(--link);text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .crumb-cur{--ph:#9b9b99}}:root[data-theme="dark"] .crumb-cur{--ph:#9b9b99}
 .cnav{display:flex;flex:none;height:20px;align-items:center}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
-.cn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.cn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5714;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
 .cn.is-off{opacity:.25}.crumbs .sep{margin:0 6px;color:var(--arrow);font-size:.85em}
 /* arrows inside a line of text: the card arrow's line, 1.5px at each size; side margins keep the width the glyph had */
