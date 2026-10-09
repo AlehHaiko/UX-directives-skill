@@ -186,6 +186,8 @@ ICON_SUN = ('<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10"
 ICON_MOON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M17.2 10.63A7.2 7.2 0 1 1 10.17 3.6a5.6 5.6 0 0 0 7.03 7.03z"/></svg>'
 # The cross of "clear" and "remove": the open burger's two lines (13 units long, crossed at 45 degrees)
 ICON_X = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg>'
+# Chapter chevron, drawn folded (pointing right); the open one is the same line turned a quarter (CSS)
+ICON_CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="4.25 2.5 7.75 6 4.25 9.5"/></svg>'
 ICON_SEARCH = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
 
 
@@ -290,7 +292,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
         # the toggle is a button of its own, next to the title: no control sits inside another
         # open/closed lives in two attributes: aria-expanded on the button, hidden on the list (app.js, navSet)
         chev = (f'<button class="chev" type="button" aria-expanded="{"true" if here else "false"}" '
-                f'aria-controls="nav-ch-{c["n"]}" aria-label="Chapter {c["n"]} subcategories"></button>')
+                f'aria-controls="nav-ch-{c["n"]}" aria-label="Chapter {c["n"]} subcategories">{ICON_CHEV}</button>')
         if here:  # row toggles the list; never links to the current chapter
             cur = ' aria-current="page"' if c["file"] == current_file else ""
             head = f'<div class="nav-ch-h"><span class="nav-ch-t"{cur}>{label}</span>{chev}</div>'
@@ -779,14 +781,14 @@ a{color:var(--link);text-decoration:none}
 /* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
 .chev{appearance:none;border:0;margin:0;padding:0;background:none;font:inherit;color:inherit;cursor:pointer;flex:none;width:34px;display:grid;place-items:center;border-radius:6px;transition:background-color .35s var(--soft)}
 /* the glyph is the text colour, a little lighter at rest; the button's states are its block's background alone */
-.chev::before{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.75;transform:translateX(-1px) rotate(-45deg);transition:transform .6s var(--spring),opacity .35s var(--soft)}
-.chev[aria-expanded="true"]::before{transform:translateY(-1px) rotate(45deg)}
+.chev svg{display:block;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.75;transition:transform .6s var(--spring),opacity .35s var(--soft)}
+.chev[aria-expanded="true"] svg{transform:rotate(90deg)}
 @media (hover:hover){
   /* neighbour: pointer or keyboard focus on the title next to it (a link to another chapter) */
   .nav-ch-h:has(a.nav-ch-t:hover) .chev,.nav-ch-h:has(a.nav-ch-t:focus-visible) .chev{background:var(--ch-sel)}
   /* live: pointer or focus on the chevron itself; pointer on the current chapter's row, where the title folds the list too */
   .chev:hover,.chev:focus-visible,.nav-ch[data-here] .nav-ch-h:hover .chev{background:var(--ch-live)}
-  .chev:hover::before,.chev:focus-visible::before,.nav-ch[data-here] .nav-ch-h:hover .chev::before{opacity:1}
+  .chev:hover svg,.chev:focus-visible svg,.nav-ch[data-here] .nav-ch-h:hover .chev svg{opacity:1}
 }
 /* no hover to announce it, so the toggle is drawn as a button, the way "Expand all" is. The strip, as tall as the row,
    is still what is pressed; what is seen is a box inside it (::after): the border, radius and height of .nav-toggle
@@ -796,14 +798,14 @@ a{color:var(--link);text-decoration:none}
    open or folded, its selected tint (never grey); pressed: one step denser. A coloured box has a coloured edge
    (--chev-bd): the chapter's tint one step denser than the fill; the grey edge belongs to the grey box alone */
 @media (hover:none){
-  .chev{padding:calc(6px + 14px * 1.3 / 2 - 3px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line);--chev-bd:var(--line)}
+  .chev{padding:calc(6px + 14px * 1.3 / 2 - 6px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line);--chev-bd:var(--line)}
   .chev::after{content:"";box-sizing:border-box;position:absolute;right:0;top:calc(6px + 14px * 1.3 / 2 - (12px * 1.6 + 8px) / 2);width:28px;height:calc(12px * 1.6 + 8px);border:1px solid var(--chev-bd);border-radius:6px;background:var(--chev-bg);transition:background-color .35s var(--soft),border-color .35s var(--soft)}
-  .chev::before{position:relative;z-index:1}
+  .chev svg{position:relative;z-index:1}
   .chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
   .chev[aria-expanded="true"]{--chev-bg:var(--ch-hov);--chev-bd:var(--ch-sel)}
   .nav-ch[data-here] .chev{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
   .chev:active,.nav-ch[data-here] .chev:active,.nav-ch[data-here] .nav-ch-h:active .chev{--chev-bg:var(--ch-live);--chev-bd:var(--ch-deep)}
-  .chev:active::before,.nav-ch[data-here] .nav-ch-h:active .chev::before{opacity:1}
+  .chev:active svg,.nav-ch[data-here] .nav-ch-h:active .chev svg{opacity:1}
 }
 :root{interpolate-size:allow-keywords}
 .nav-ch-c{block-size:0;overflow:hidden;transition:block-size .45s var(--soft),content-visibility .45s allow-discrete}
