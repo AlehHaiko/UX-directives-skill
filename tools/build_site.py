@@ -283,7 +283,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
     # nav_sec: the page's "On this page" items, repeated under the current menu item where that list is hidden (style.css, .nav-sec)
-    # a chapter page's go under the chapter row, outside the list the chevron folds; the home page's under "Contents"
+    # a chapter page's go under the chapter row, inside the element the chevron folds; the home page's under "Contents"
     sec = f'<ol class="nav-sec">{nav_sec}</ol>' if nav_sec else ""
     nav = []
     for c in chapters:
@@ -306,7 +306,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
         closed = "" if here else ' hidden="until-found"'  # until-found: find-in-page still reaches a closed list
         nav.append(
             f'<div class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}">'
-            f'{head}{sec if c["file"] == current_file else ""}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}><ul>{items}</ul></div></div>')
+            f'{head}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}>{sec if c["file"] == current_file else ""}<ul>{items}</ul></div></div>')
     toc_style = f' style="{chapter_vars(current_ch)}"' if current_ch else ""
     toc_html = f'<aside class="toc"{toc_style} aria-label="On this page"><p class="toc-h">On this page</p>{toc}</aside>' if toc else ""
     return f"""<!doctype html>
@@ -819,7 +819,7 @@ a{color:var(--link);text-decoration:none}
    (12px text at line height 1.6, 3px padding, 1px border), its right edge under that button's. It sits at the title's
    first line (6px padding, 14px text at 1.3), so boxes of rows one under another keep a gap, and so does the glyph.
    The box's fill (--chev-bg) at rest: grey when folded, the chapter's hover tint when open; the current chapter's,
-   open or folded, its selected tint (never grey); pressed: one step denser. A coloured box has a coloured edge
+   its selected tint when open and grey when folded, as every folded row; pressed: one step denser. A coloured box has a coloured edge
    (--chev-bd): the chapter's tint one step denser than the fill; the grey edge belongs to the grey box alone */
 @media (hover:none){
   .chev{padding:calc(6px + 14px * 1.3 / 2 - 7.8px) 0 0 6px;place-items:start center;position:relative;--chev-bg:var(--line);--chev-bd:var(--line)}
@@ -827,7 +827,7 @@ a{color:var(--link);text-decoration:none}
   .chev svg{position:relative;z-index:1}
   .chev:focus-visible{outline:none}.chev:focus-visible::after{outline:2px solid var(--link);outline-offset:2px}
   .chev[aria-expanded="true"]{--chev-bg:var(--ch-hov);--chev-bd:var(--ch-sel)}
-  .nav-ch[data-here] .chev{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
+  .nav-ch[data-here] .chev[aria-expanded="true"]{--chev-bg:var(--ch-sel);--chev-bd:var(--ch-live)}
   .chev:active,.nav-ch[data-here] .chev:active,.nav-ch[data-here] .nav-ch-h:active .chev{--chev-bg:var(--ch-live);--chev-bd:var(--ch-deep)}
   .chev:active svg,.nav-ch[data-here] .nav-ch-h:active .chev svg{opacity:1}
 }
@@ -844,8 +844,9 @@ a{color:var(--link);text-decoration:none}
    past the number (.num: 2.4em of 12px) and the 8px gap */
 .nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 calc(2.4 * 12px + 8px);font-size:13px}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
-/* under a chapter row: the same column, reached without the subcategory list's 16px */
-.nav-ch>.nav-sec{padding-left:calc(16px + 2.4 * 12px + 8px)}
+/* under a chapter row: the same column, reached without the subcategory list's 16px. It folds with the chapter:
+   it is the first thing in the folded element, and its 4px and the list's 2px, which would merge there, stay 6px */
+.nav-ch-c>.nav-sec{margin-bottom:6px;padding-left:calc(16px + 2.4 * 12px + 8px)}
 /* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself,
    their text where chapter 1's title starts. An unseen "1." set as the chapter numbers are (.nav-ch-n in .nav-ch-h)
    and the row's 6px gap stand before each item, so the column holds in any font */
