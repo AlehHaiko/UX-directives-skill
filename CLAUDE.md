@@ -54,7 +54,7 @@ python3 tools/check_links.py
 Healthy output, two lines:
 
 ```
-pages 73, local links checked 8325, missing 0, anchors checked 1990, anchors missing 0, external skipped 1
+pages 73, local links checked 8252, missing 0, anchors checked 1990, anchors missing 0, external skipped 1
 index links checked 617, missing 0, anchors checked 555, anchors missing 0
 ```
 
