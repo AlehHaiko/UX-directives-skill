@@ -1132,7 +1132,7 @@ JS = r"""
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand-m,.search-x,.r-x,.cv-arr,a.cn',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand-m,.search-x,.r-x,.cv-arr,a.cn,.chev',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
@@ -1141,7 +1141,9 @@ JS = r"""
     var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8))),
       up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8,y=Math.round(up?r.top-6-h:r.bottom+6);
     tip.classList.toggle('up',up);tip.style.left=x+'px';tip.style.top=y+'px';tip.style.transformOrigin=(cx-x)+'px '+(up?'100%':'0')}
-  function tipShow(el){clearTimeout(tipT);var t=el.getAttribute('aria-label');if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
+  // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
+  function tipText(el){return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')}
+  function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
   function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
   // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
   function tipDismiss(){tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
