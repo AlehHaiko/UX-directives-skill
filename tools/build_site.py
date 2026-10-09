@@ -313,7 +313,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <body class="has-toc">
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="top-in">
-  <button class="menu-btn" aria-label="Toggle navigation" title="Hide navigation" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
+  <button class="menu-btn" aria-label="Hide panel" title="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
   <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span></a>
   <a class="brand-m" href="index.html" aria-label="Home">{HM_MARK.format(stroke="currentColor")}</a>
   <div class="search">
@@ -726,7 +726,19 @@ a{color:var(--link);text-decoration:none}
 .ic-burger{display:none}.ic-burger path{transform-box:fill-box;transform-origin:center;transition:transform .5s var(--spring),opacity .2s var(--soft)}
 /* shown: filled column; hidden: empty column that slides out on hover as a preview */
 .side-hidden .ic-panel .col{transform:scaleX(0);opacity:0}
-@media (hover:hover){.side-hidden .menu-btn:hover .ic-panel .col{transform:none;opacity:1}}
+/* hover previews the click: the column leaves a shown panel's icon and returns to a hidden one's; after a click, not until the pointer has left */
+@media (hover:hover){.side-hidden .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:none;opacity:1}
+  :root:not(.side-hidden) .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:scaleX(0);opacity:0}}
+/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up); the shadow is the results list's */
+.tip{position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:5px 9px;border:1px solid var(--text);border-radius:6px;background:var(--text);color:#fff;
+  font-size:12px;font-weight:500;line-height:1.35;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px) scale(.94);
+  transition:opacity .15s var(--soft),transform .15s var(--soft),visibility 0s .15s}
+.tip.up{transform:translateY(4px) scale(.94)}
+.tip.on{opacity:1;visibility:visible;transform:none;transition:opacity .18s var(--soft),transform .4s var(--spring),visibility 0s}
+/* the gap to the control belongs to the tooltip, so the pointer can cross it */
+.tip::before{content:"";position:absolute;left:0;right:0;top:-7px;height:7px}.tip.up::before{top:auto;bottom:-7px}
+:root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
@@ -1063,7 +1075,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 }
 /* phones: the field gets the title's room; the emblem stands in for it as the home link */
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
-@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  /* the tooltip keeps its fade and loses its move */
+  .tip,.tip.up{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 """
 
@@ -1101,16 +1115,45 @@ JS = r"""
   // opening moves focus into the menu; closing returns it to the button (unless keep)
   // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
   function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
-    [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,script'))n.inert=open});
+    [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,.tip,script'))n.inert=open});
     if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
-    var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
+    var t=mobile.matches?(open?'Close panel':'Open panel'):(open?'Hide panel':'Show panel');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
-  if(mb){mb.addEventListener('click',function(){if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
+  if(mb){mb.addEventListener('click',function(){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
     scrim.addEventListener('click',function(){setNav(false)});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&mobile.matches&&document.body.classList.contains('nav-open'))setNav(false)});
-    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();}
+    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();
+    // the icon's hover preview is off from a click until the pointer leaves
+    mb.addEventListener('pointerleave',function(){mb.classList.remove('pv-off')});}
+  // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
+  // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
+  // A click and Escape hide it, and it does not return while the pointer stays on the same control.
+  var TIP_SEL='.menu-btn',TIP_DELAY=400,TIP_CHAIN=300;
+  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
+  tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
+  function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
+  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below
+  function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
+    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8))),
+      up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8,y=Math.round(up?r.top-6-h:r.bottom+6);
+    tip.classList.toggle('up',up);tip.style.left=x+'px';tip.style.top=y+'px';tip.style.transformOrigin=(cx-x)+'px '+(up?'100%':'0')}
+  function tipShow(el){clearTimeout(tipT);var t=el.getAttribute('aria-label');if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
+  function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
+  function tipDismiss(){tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
+  document.addEventListener('pointerover',function(e){
+    if(e.pointerType==='touch'||!canHover.matches||tip.contains(e.target))return;
+    var el=tipCtl(e.target);if(el===tipOver)return;tipOver=el;clearTimeout(tipT);
+    if(!el){if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();return}
+    if(tipOwn||Date.now()-tipGone<TIP_CHAIN)tipShow(el);else tipT=setTimeout(function(){tipShow(el)},TIP_DELAY)});
+  root.addEventListener('pointerleave',function(){tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
+  document.addEventListener('focusin',function(e){var el=tipCtl(e.target);if(el&&!tipMute&&el.matches(':focus-visible'))tipShow(el)});
+  document.addEventListener('focusout',function(e){if(tipOwn&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
+  document.addEventListener('click',tipDismiss,true);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')tipDismiss()},true);
+  addEventListener('scroll',tipPlace,{passive:true,capture:true});addEventListener('resize',tipHide);document.addEventListener('input',tipPlace);
   // chapter menu: independent sections, remembered across pages, collapse/expand all
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};

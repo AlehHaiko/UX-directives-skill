@@ -115,7 +115,19 @@ a{color:var(--link);text-decoration:none}
 .ic-burger{display:none}.ic-burger path{transform-box:fill-box;transform-origin:center;transition:transform .5s var(--spring),opacity .2s var(--soft)}
 /* shown: filled column; hidden: empty column that slides out on hover as a preview */
 .side-hidden .ic-panel .col{transform:scaleX(0);opacity:0}
-@media (hover:hover){.side-hidden .menu-btn:hover .ic-panel .col{transform:none;opacity:1}}
+/* hover previews the click: the column leaves a shown panel's icon and returns to a hidden one's; after a click, not until the pointer has left */
+@media (hover:hover){.side-hidden .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:none;opacity:1}
+  :root:not(.side-hidden) .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:scaleX(0);opacity:0}}
+/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up); the shadow is the results list's */
+.tip{position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:5px 9px;border:1px solid var(--text);border-radius:6px;background:var(--text);color:#fff;
+  font-size:12px;font-weight:500;line-height:1.35;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px) scale(.94);
+  transition:opacity .15s var(--soft),transform .15s var(--soft),visibility 0s .15s}
+.tip.up{transform:translateY(4px) scale(.94)}
+.tip.on{opacity:1;visibility:visible;transform:none;transition:opacity .18s var(--soft),transform .4s var(--spring),visibility 0s}
+/* the gap to the control belongs to the tooltip, so the pointer can cross it */
+.tip::before{content:"";position:absolute;left:0;right:0;top:-7px;height:7px}.tip.up::before{top:auto;bottom:-7px}
+:root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
@@ -452,7 +464,9 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 }
 /* phones: the field gets the title's room; the emblem stands in for it as the home link */
 @media (max-width:520px){.brand{display:none}.brand-m{display:grid}.top-in{gap:8px}}
-@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  /* the tooltip keeps its fade and loses its move */
+  .tip,.tip.up{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b}

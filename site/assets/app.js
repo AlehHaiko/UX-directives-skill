@@ -32,16 +32,45 @@
   // opening moves focus into the menu; closing returns it to the button (unless keep)
   // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
   function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
-    [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,script'))n.inert=open});
+    [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,.tip,script'))n.inert=open});
     if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
-    var t=mobile.matches?(open?'Close navigation':'Open navigation'):(open?'Hide navigation':'Show navigation');
+    var t=mobile.matches?(open?'Close panel':'Open panel'):(open?'Hide panel':'Show panel');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t);mb.title=t}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
-  if(mb){mb.addEventListener('click',function(){if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
+  if(mb){mb.addEventListener('click',function(){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
     scrim.addEventListener('click',function(){setNav(false)});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&mobile.matches&&document.body.classList.contains('nav-open'))setNav(false)});
-    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();}
+    mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();
+    // the icon's hover preview is off from a click until the pointer leaves
+    mb.addEventListener('pointerleave',function(){mb.classList.remove('pv-off')});}
+  // tooltips: one styled label under an icon-only control; its text is the control's aria-label.
+  // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
+  // A click and Escape hide it, and it does not return while the pointer stays on the same control.
+  var TIP_SEL='.menu-btn',TIP_DELAY=400,TIP_CHAIN=300;
+  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
+  tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
+  function tipCtl(n){return n&&n.closest?n.closest(TIP_SEL):null}
+  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below
+  function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
+    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8))),
+      up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8,y=Math.round(up?r.top-6-h:r.bottom+6);
+    tip.classList.toggle('up',up);tip.style.left=x+'px';tip.style.top=y+'px';tip.style.transformOrigin=(cx-x)+'px '+(up?'100%':'0')}
+  function tipShow(el){clearTimeout(tipT);var t=el.getAttribute('aria-label');if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
+  function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
+  function tipDismiss(){tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
+  document.addEventListener('pointerover',function(e){
+    if(e.pointerType==='touch'||!canHover.matches||tip.contains(e.target))return;
+    var el=tipCtl(e.target);if(el===tipOver)return;tipOver=el;clearTimeout(tipT);
+    if(!el){if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();return}
+    if(tipOwn||Date.now()-tipGone<TIP_CHAIN)tipShow(el);else tipT=setTimeout(function(){tipShow(el)},TIP_DELAY)});
+  root.addEventListener('pointerleave',function(){tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
+  document.addEventListener('focusin',function(e){var el=tipCtl(e.target);if(el&&!tipMute&&el.matches(':focus-visible'))tipShow(el)});
+  document.addEventListener('focusout',function(e){if(tipOwn&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
+  document.addEventListener('click',tipDismiss,true);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')tipDismiss()},true);
+  addEventListener('scroll',tipPlace,{passive:true,capture:true});addEventListener('resize',tipHide);document.addEventListener('input',tipPlace);
   // chapter menu: independent sections, remembered across pages, collapse/expand all
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};
