@@ -807,7 +807,9 @@ a{color:var(--link);text-decoration:none}
 .nav-home.is-cur{cursor:default}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
-.nav-ch-n{flex:none;align-self:flex-start}.nav-ch-l{flex:1;min-width:0}@media (hover:hover){.nav-ch-t:hover{text-decoration:none}}
+/* every chapter number takes the room of the widest ("4.", 14px at 600): the titles start on one vertical, and so do the subcategory numbers under them */
+.sidebar{--nav-n:13.42px}
+.nav-ch-n{flex:none;align-self:flex-start;width:var(--nav-n)}.nav-ch-l{flex:1;min-width:0}@media (hover:hover){.nav-ch-t:hover{text-decoration:none}}
 .nav-ch-h:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
 /* the chevron is the toggle: a button, a 34px strip at the row's end, separate from the title link */
@@ -851,7 +853,7 @@ a{color:var(--link);text-decoration:none}
 .nav-ch-c:not([hidden]){block-size:auto}
 /* the hover fills only where there is a hover: on touch they would stay on the row last tapped */
 @media (hover:hover){.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}.nav-ch-h:hover{background:var(--ch-hov)}}
-.nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 16px}
+.nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 calc(var(--nav-n) + 6px)}
 .nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
 /* the page's sections under the current item: shown only where "On this page" is hidden (see responsive)
@@ -859,15 +861,15 @@ a{color:var(--link);text-decoration:none}
    past the number (.num: 2.4em of 12px) and the 8px gap */
 .nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 calc(2.4 * 12px + 8px);font-size:13px}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
-/* under a chapter row: the same column, reached without the subcategory list's 16px. It folds with the chapter:
+/* under a chapter row: the same column, reached without the subcategory list's own indent. It folds with the chapter:
    it is the first thing in the folded element, and its 4px and the list's 2px, which would merge there, stay 6px */
-.nav-ch-c>.nav-sec{margin-bottom:6px;padding-left:calc(16px + 2.4 * 12px + 8px)}
+.nav-ch-c>.nav-sec{margin-bottom:6px;padding-left:calc(var(--nav-n) + 6px + 2.4 * 12px + 8px)}
 /* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself,
-   their text where chapter 1's title starts. An unseen "1." set as the chapter numbers are (.nav-ch-n in .nav-ch-h)
-   and the row's 6px gap stand before each item, so the column holds in any font */
+   their text where the chapters' titles start. An unseen "1." as wide as the chapter numbers are (.nav-ch-n in .nav-ch-h)
+   and the row's 6px gap stand before each item */
 .sidebar>.nav-sec{margin:-4px 0 6px;padding-left:0}
 .sidebar>.nav-sec li{display:flex}
-.sidebar>.nav-sec li::before{content:"1.";flex:none;visibility:hidden;font-size:14px;font-weight:600;line-height:1;margin-right:6px}
+.sidebar>.nav-sec li::before{content:"1.";flex:none;width:var(--nav-n);visibility:hidden;font-size:14px;font-weight:600;line-height:1;margin-right:6px}
 .sidebar>.nav-sec a{flex:1;min-width:0}
 .sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sidebar>.nav-sec a:hover{background:var(--bg-soft);color:var(--text);text-decoration:none}}
