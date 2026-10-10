@@ -1442,6 +1442,9 @@ JS = r"""
     var headH=function(){root.style.setProperty('--dh-h',dh.offsetHeight+'px')};
     headH();addEventListener('resize',headH);
     addEventListener('scroll',req,{passive:true});addEventListener('scrollend',stick);addEventListener('resize',req);stick();
+    // the heading also moves with no scroll and no resize of the window: the menu shown or hidden changes the column's width,
+    // the text above reflows and the heading leaves or takes its stuck place. The column's own box tells of every such change
+    var col=dh.closest('.main');if(col&&window.ResizeObserver)new ResizeObserver(req).observe(col);
     // links to the heading: a native jump lands by its stuck place, so go to the mark's line and set hash and focus by hand
     // (location.hash, not pushState: it moves :target too; the scroll it starts is replaced by the one below)
     [].forEach.call(document.querySelectorAll('a[href="#directives"]'),function(a){a.addEventListener('click',function(e){
