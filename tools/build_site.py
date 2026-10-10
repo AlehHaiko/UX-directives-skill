@@ -935,9 +935,12 @@ a{color:var(--link);text-decoration:none}
 .hm{--hm-rise:14px}
 .hm-q{position:absolute;left:50%;top:56px;width:max-content;max-width:calc(100vw - 32px);transform:translate(-50%,var(--hm-rise));color:#fff;font-size:18px;font-weight:500;line-height:1.3;
   text-align:center;opacity:0;pointer-events:none;transition:opacity .3s var(--soft),transform .3s var(--soft)}
+/* the quote is text to read and copy, not a control: it can be selected while it shows, and neither it nor the mark changes the cursor;
+   whichever of the two texts is not showing cannot be selected or pressed, so a drag over the one that shows never picks up the other */
+.hm .hm-mark,.hm-q{cursor:default}.hm-q{-webkit-user-select:none;user-select:none}
 .hm-a{display:block;font-size:.75em;color:rgba(255,255,255,.75);opacity:0;transform:translateY(calc(var(--hm-rise)/2));transition:opacity .3s var(--soft),transform .3s var(--soft)}
-.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0;transform:translateY(calc(var(--hm-rise)*-.7));transition:opacity .3s var(--soft),transform .3s var(--soft)}
-.hm:is(.is-q,:focus-visible) .hm-q{opacity:1;transform:translate(-50%,0);transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
+.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0;pointer-events:none;-webkit-user-select:none;user-select:none;transform:translateY(calc(var(--hm-rise)*-.7));transition:opacity .3s var(--soft),transform .3s var(--soft)}
+.hm:is(.is-q,:focus-visible) .hm-q{opacity:1;pointer-events:auto;-webkit-user-select:text;user-select:text;transform:translate(-50%,0);transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
 .hm:is(.is-q,:focus-visible) .hm-a{opacity:1;transform:none;transition:opacity .3s var(--soft) .225s,transform .5s var(--spring) .225s}
 /* its focus ring is the banner arrows' white one, drawn around the grown mark and the quote */
 .hm:focus-visible{outline:none}.hm:focus-visible::after{content:"";position:absolute;inset:-15px 28px;outline:2px solid #fff;border-radius:4px;pointer-events:none}
@@ -1139,7 +1142,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   /* the quote is as large as one line clear of the arrow allows: its width is 24.6 times its font size, and 75px keep it 8px from the chevron on both sides;
      the width is the banner's own (cqw), so a scrollbar that takes room does not push the line onto the chevron; the focus ring is as wide as that line */
   .hm{gap:8px;--hm-rise:10px}.hm-mark{width:34px}.hm-t{font-size:14px}.cover-home{container-type:inline-size;--hm-q:clamp(11px,calc((100vw - 75px)/24.6),13.34px)}@supports (width:1cqw){.cover-home{--hm-q:clamp(11px,calc((100cqw - 75px)/24.6),13.34px)}}
-  .hm-q{top:36px;font-size:var(--hm-q)}.hm-a{font-size:10px}.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1;transform:none}.hm:focus-visible::after{inset:-11px auto;left:50%;width:calc(24.6em + 6px);margin-left:calc(-12.3em - 3px);font-size:var(--hm-q)}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
+  .hm-q{top:36px;font-size:var(--hm-q)}.hm-a{font-size:10px}.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1;transform:none;pointer-events:auto;-webkit-user-select:auto;user-select:auto}.hm:focus-visible::after{inset:-11px auto;left:50%;width:calc(24.6em + 6px);margin-left:calc(-12.3em - 3px);font-size:var(--hm-q)}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
   body.nav-open .sidebar{transform:none;visibility:visible;transition:transform .2s ease,visibility 0s}
   body.nav-open{overflow:hidden}
@@ -1195,9 +1198,11 @@ JS = r"""
   // The mark and the quote keep it, with the strip between the two, so the pointer can reach the text; anywhere else it goes after HM_OUT.
   // The zone is worked out from coordinates, not from :hover: the mark moves and grows under a pointer that stands still.
   // Keyboard focus shows the quote too (CSS), and only the keyboard gives that focus: a press on the mark does not.
-  // Touch: a tap on the mark shows the quote and the next tap hides it; a tap on the quote keeps it; a touch anywhere else and a scroll of the page hide it
-  var hm=cv&&cv.querySelector('.hm'),hmMark=hm&&hm.querySelector('.hm-mark'),hmQ=hm&&hm.querySelector('.hm-q'),hmOn={},hmT=0,hmTouch=false,HM_OUT=200;
-  function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
+  // Touch: a tap on the mark shows the quote and the next tap hides it; a tap on the quote keeps it; a touch anywhere else and a scroll of the page hide it.
+  // The quote can be selected: it stays while a selection is being dragged, wherever the pointer goes, and a selection in it is dropped when it hides
+  var hm=cv&&cv.querySelector('.hm'),hmMark=hm&&hm.querySelector('.hm-mark'),hmQ=hm&&hm.querySelector('.hm-q'),hmOn={},hmT=0,hmTouch=false,hmSel=false,HM_OUT=200;
+  function hmSet(k,v){hmOn[k]=v;var on=!!(hmOn.over||hmOn.tap),s=on?null:getSelection();
+    if(s&&s.rangeCount&&hmQ.contains(s.anchorNode))s.removeAllRanges();hm.classList.toggle('is-q',on)}
   function hmIn(x,y,r){return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
   // 1: on the mark (where it is now, or where it rests: the top of .hm, centred); 2: on the shown quote or between it and the mark; 0: elsewhere
   function hmAt(e){if(cv.classList.contains('is-min'))return 0;
@@ -1205,11 +1210,17 @@ JS = r"""
     if(hmIn(x,y,r)||hmIn(x,y,{left:l,right:l+w,top:b.top,bottom:b.top+w}))return 1;
     if(!hm.matches('.is-q,:focus-visible'))return 0;
     var q=hmQ.getBoundingClientRect();return hmIn(x,y,{left:q.left,right:q.right,top:Math.min(q.top,r.bottom),bottom:q.bottom})?2:0}
-  function hmOut(){if(hmOn.over&&!hmT)hmT=setTimeout(function(){hmT=0;hmSet('over',false)},HM_OUT)}
+  function hmOut(){if(hmOn.over&&!hmT&&!hmSel)hmT=setTimeout(function(){hmT=0;hmSet('over',false)},HM_OUT)}
   if(hm){cv.addEventListener('pointermove',function(e){if(e.pointerType==='touch')return;var z=hmAt(e);
       if(z===1||z===2&&hmOn.over){clearTimeout(hmT);hmT=0;if(!hmOn.over)hmSet('over',true)}else hmOut()});
     cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmOut()});
-    hm.addEventListener('mousedown',function(e){e.preventDefault()});
+    // a press on the mark does not focus the emblem; a press on its texts starts a selection, and the focus that came with it is given back
+    // when the button is released (giving it back at once would stop the selection)
+    hm.addEventListener('mousedown',function(e){if(hmMark.contains(e.target))e.preventDefault()});
+    hmQ.addEventListener('pointerdown',function(e){if(e.pointerType!=='touch')hmSel=true});
+    ['pointerup','pointercancel'].forEach(function(t){document.addEventListener(t,function(e){
+      if(document.activeElement===hm&&!hm.matches(':focus-visible'))hm.blur();
+      if(hmSel){hmSel=false;if(!hmAt(e))hmOut()}},true)});
     hm.addEventListener('pointerdown',function(e){hmTouch=e.pointerType==='touch'});
     hm.addEventListener('click',function(e){if(hmTouch&&hmAt(e)===1)hmSet('tap',!hmOn.tap)});
     document.addEventListener('pointerdown',function(e){if(hmOn.tap&&!(cv.contains(e.target)&&hmAt(e)))hmSet('tap',false)},true);
