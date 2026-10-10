@@ -412,11 +412,13 @@ def call(key, cls, inner):
             f'<div class="call-body">{inner}</div></div>')
 
 
-def sec_head(key, name):
+def sec_head(key, name, anchor=True):
     _, emoji, title, arrow = next(x for x in SECTIONS if x[0] == key)
     tail = f' <span class="arrow" aria-hidden="true">{ARROW_R}</span> <span class="to">{esc(name)}</span>' if arrow else ""
     em = f'<span class="em" aria-hidden="true">{HEAD_EMOJI[key]}</span> ' if key in HEAD_EMOJI else ""
-    return f'<h2 id="{key}">{em}{title}{tail}</h2>'
+    # the sticky directives heading leaves its id to the in-flow .dh-mark before it, so a #directives jump lands at the list start
+    attr = f'id="{key}"' if anchor else 'class="dh"'
+    return f'<h2 {attr}>{em}{title}{tail}</h2>'
 
 
 def render_sub(ch, s, prev, nxt, chapters):
@@ -452,7 +454,7 @@ def render_sub(ch, s, prev, nxt, chapters):
                 f'<article class="dir" id="{anchor}"><p class="dir-meta">'
                 f'<a class="chip" href="#{anchor}">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</a></p>'
                 f'<h3 class="dir-title">{inline(d["title"])}</h3><p class="dir-body">{inline(d["body"])}</p></article>')
-    out.append(f'<section style="{chapter_vars(ch["n"])}"><span class="dh-mark" aria-hidden="true"></span>{sec_head("directives", name)}<div class="dirs">{"".join(cards)}</div></section>')
+    out.append(f'<section style="{chapter_vars(ch["n"])}"><span class="dh-mark" id="directives" aria-hidden="true"></span>{sec_head("directives", name, anchor=False)}<div class="dirs">{"".join(cards)}</div></section>')
     out.append(f'<section>{sec_head("summary", name)}'
                + call("summary", "c-yellow", "<ul>" + "".join(f"<li>{inline(x)}</li>" for x in s["summary"]) + "</ul>") + "</section>")
     out.append(f'<section>{sec_head("indicators", name)}'
@@ -999,13 +1001,13 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .dir:not(.repealed){cursor:default}
 /* hover: the active card comes forward, the others step back (repealed cards stay put) */
 /* the "UX directives" heading stays under the banner while its cards scroll */
-#directives{--bleed:var(--pad,16px);--fade:rgba(15,23,42,.06);position:sticky;top:calc(var(--top) + var(--cover-h));z-index:5;background:var(--bg);margin:24px calc(-1 * var(--bleed)) 0;padding:12px var(--bleed)}
+section>h2.dh{--bleed:var(--pad,16px);--fade:rgba(15,23,42,.06);position:sticky;top:calc(var(--top) + var(--cover-h));z-index:5;background:var(--bg);margin:24px calc(-1 * var(--bleed)) 0;padding:12px var(--bleed)}
 /* shadow: a soft strip below the heading only, fading out toward both ends */
-#directives::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;opacity:0;transition:opacity .3s var(--soft);
+section>h2.dh::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;opacity:0;transition:opacity .3s var(--soft);
   background:linear-gradient(var(--fade),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
-#directives.is-stuck::after{opacity:1}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #directives{--fade:rgba(0,0,0,.30)}}
-:root[data-theme="dark"] #directives{--fade:rgba(0,0,0,.30)}
+section>h2.dh.is-stuck::after{opacity:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) section>h2.dh{--fade:rgba(0,0,0,.30)}}
+:root[data-theme="dark"] section>h2.dh{--fade:rgba(0,0,0,.30)}
 .dh-mark{display:block;height:0}
 /* --dh-h is the measured height of the sticky heading (it wraps on narrow screens) */
 .dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + var(--dh-h,56px) + 16px)}
@@ -1106,7 +1108,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   /* "2. Discoverability" reads "2.2 Discoverability": the chapter number appears, the dot after the subcategory number takes no room */
   .cover.is-min .cv-c{display:inline}.cover.is-min .cv-d{font-size:0}
   /* the sticky heading is just "UX directives": the banner above it names the subcategory; the name stays for screen readers */
-  #directives .arrow{display:none}#directives .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  section>h2.dh .arrow{display:none}section>h2.dh .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
@@ -1162,7 +1164,7 @@ JS = r"""
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
   addEventListener('load',function(){setTimeout(function(){root.classList.add('smooth')},100)});
   // in-page links: smooth scroll (CSS) and move focus to the target
-  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
+  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(el.classList.contains('dh-mark'))el=el.nextElementSibling;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
   var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
@@ -1316,18 +1318,20 @@ JS = r"""
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
     links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      if(!a.closest('.nav-sec'))el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
+      // #directives is the mark before the sticky heading: the jump is measured on the mark, the cue plays on the heading
+      var hd=el.classList.contains('dh-mark')?el.nextElementSibling:el;
+      if(!a.closest('.nav-sec'))hd.addEventListener('animationend',function(e){if(e.target===hd&&/^bb-cue-/.test(e.animationName))hd.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
         var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
         cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
-        cueEl=el;if(Math.abs(cueY-scrollY)<1){cueNow();return}
+        cueEl=hd;if(Math.abs(cueY-scrollY)<1){cueNow();return}
         addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
         // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
         clearTimeout(cueT);cueT=setTimeout(cueNow,400)})});
   }
   // directives heading: shadow only while stuck under the banner
-  var dh=document.getElementById('directives');
+  var dh=document.querySelector('h2.dh');
   if(dh){var mk=document.querySelector('.dh-mark'),raf=0;
     var stick=function(){raf=0;var t=parseFloat(getComputedStyle(dh).top)||0;
       var natural=mk.getBoundingClientRect().top,top=dh.getBoundingClientRect().top;
@@ -1340,7 +1344,7 @@ JS = r"""
     // (location.hash, not pushState: it moves :target too; the scroll it starts is replaced by the one below)
     [].forEach.call(document.querySelectorAll('a[href="#directives"]'),function(a){a.addEventListener('click',function(e){
       if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();
-      var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(dh).scrollMarginTop)||0);
+      var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(mk).scrollMarginTop)||0);
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search

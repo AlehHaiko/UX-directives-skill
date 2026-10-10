@@ -373,13 +373,13 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
 .dir:not(.repealed){cursor:default}
 /* hover: the active card comes forward, the others step back (repealed cards stay put) */
 /* the "UX directives" heading stays under the banner while its cards scroll */
-#directives{--bleed:var(--pad,16px);--fade:rgba(15,23,42,.06);position:sticky;top:calc(var(--top) + var(--cover-h));z-index:5;background:var(--bg);margin:24px calc(-1 * var(--bleed)) 0;padding:12px var(--bleed)}
+section>h2.dh{--bleed:var(--pad,16px);--fade:rgba(15,23,42,.06);position:sticky;top:calc(var(--top) + var(--cover-h));z-index:5;background:var(--bg);margin:24px calc(-1 * var(--bleed)) 0;padding:12px var(--bleed)}
 /* shadow: a soft strip below the heading only, fading out toward both ends */
-#directives::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;opacity:0;transition:opacity .3s var(--soft);
+section>h2.dh::after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;pointer-events:none;opacity:0;transition:opacity .3s var(--soft);
   background:linear-gradient(var(--fade),transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
-#directives.is-stuck::after{opacity:1}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #directives{--fade:rgba(0,0,0,.30)}}
-:root[data-theme="dark"] #directives{--fade:rgba(0,0,0,.30)}
+section>h2.dh.is-stuck::after{opacity:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) section>h2.dh{--fade:rgba(0,0,0,.30)}}
+:root[data-theme="dark"] section>h2.dh{--fade:rgba(0,0,0,.30)}
 .dh-mark{display:block;height:0}
 /* --dh-h is the measured height of the sticky heading (it wraps on narrow screens) */
 .dir{scroll-margin-top:calc(var(--top) + var(--cover-h,0px) + var(--dh-h,56px) + 16px)}
@@ -480,7 +480,7 @@ h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
   /* "2. Discoverability" reads "2.2 Discoverability": the chapter number appears, the dot after the subcategory number takes no room */
   .cover.is-min .cv-c{display:inline}.cover.is-min .cv-d{font-size:0}
   /* the sticky heading is just "UX directives": the banner above it names the subcategory; the name stays for screen readers */
-  #directives .arrow{display:none}#directives .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  section>h2.dh .arrow{display:none}section>h2.dh .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}

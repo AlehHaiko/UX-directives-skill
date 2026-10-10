@@ -15,7 +15,7 @@
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
   addEventListener('load',function(){setTimeout(function(){root.classList.add('smooth')},100)});
   // in-page links: smooth scroll (CSS) and move focus to the target
-  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
+  function focusTarget(el){if(!el||!el.nodeType)el=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));if(!el)return;if(el.classList.contains('dh-mark'))el=el.nextElementSibling;if(!el.matches('a[href],button,input,select,textarea,[tabindex]'))el.setAttribute('tabindex','-1');el.focus({preventScroll:true})}
   addEventListener('hashchange',focusTarget);
   // theme
   var tb=document.querySelector('.theme-btn'),sysDark=matchMedia('(prefers-color-scheme: dark)');
@@ -169,18 +169,20 @@
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
     links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
-      if(!a.closest('.nav-sec'))el.addEventListener('animationend',function(e){if(e.target===el&&/^bb-cue-/.test(e.animationName))el.classList.remove('cue')});
+      // #directives is the mark before the sticky heading: the jump is measured on the mark, the cue plays on the heading
+      var hd=el.classList.contains('dh-mark')?el.nextElementSibling:el;
+      if(!a.closest('.nav-sec'))hd.addEventListener('animationend',function(e){if(e.target===hd&&/^bb-cue-/.test(e.animationName))hd.classList.remove('cue')});
       a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
         // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
         var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
         cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
-        cueEl=el;if(Math.abs(cueY-scrollY)<1){cueNow();return}
+        cueEl=hd;if(Math.abs(cueY-scrollY)<1){cueNow();return}
         addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
         // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
         clearTimeout(cueT);cueT=setTimeout(cueNow,400)})});
   }
   // directives heading: shadow only while stuck under the banner
-  var dh=document.getElementById('directives');
+  var dh=document.querySelector('h2.dh');
   if(dh){var mk=document.querySelector('.dh-mark'),raf=0;
     var stick=function(){raf=0;var t=parseFloat(getComputedStyle(dh).top)||0;
       var natural=mk.getBoundingClientRect().top,top=dh.getBoundingClientRect().top;
@@ -193,7 +195,7 @@
     // (location.hash, not pushState: it moves :target too; the scroll it starts is replaced by the one below)
     [].forEach.call(document.querySelectorAll('a[href="#directives"]'),function(a){a.addEventListener('click',function(e){
       if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();
-      var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(dh).scrollMarginTop)||0);
+      var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(mk).scrollMarginTop)||0);
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
   // search
