@@ -929,8 +929,8 @@ a{color:var(--link);text-decoration:none}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .5s var(--spring)}
 .hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
 /* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; a pointer on the mark shows it, the mark and the quote keep it (script).
-   Everything that arrives moves on the mark's spring (.5s): the mark grows as a card lifts under the pointer, the quote rises --hm-rise into place and
-   its attribution follows .075s behind it; the caption gives way upward and comes back down the same way. What leaves goes in .3s on the soft curve, and what
+   Everything that arrives moves on the mark's spring (.5s): the mark grows as a card lifts under the pointer, the quote rises --hm-rise into place,
+   its two lines as one block; the caption gives way upward and comes back down the same way. What leaves goes in .3s on the soft curve, and what
    arrives starts .15s later, so the two texts are never half-shown over each other */
 .hm{--hm-rise:14px}
 .hm-q{position:absolute;left:50%;top:56px;width:max-content;max-width:calc(100vw - 32px);transform:translate(-50%,var(--hm-rise));color:#fff;font-size:18px;font-weight:500;line-height:1.3;
@@ -938,10 +938,9 @@ a{color:var(--link);text-decoration:none}
 /* the quote is text to read and copy, not a control: it can be selected while it shows, and neither it nor the mark changes the cursor;
    whichever of the two texts is not showing cannot be selected or pressed, so a drag over the one that shows never picks up the other */
 .hm .hm-mark,.hm-q{cursor:default}.hm-q{-webkit-user-select:none;user-select:none}
-.hm-a{display:block;font-size:.75em;color:rgba(255,255,255,.75);opacity:0;transform:translateY(calc(var(--hm-rise)/2));transition:opacity .3s var(--soft),transform .3s var(--soft)}
+.hm-a{display:block;font-size:.75em;color:rgba(255,255,255,.75)}
 .hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0;pointer-events:none;-webkit-user-select:none;user-select:none;transform:translateY(calc(var(--hm-rise)*-.7));transition:opacity .3s var(--soft),transform .3s var(--soft)}
 .hm:is(.is-q,:focus-visible) .hm-q{opacity:1;pointer-events:auto;-webkit-user-select:text;user-select:text;transform:translate(-50%,0);transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
-.hm:is(.is-q,:focus-visible) .hm-a{opacity:1;transform:none;transition:opacity .3s var(--soft) .225s,transform .5s var(--spring) .225s}
 /* its focus ring is the banner arrows' white one, drawn around the grown mark and the quote */
 .hm:focus-visible{outline:none}.hm:focus-visible::after{content:"";position:absolute;inset:-15px 28px;outline:2px solid #fff;border-radius:4px;pointer-events:none}
 /* prev/next arrows at the banner's edges */
@@ -1174,9 +1173,9 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
-  /* the banner's emblem does not grow and its texts do not move; caption, quote and attribution keep their fade */
-  .hm:is(.is-q,:focus-visible) .hm-mark,.hm:is(.is-q,:focus-visible) .hm-t,.hm .hm-a{transform:none}.hm .hm-q{transform:translateX(-50%)}
-  .hm .hm-t,.hm .hm-q,.hm .hm-a{transition:opacity .15s linear!important}
+  /* the banner's emblem does not grow and its texts do not move; caption and quote keep their fade */
+  .hm:is(.is-q,:focus-visible) .hm-mark,.hm:is(.is-q,:focus-visible) .hm-t{transform:none}.hm .hm-q{transform:translateX(-50%)}
+  .hm .hm-t,.hm .hm-q{transition:opacity .15s linear!important}
   /* the theme icon keeps a fade between sun and moon and loses the morph */
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
