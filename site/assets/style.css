@@ -81,13 +81,16 @@ a{color:var(--link);text-decoration:none}
 /* one cross for both buttons, sized to their 26px square; 1.875 units of the 20 grid are 1.5px at 16px */
 .search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
-@media (hover:hover){.search-x:hover::before{background:var(--bg)}}
+/* pointed at or focused: the chevron's live step, the page's chapter tint one step denser than selected, edged one step denser
+   still; Contents and the 404 page have no chapter and take the Contents blue. The same on a Recent tile's button, in the tile's chapter */
+@media (hover:hover){.search-x:hover::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep))}}
 /* the focus ring goes around the 26px square, inside the field */
-.search-x:focus-visible{outline:none}.search-x:focus-visible::before{outline:2px solid var(--link);outline-offset:2px}
+.search-x:focus-visible{outline:none}.search-x:focus-visible::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep));outline:2px solid var(--link);outline-offset:2px}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
-@media (hover:hover){.results li a:hover{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
-.results li[aria-selected="true"] a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
+/* a Recent tile keeps its hover tint while the pointer or the focus is on its own button */
+@media (hover:hover){.results li a:hover,.results li:has(.r-x:hover) a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
+.results li[aria-selected="true"] a,.results li:has(.r-x:focus-visible) a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
 .results .r-id{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:8px}
 .results .r-t{font-weight:650}.results .r-b{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
 .results mark{background:var(--ch-sel,var(--yellow));color:inherit;border-radius:3px;padding:0 1px}
@@ -109,7 +112,12 @@ a{color:var(--link);text-decoration:none}
 .results .r-head{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .results .r-q{display:block;margin-top:4px;font-size:12px;font-family:var(--mono)}
 .results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer}
-@media (hover:hover){.results .r-x:hover{background:var(--bg-soft)}}
+@media (hover:hover){.results .r-x:hover{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}}
+.results .r-x:focus-visible{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
+/* what a removal would take is edged in brick before the click: the tile whose button is pointed at or focused, every tile for
+   "Clear history". 2px with no reflow: the tile's own 1px border recoloured and 1px of inset shadow */
+@media (hover:hover){.results li:has(.r-x:hover) a,.results:has(.r-clear:hover) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}}
+.results li:has(.r-x:focus-visible) a,.results:has(.r-clear:focus-visible) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-hist a{padding-right:38px}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
@@ -546,6 +554,6 @@ section>h2.dh.is-stuck::after{opacity:1}
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
 /* search result tints */
-.rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b}
-/* Contents tints */
-:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-line:#5f92cc}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-line:#3b6da3}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-line:#3b6da3}
+.rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137;--ch-live-l:#fec3fd;--ch-live-d:#5c305c;--ch-deep-l:#feb3fd;--ch-deep-d:#6b346b}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16;--ch-live-l:#a8e6a3;--ch-live-d:#1d491a;--ch-deep-l:#95de8f;--ch-deep-d:#1a5417}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e;--ch-live-l:#6ee9e8;--ch-live-d:#014848;--ch-deep-l:#3ce2e1;--ch-deep-d:#055252}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a;--ch-live-l:#ffce99;--ch-live-d:#5d3801;--ch-deep-l:#ffc17b;--ch-deep-d:#694003}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08;--ch-live-l:#f0e710;--ch-live-d:#454202;--ch-deep-l:#e8df01;--ch-deep-d:#4e4b00}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508;--ch-live-l:#fad091;--ch-live-d:#583b01;--ch-deep-l:#f0c688;--ch-deep-d:#634301}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a;--ch-live-l:#ffce94;--ch-live-d:#5c3902;--ch-deep-l:#fec176;--ch-deep-d:#684001}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c;--ch-live-l:#97e8b2;--ch-live-d:#014b27;--ch-deep-l:#7ee1a1;--ch-deep-d:#02552d}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b;--ch-live-l:#71eadf;--ch-live-d:#044944;--ch-deep-l:#42e2d6;--ch-deep-d:#03524d}
+/* Contents tints, the brick edge */
+:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-live:#b9d9ff;--home-deep:#a8d0ff;--home-line:#5f92cc;--brick:#da674b}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33}

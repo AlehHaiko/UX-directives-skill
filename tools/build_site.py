@@ -244,7 +244,7 @@ TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10
 TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TINT_TARGETS.items()}
          for n, v in PALETTE.items()}
 # Contents has no chapter: its current item and its hover take the same tints from a sky blue, #8dc2fe (OKLCH hue 252; the banner's own #1829c4 is hue 267).
-HOME_TINTS = {k: tint("#8dc2fe", *TINT_TARGETS[k]) for k in ("sel-l", "hov-l", "sel-d", "hov-d")}
+HOME_TINTS = {k: tint("#8dc2fe", *t) for k, t in TINT_TARGETS.items()}
 
 def line_tint(accent, bgs, target=3.0):
     """Accent hue and chroma at the first lightness step (.001 of OKLCH L, counted from the backgrounds' side)
@@ -258,6 +258,9 @@ def line_tint(accent, bgs, target=3.0):
         if all(cr(hex2rgb(x),b)>=target for b in bgc): return x
 # The search field's border while it has the focus: the same sky blue, 3:1 against the page and against the field (--bg-soft).
 HOME_LINE = {"l": line_tint("#8dc2fe", ("#ffffff", "#f7f6f3")), "d": line_tint("#8dc2fe", ("#191919", "#202020"))}
+# The edge of a Recent tile while its "Remove from history", or "Clear history", is pointed at or focused: a brick red
+# (#b8492e, OKLCH hue 35), 3:1 against the tile at rest (the page background) and against every chapter's hover tint.
+BRICK = {k: line_tint("#b8492e", (bg, *(t["hov-" + k] for t in TINTS.values()))) for k, bg in (("l", "#ffffff"), ("d", "#191919"))}
 
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
@@ -348,7 +351,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     <span class="search-ic">{ICON_SEARCH}</span>
     <input id="q" type="search" placeholder="Search directives…" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off" role="combobox" aria-autocomplete="list" aria-controls="results" aria-expanded="false">
     <kbd>/</kbd>
-    <button type="button" class="search-x" aria-label="Clear search">{ICON_X}</button>
+    <button type="button" class="search-x" aria-label="Clear search"{f' style="{chapter_vars(current_ch)}"' if current_ch else ""}>{ICON_X}</button>
     <ol id="results" class="results" role="listbox" hidden></ol>
     <div id="q-status" class="sr" role="status" aria-live="polite"></div>
   </div>
@@ -640,12 +643,15 @@ def main(base="/", out=None):
         + "window.BB_CHAPTERS=" + json.dumps({c["n"]: c["title"] for c in chapters}, ensure_ascii=False, separators=(",", ":")) + ";\n"
         + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
-    rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
+    rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']};"
+                 f"--ch-live-l:{t['live-l']};--ch-live-d:{t['live-d']};--ch-deep-l:{t['deep-l']};--ch-deep-d:{t['deep-d']}}}" for n, t in TINTS.items())
     h = HOME_TINTS
-    home = (f":root{{--home-sel:{h['sel-l']};--home-hov:{h['hov-l']};--home-line:{HOME_LINE['l']}}}"
-            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']};--home-line:{HOME_LINE['d']}}}}}"
-            f":root[data-theme=\"dark\"]{{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']};--home-line:{HOME_LINE['d']}}}")
-    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints */\n" + home + "\n", encoding="utf-8")
+    hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
+                    f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]}")
+    home = (f":root{{{hv('l')}}}"
+            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
+            f":root[data-theme=\"dark\"]{{{hv('d')}}}")
+    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints, the brick edge */\n" + home + "\n", encoding="utf-8")
     (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
     print(f"Built {1 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories; {n_dirs} directive IDs indexed.")
@@ -734,13 +740,16 @@ a{color:var(--link);text-decoration:none}
 /* one cross for both buttons, sized to their 26px square; 1.875 units of the 20 grid are 1.5px at 16px */
 .search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
-@media (hover:hover){.search-x:hover::before{background:var(--bg)}}
+/* pointed at or focused: the chevron's live step, the page's chapter tint one step denser than selected, edged one step denser
+   still; Contents and the 404 page have no chapter and take the Contents blue. The same on a Recent tile's button, in the tile's chapter */
+@media (hover:hover){.search-x:hover::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep))}}
 /* the focus ring goes around the 26px square, inside the field */
-.search-x:focus-visible{outline:none}.search-x:focus-visible::before{outline:2px solid var(--link);outline-offset:2px}
+.search-x:focus-visible{outline:none}.search-x:focus-visible::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep));outline:2px solid var(--link);outline-offset:2px}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
-@media (hover:hover){.results li a:hover{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
-.results li[aria-selected="true"] a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
+/* a Recent tile keeps its hover tint while the pointer or the focus is on its own button */
+@media (hover:hover){.results li a:hover,.results li:has(.r-x:hover) a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
+.results li[aria-selected="true"] a,.results li:has(.r-x:focus-visible) a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}
 .results .r-id{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:8px}
 .results .r-t{font-weight:650}.results .r-b{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
 .results mark{background:var(--ch-sel,var(--yellow));color:inherit;border-radius:3px;padding:0 1px}
@@ -762,7 +771,12 @@ a{color:var(--link);text-decoration:none}
 .results .r-head{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 0;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .results .r-q{display:block;margin-top:4px;font-size:12px;font-family:var(--mono)}
 .results .r-x{position:absolute;top:6px;right:6px;width:26px;height:26px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer}
-@media (hover:hover){.results .r-x:hover{background:var(--bg-soft)}}
+@media (hover:hover){.results .r-x:hover{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}}
+.results .r-x:focus-visible{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
+/* what a removal would take is edged in brick before the click: the tile whose button is pointed at or focused, every tile for
+   "Clear history". 2px with no reflow: the tile's own 1px border recoloured and 1px of inset shadow */
+@media (hover:hover){.results li:has(.r-x:hover) a,.results:has(.r-clear:hover) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}}
+.results li:has(.r-x:focus-visible) a,.results:has(.r-clear:focus-visible) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-hist a{padding-right:38px}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
