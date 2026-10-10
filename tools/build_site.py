@@ -778,6 +778,12 @@ a{color:var(--link);text-decoration:none}
 @media (hover:hover){.results li:has(.r-x:hover) a,.results:has(.r-clear:hover) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}}
 .results li:has(.r-x:focus-visible) a,.results:has(.r-clear:focus-visible) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-hist a{padding-right:38px}
+/* a Recent entry on its way out: clipped to its shrinking height and out of the pointer's reach; it keeps the brick edge, the tile's
+   tint and the button's step it had at the click (.r-brick, .r-tint) until it is gone */
+.results .r-out{overflow:hidden;pointer-events:none}
+.results .r-brick a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
+.results .r-tint a{background:var(--ch-hov,var(--bg))}
+.results .r-tint .r-x{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
@@ -1600,6 +1606,40 @@ JS = r"""
   function hist(){try{return JSON.parse(localStorage.getItem(HK)||'[]')}catch(e){return[]}}
   function saveHist(h){try{localStorage.setItem(HK,JSON.stringify(h))}catch(e){}}
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
+  // ---- a Recent entry leaves: it fades and gives up its height on --soft while what follows rides up into its place on --spring
+  // (the menu's fold and a card's lift). Storage and the option list change at the click; the node goes when the motion ends
+  var LEAVE=450,hov=null;
+  function leaving(){return !res.hidden&&!!res.querySelector('.r-out')}
+  function ease(n){return getComputedStyle(root).getPropertyValue(n).trim()||'ease-out'}
+  function stays(li){do li=li.nextElementSibling;while(li&&li.classList.contains('r-out'));return li}
+  // a collapsed row still has the grid's gap after it: the next row that stays takes the gap back as a negative margin at the
+  // collapse's pace, and hands it on if it leaves too
+  function carry(rec,li){var t=rec.m?rec.m.currentTime:0,nx=stays(li);if(rec.m)rec.m.cancel();rec.m=null;if(!nx)return;
+    rec.m=nx.animate({marginTop:['0px',-rec.gap+'px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards',composite:'add'});rec.m.currentTime=t;(nx._m=nx._m||[]).push(rec)}
+  function out(li,x,mark){
+    if(li.classList.contains('r-out'))return false;
+    var h=li.getBoundingClientRect().height,gap=parseFloat(getComputedStyle(res).rowGap)||0,d=h+gap,soft=ease('--soft'),spring=ease('--spring'),rec={gap:gap,m:null},i=items.indexOf(x),n;
+    saveHist(hist().filter(function(e){return e.url!==x.url}));
+    // no longer an option: the arrows skip it and the rest are numbered anew
+    if(i>-1)items.splice(i,1);sel=-1;q.removeAttribute('aria-activedescendant');
+    li.className+=' r-out'+(mark?' '+mark:'');li.removeAttribute('role');li.removeAttribute('id');li.setAttribute('aria-hidden','true');li.inert=true;
+    [].forEach.call(res.querySelectorAll('li[role=option]'),function(l,k){l.id='r'+k;l.removeAttribute('aria-selected')});
+    (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;carry(rec,li);
+    // the layout moves what follows at the collapse's pace; the difference to the spring is added as a transform that ends at 0
+    if(spring!==soft)for(n=li.nextElementSibling;n;n=n.nextElementSibling){
+      n.animate({transform:['translateY(0)','translateY('+-d+'px)']},{duration:LEAVE,easing:spring,composite:'add'});
+      n.animate({transform:['translateY(0)','translateY('+d+'px)']},{duration:LEAVE,easing:soft,composite:'add'})}
+    li.animate({height:[h+'px','0px'],opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'}).onfinish=function(){
+      if(li.parentNode!==res)return;
+      if(rec.m)rec.m.cancel();li.remove();
+      if(leaving())return;
+      if(!res.querySelector('.r-hist'))close();
+      // the tooltip does not return while the pointer stays: the button that arrived under it is, to the tooltip, the control just clicked
+      if(hov){tipOver=tipCtl(hov.isConnected?hov:null);hov=null}};
+    return true}
+  // while entries leave, the buttons that pass under a resting pointer raise no tooltip
+  res.addEventListener('pointerover',function(e){if(leaving()){hov=e.target;e.stopPropagation()}});
+  res.addEventListener('pointerleave',function(){hov=null});
   function showHist(){
     var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
@@ -1608,11 +1648,10 @@ JS = r"""
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
         +'<button type="button" class="r-x" aria-label="Remove from history"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg></button>';
-      // an entry removed from a scrolled list: the list stays where it was (the focus going to the field renders it once more).
-      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));var y=res.scrollTop;showHist();q.focus({preventScroll:true});res.scrollTop=y;
-        // the click hid the tooltip; the next entry's button is now under the pointer: to the tooltip it is the control just clicked,
-        // so the tooltip does not return while the pointer stays (a click from the keyboard has no pointer place)
-        if(e.detail)tipOver=tipCtl(document.elementFromPoint(e.clientX,e.clientY))});
+      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();
+        var b=e.currentTarget,held=canHover.matches&&b.matches(':hover')||b.matches(':focus-visible');
+        if(!out(li,x,held?'r-brick r-tint':''))return;
+        q.focus({preventScroll:true})});
       res.appendChild(li);items.push(x);
     });
     var foot=document.createElement('li');foot.className='r-foot';
@@ -1654,7 +1693,8 @@ JS = r"""
   });
   document.addEventListener('click',function(e){if(!e.target.closest('.search'))close()});
   var ic=document.querySelector('.search-ic');
-  q.addEventListener('focus',function(){if(ic){ic.classList.remove('pop');void ic.offsetWidth;ic.classList.add('pop')}refresh()});
+  // the focus returning to the field while entries leave keeps the list as it is: a new render would cut the motion
+  q.addEventListener('focus',function(){if(ic){ic.classList.remove('pop');void ic.offsetWidth;ic.classList.add('pop')}if(!leaving())refresh()});
   if(ic)ic.addEventListener('animationend',function(){ic.classList.remove('pop')});
   q.parentNode.classList.toggle('has-val',!!q.value);
 })();

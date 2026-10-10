@@ -119,6 +119,12 @@ a{color:var(--link);text-decoration:none}
 @media (hover:hover){.results li:has(.r-x:hover) a,.results:has(.r-clear:hover) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}}
 .results li:has(.r-x:focus-visible) a,.results:has(.r-clear:focus-visible) .r-hist a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-hist a{padding-right:38px}
+/* a Recent entry on its way out: clipped to its shrinking height and out of the pointer's reach; it keeps the brick edge, the tile's
+   tint and the button's step it had at the click (.r-brick, .r-tint) until it is gone */
+.results .r-out{overflow:hidden;pointer-events:none}
+.results .r-brick a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
+.results .r-tint a{background:var(--ch-hov,var(--bg))}
+.results .r-tint .r-x{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
 @media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
