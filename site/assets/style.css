@@ -291,7 +291,7 @@ a{color:var(--link);text-decoration:none}
 .cover-home{background:#1829c4}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
-.hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .45s var(--spring)}
 .hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft)}
 /* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script) */

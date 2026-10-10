@@ -11,12 +11,17 @@
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
     cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq);cv.addEventListener('focusin',creq)}
   // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner;
-  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not
-  var hm=cv&&cv.querySelector('.hm'),hmOn={};
+  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not.
+  // Touch: a tap on the emblem shows the quote and the next tap hides it; a touch anywhere else and a scroll of the page hide it too
+  var hm=cv&&cv.querySelector('.hm'),hmOn={},hmTouch=false;
   function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
   if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
     cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)});
-    hm.addEventListener('mousedown',function(e){e.preventDefault()})}
+    hm.addEventListener('mousedown',function(e){e.preventDefault()});
+    hm.addEventListener('pointerdown',function(e){hmTouch=e.pointerType==='touch'});
+    hm.addEventListener('click',function(){if(hmTouch&&!cv.classList.contains('is-min'))hmSet('tap',!hmOn.tap)});
+    document.addEventListener('pointerdown',function(e){if(hmOn.tap&&!hm.contains(e.target))hmSet('tap',false)},true);
+    addEventListener('scroll',function(){if(hmOn.tap)hmSet('tap',false)},{passive:true})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
   // smooth scrolling only after the page has settled, so a link to #id lands instantly

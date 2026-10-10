@@ -505,7 +505,7 @@ HM_MARK = ('<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill=
 
 # Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on #1829c4.
 # The emblem keeps a line of Leonardo's, the closing sentence of the Preface's epigraph: it takes the caption's place while the emblem is pointed at
-# or has the keyboard's focus (its one Tab stop).
+# or has the keyboard's focus (its one Tab stop); on touch a tap shows it and hides it.
 HM_QUOTE = "\u201cPractice must always be founded on sound theory.\u201d\nLeonardo da Vinci, between 1480 and 1519"
 HOME_COVER = ('<div class="cover cover-home"><div class="cover-in">'
               '<div class="hm" role="img" tabindex="0" aria-label="Human-Centered Systems Engineering" aria-describedby="hm-q">'
@@ -924,7 +924,7 @@ a{color:var(--link);text-decoration:none}
 .cover-home{background:#1829c4}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
-.hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .45s var(--spring)}
 .hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft)}
 /* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script) */
@@ -1178,12 +1178,17 @@ JS = r"""
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
     cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq);cv.addEventListener('focusin',creq)}
   // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner;
-  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not
-  var hm=cv&&cv.querySelector('.hm'),hmOn={};
+  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not.
+  // Touch: a tap on the emblem shows the quote and the next tap hides it; a touch anywhere else and a scroll of the page hide it too
+  var hm=cv&&cv.querySelector('.hm'),hmOn={},hmTouch=false;
   function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
   if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
     cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)});
-    hm.addEventListener('mousedown',function(e){e.preventDefault()})}
+    hm.addEventListener('mousedown',function(e){e.preventDefault()});
+    hm.addEventListener('pointerdown',function(e){hmTouch=e.pointerType==='touch'});
+    hm.addEventListener('click',function(){if(hmTouch&&!cv.classList.contains('is-min'))hmSet('tap',!hmOn.tap)});
+    document.addEventListener('pointerdown',function(e){if(hmOn.tap&&!hm.contains(e.target))hmSet('tap',false)},true);
+    addEventListener('scroll',function(){if(hmOn.tap)hmSet('tap',false)},{passive:true})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
