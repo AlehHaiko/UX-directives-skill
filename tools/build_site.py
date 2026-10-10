@@ -1502,8 +1502,11 @@ JS = r"""
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
         +'<button type="button" class="r-x" aria-label="Remove from history"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg></button>';
-      // an entry removed from a scrolled list: the list stays where it was (the focus going to the field renders it once more)
-      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));var y=res.scrollTop;showHist();q.focus({preventScroll:true});res.scrollTop=y});
+      // an entry removed from a scrolled list: the list stays where it was (the focus going to the field renders it once more).
+      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));var y=res.scrollTop;showHist();q.focus({preventScroll:true});res.scrollTop=y;
+        // the click hid the tooltip; the next entry's button is now under the pointer: to the tooltip it is the control just clicked,
+        // so the tooltip does not return while the pointer stays (a click from the keyboard has no pointer place)
+        if(e.detail)tipOver=tipCtl(document.elementFromPoint(e.clientX,e.clientY))});
       res.appendChild(li);items.push(x);
     });
     var foot=document.createElement('li');foot.className='r-foot';
