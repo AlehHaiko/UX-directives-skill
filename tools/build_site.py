@@ -261,6 +261,10 @@ HOME_LINE = {"l": line_tint("#8dc2fe", ("#ffffff", "#f7f6f3")), "d": line_tint("
 # The edge of a Recent tile while its "Remove from history", or "Clear history", is pointed at or focused: a brick red
 # (#b8492e, OKLCH hue 35), 3:1 against the tile at rest (the page background) and against every chapter's hover tint.
 BRICK = {k: line_tint("#b8492e", (bg, *(t["hov-" + k] for t in TINTS.values()))) for k, bg in (("l", "#ffffff"), ("d", "#191919"))}
+# The fill of "Clear history" while it is pointed at or focused, under white text: the same brick at the lightest step that gives
+# white 4.5:1 (the light theme's edge is too light for small text); the dark theme's edge already does.
+BRICK_FILL = {"l": line_tint("#b8492e", ("#ffffff",), 4.5), "d": BRICK["d"]}
+assert all(cr(hex2rgb(v), hex2rgb("#ffffff")) >= 4.5 for v in BRICK_FILL.values())
 
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
@@ -647,7 +651,7 @@ def main(base="/", out=None):
                  f"--ch-live-l:{t['live-l']};--ch-live-d:{t['live-d']};--ch-deep-l:{t['deep-l']};--ch-deep-d:{t['deep-d']}}}" for n, t in TINTS.items())
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
-                    f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]}")
+                    f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]}")
     home = (f":root{{{hv('l')}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
             f":root[data-theme=\"dark\"]{{{hv('d')}}}")
@@ -784,8 +788,11 @@ a{color:var(--link);text-decoration:none}
 .results .r-brick a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-tint a{background:var(--ch-hov,var(--bg))}
 .results .r-tint .r-x{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
-.results .r-clear{font:inherit;font-size:12px;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;justify-self:start}
-@media (hover:hover){.results .r-clear:hover{background:var(--bg)}}
+/* "Clear history" ends the Recent heading's row, its right edge on the vertical of the entries' buttons (the row's 4px padding and 2px).
+   Pointed at or focused it fills with brick under white text, the colour of the edge every entry takes with it; no reflow */
+.results .r-clear{font:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin-right:2px;cursor:pointer}
+@media (hover:hover){.results .r-clear:hover{background:var(--brick-fill);border-color:var(--brick-fill);color:#fff}}
+.results .r-clear:focus-visible{background:var(--brick-fill);border-color:var(--brick-fill);color:#fff}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
 .theme-btn span{display:inline-block}
 .theme-btn.turn span{animation:bb-turn .6s var(--spring)}
@@ -1634,7 +1641,7 @@ JS = r"""
     if(calm()){(li._m||[]).forEach(drop);li.remove();if(!res.querySelector('.r-hist'))close();return true}
     (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;if(!all)carry(rec,li);
     // the last entry takes the heading and "Clear history" with it: the list closes when it is gone
-    if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head,.r-foot'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
+    if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
     // the layout moves what follows at the collapse's pace; the difference to the spring is added as a transform that ends at 0
     if(!all&&spring!==soft)for(n=li.nextElementSibling;n;n=n.nextElementSibling){
       n.animate({transform:['translateY(0)','translateY('+-d+'px)']},{duration:LEAVE,easing:spring,composite:'add'});
@@ -1662,7 +1669,10 @@ JS = r"""
   function showHist(){
     var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
-    var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
+    // the heading's row ends with "Clear history": it comes before the entries on the screen and in the Tab order
+    var head=document.createElement('li');head.className='r-head';head.innerHTML='Recent<button type="button" class="r-clear">Clear history</button>';
+    head.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
+    res.appendChild(head);
     h.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
@@ -1680,10 +1690,7 @@ JS = r"""
         tell('Removed from history')});
       res.appendChild(li);items.push(x);
     });
-    var foot=document.createElement('li');foot.className='r-foot';
-    foot.innerHTML='<button type="button" class="r-clear">Clear history</button>';
-    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
-    res.appendChild(foot);res.hidden=false;q.setAttribute('aria-expanded','true');
+    res.hidden=false;q.setAttribute('aria-expanded','true');
     res.scrollTop=0;
   }
   function refresh(){if(gapA){gapA.cancel();gapA=null}q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}

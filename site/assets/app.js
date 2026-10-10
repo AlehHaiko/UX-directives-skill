@@ -410,7 +410,7 @@
     if(calm()){(li._m||[]).forEach(drop);li.remove();if(!res.querySelector('.r-hist'))close();return true}
     (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;if(!all)carry(rec,li);
     // the last entry takes the heading and "Clear history" with it: the list closes when it is gone
-    if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head,.r-foot'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
+    if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
     // the layout moves what follows at the collapse's pace; the difference to the spring is added as a transform that ends at 0
     if(!all&&spring!==soft)for(n=li.nextElementSibling;n;n=n.nextElementSibling){
       n.animate({transform:['translateY(0)','translateY('+-d+'px)']},{duration:LEAVE,easing:spring,composite:'add'});
@@ -438,7 +438,10 @@
   function showHist(){
     var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
-    var head=document.createElement('li');head.className='r-head';head.textContent='Recent';res.appendChild(head);
+    // the heading's row ends with "Clear history": it comes before the entries on the screen and in the Tab order
+    var head=document.createElement('li');head.className='r-head';head.innerHTML='Recent<button type="button" class="r-clear">Clear history</button>';
+    head.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
+    res.appendChild(head);
     h.forEach(function(x,i){
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
@@ -456,10 +459,7 @@
         tell('Removed from history')});
       res.appendChild(li);items.push(x);
     });
-    var foot=document.createElement('li');foot.className='r-foot';
-    foot.innerHTML='<button type="button" class="r-clear">Clear history</button>';
-    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
-    res.appendChild(foot);res.hidden=false;q.setAttribute('aria-expanded','true');
+    res.hidden=false;q.setAttribute('aria-expanded','true');
     res.scrollTop=0;
   }
   function refresh(){if(gapA){gapA.cancel();gapA=null}q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
