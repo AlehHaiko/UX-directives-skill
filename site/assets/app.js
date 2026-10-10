@@ -96,12 +96,10 @@
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
   // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below.
   // A chapter chevron has the next chevron right under it: its tooltip stands beside it, on the right, or on the left when the right has no room;
-  // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above).
-  // "Remove from history" stands beside its button too, so what is under it stays free (the cover's arrow, the next entry's button):
-  // on the left, or on the right when the left has no room. "Clear search" stays under its button: beside it, it would lie on the typed query
+  // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above)
   function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
-    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,xb=tipOwn.matches('.r-x'),side=xb||tipOwn.matches('.chev'),x,y,up=false,sl=false;
-    if(side){sl=xb?r.left-6-w>=8:r.right+6+w>vw-8;x=Math.round(sl?r.left-6-w:r.right+6);y=Math.round(Math.max(0,Math.min(r.top+r.height/2-h/2,innerHeight-h)))}
+    var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,side=tipOwn.matches('.chev'),x,y,up=false,sl=false;
+    if(side){sl=r.right+6+w>vw-8;x=Math.round(sl?r.left-6-w:r.right+6);y=Math.round(Math.max(0,Math.min(r.top+r.height/2-h/2,innerHeight-h)))}
     else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
     tip.classList.toggle('up',up);tip.classList.toggle('at-r',side&&!sl);tip.classList.toggle('at-l',sl);tip.style.left=x+'px';tip.style.top=y+'px';
     tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
