@@ -386,6 +386,8 @@
   // ---- a Recent entry leaves: it fades and gives up its height on --soft while what follows rides up into its place on --spring
   // (the menu's fold and a card's lift). Storage and the option list change at the click; the node goes when the motion ends
   var LEAVE=450,hov=null,gapA=null;
+  // reduced motion: the entry is gone at once; the focus and the announcement are the same
+  function calm(){return matchMedia('(prefers-reduced-motion:reduce)').matches}
   function leaving(){return !res.hidden&&!!res.querySelector('.r-out')}
   function ease(n){return getComputedStyle(root).getPropertyValue(n).trim()||'ease-out'}
   function near(li,dir){do li=li[dir];while(li&&li.classList.contains('r-out'));return li&&li.classList.contains('r-hist')?li:null}
@@ -405,6 +407,7 @@
     if(i>-1)items.splice(i,1);sel=-1;q.removeAttribute('aria-activedescendant');
     li.className+=' r-out'+(mark?' '+mark:'');li.removeAttribute('role');li.removeAttribute('id');li.setAttribute('aria-hidden','true');li.inert=true;
     [].forEach.call(res.querySelectorAll('li[role=option]'),function(l,k){l.id='r'+k;l.removeAttribute('aria-selected')});
+    if(calm()){(li._m||[]).forEach(drop);li.remove();if(!res.querySelector('.r-hist'))close();return true}
     (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;if(!all)carry(rec,li);
     // the last entry takes the heading and "Clear history" with it: the list closes when it is gone
     if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head,.r-foot'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
@@ -425,7 +428,7 @@
   // "Clear history": every entry leaves in the same motion, then the list closes. Nothing stays to ride up or to take the gaps
   // back, so the list's own gap closes at the collapse's pace; a new render (refresh) drops that animation
   function outAll(mark){var ls=[].slice.call(res.querySelectorAll('.r-hist:not(.r-out)')),xs=items.slice();if(!ls.length)return;
-    gapA=res.animate({rowGap:[getComputedStyle(res).rowGap,'0px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards'});
+    if(!calm())gapA=res.animate({rowGap:[getComputedStyle(res).rowGap,'0px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards'});
     ls.forEach(function(li,i){out(li,xs[i],mark,true)});saveHist([])}
   // while entries leave, the buttons that pass under a resting pointer raise no tooltip
   res.addEventListener('pointerover',function(e){if(leaving()){hov=e.target;e.stopPropagation()}});
@@ -440,11 +443,14 @@
         +'<button type="button" class="r-x" aria-label="Remove from history"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg></button>';
       li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();
         var b=e.currentTarget,held=canHover.matches&&b.matches(':hover')||b.matches(':focus-visible');
+        var to=near(li,'nextElementSibling')||near(li,'previousElementSibling'),still=calm();
         if(!out(li,x,held?'r-brick r-tint':''))return;
         // the focus goes to the button of the entry that takes this one's place: the next, else the previous, else the field.
-        // Its tooltip waits for the motion's end, where the button comes to rest
-        var to=near(li,'nextElementSibling')||near(li,'previousElementSibling');
-        tipMute=true;(to?to.querySelector('.r-x'):q).focus({preventScroll:true});tipMute=false;
+        // Its tooltip waits for the motion's end, where the button comes to rest; with no motion the button is there already
+        tipMute=!still;(to?to.querySelector('.r-x'):q).focus({preventScroll:true});tipMute=false;
+        // no motion: the next entry's button is under the pointer at once. To the tooltip it is the control just clicked,
+        // so the tooltip does not return while the pointer stays (a click from the keyboard has no pointer place)
+        if(still&&e.detail)tipOver=tipCtl(document.elementFromPoint(e.clientX,e.clientY));
         tell('Removed from history')});
       res.appendChild(li);items.push(x);
     });
