@@ -788,9 +788,9 @@ a{color:var(--link);text-decoration:none}
 .results .r-brick a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-tint a{background:var(--ch-hov,var(--bg))}
 .results .r-tint .r-x{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
-/* "Clear history" ends the Recent heading's row, its right edge on the vertical of the entries' buttons (the row's 4px padding and 2px).
+/* "Clear history" ends the Recent heading's row, its right edge on the tiles' right edge (it takes back the row's 4px padding).
    Pointed at or focused it fills with brick under white text, the colour of the edge every entry takes with it; no reflow */
-.results .r-clear{font:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin-right:2px;cursor:pointer}
+.results .r-clear{font:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin-right:-4px;cursor:pointer}
 @media (hover:hover){.results .r-clear:hover{background:var(--brick-fill);border-color:var(--brick-fill);color:#fff}}
 .results .r-clear:focus-visible{background:var(--brick-fill);border-color:var(--brick-fill);color:#fff}
 .theme-btn,.menu-btn{flex:none;width:36px;height:36px;border:0;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:16px}
