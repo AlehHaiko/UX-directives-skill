@@ -525,7 +525,7 @@ def render_home(chapters, front):
             f'<p class="hero-stats"><span><b>9</b> chapters</span><span><b>{subs}</b> subcategories</span>'
             f'<span><b>{active}</b> directives</span><span class="muted">{total - active} repealed IDs</span></p></div>'
             f'<section><h2 id="chapters">Chapters</h2><div class="ch-grid">{grid}</div></section>' + sections)
-    return layout(BOOK_TITLE, body, chapters, "index.html", None, f"<ol>{items}</ol>", cover_html=cv, nav_sec=items)
+    return layout(f"Contents—{BOOK_TITLE}", body, chapters, "index.html", None, f"<ol>{items}</ol>", cover_html=cv, nav_sec=items)
 
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
