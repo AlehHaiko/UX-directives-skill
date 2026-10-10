@@ -1480,6 +1480,8 @@ JS = r"""
     // over 30: the last option shows the rest (arrows reach it, Enter or a click runs it), the look of the suggestion row
     if(cut)res.insertAdjacentHTML('beforeend','<li role="option" id="r'+(30+off)+'" class="r-more"><a href="#"><span class="r-t">Show all '+n+' results</span></a></li>');
     res.hidden=false;q.setAttribute('aria-expanded','true');
+    // a new list starts at its top; "Show all" continues the same list, so it keeps its place
+    if(all!==true)res.scrollTop=0;
   }
   // the same query without the cap; the 31st result takes the selection (keys: the focus stays in the field) or the focus
   function showAll(keys){
@@ -1500,13 +1502,15 @@ JS = r"""
       var li=document.createElement('li');li.setAttribute('role','option');li.id='r'+i;li.className='r-hist rc'+x.c;
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+x.id+'</span><span class="r-t">'+hl(x.title,[])+'</span>'+(x.q?'<span class="r-q">'+hl(x.q,[])+'</span>':'')+'</a>'
         +'<button type="button" class="r-x" aria-label="Remove from history"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.4 5.4l9.2 9.2M14.6 5.4l-9.2 9.2"/></svg></button>';
-      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));showHist();q.focus({preventScroll:true})});
+      // an entry removed from a scrolled list: the list stays where it was (the focus going to the field renders it once more)
+      li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveHist(hist().filter(function(e2){return e2.url!==x.url}));var y=res.scrollTop;showHist();q.focus({preventScroll:true});res.scrollTop=y});
       res.appendChild(li);items.push(x);
     });
     var foot=document.createElement('li');foot.className='r-foot';
     foot.innerHTML='<button type="button" class="r-clear">Clear history</button>';
     foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();saveHist([]);showHist();q.focus({preventScroll:true})});
     res.appendChild(foot);res.hidden=false;q.setAttribute('aria-expanded','true');
+    res.scrollTop=0;
   }
   function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
