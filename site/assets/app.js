@@ -388,14 +388,18 @@
   var LEAVE=450,hov=null,gapA=null;
   function leaving(){return !res.hidden&&!!res.querySelector('.r-out')}
   function ease(n){return getComputedStyle(root).getPropertyValue(n).trim()||'ease-out'}
+  function near(li,dir){do li=li[dir];while(li&&li.classList.contains('r-out'));return li&&li.classList.contains('r-hist')?li:null}
+  // said by #q-status once the list is quiet; emptied first, so the same words are said again after a second removal
+  function tell(t){if(status)status.textContent='';say(t)}
   function stays(li){do li=li.nextElementSibling;while(li&&li.classList.contains('r-out'));return li}
   // a collapsed row still has the grid's gap after it: the next row that stays takes the gap back as a negative margin at the
   // collapse's pace, and hands it on if it leaves too
-  function carry(rec,li){var t=rec.m?rec.m.currentTime:0,nx=stays(li);if(rec.m)rec.m.cancel();rec.m=null;if(!nx)return;
-    rec.m=nx.animate({marginTop:['0px',-rec.gap+'px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards',composite:'add'});rec.m.currentTime=t;(nx._m=nx._m||[]).push(rec)}
+  function drop(rec){if(rec.m)rec.m.cancel();rec.m=null;if(rec.on)rec.on._m=rec.on._m.filter(function(r){return r!==rec});rec.on=null}
+  function carry(rec,li){var t=rec.m?rec.m.currentTime:0,nx=stays(li);drop(rec);if(!nx)return;
+    rec.m=nx.animate({marginTop:['0px',-rec.gap+'px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards',composite:'add'});rec.m.currentTime=t;rec.on=nx;(nx._m=nx._m||[]).push(rec)}
   function out(li,x,mark,all){
     if(li.classList.contains('r-out'))return false;
-    var h=li.getBoundingClientRect().height,gap=parseFloat(getComputedStyle(res).rowGap)||0,d=h+gap,soft=ease('--soft'),spring=ease('--spring'),rec={gap:gap,m:null},i=items.indexOf(x),n;
+    var h=li.getBoundingClientRect().height,gap=parseFloat(getComputedStyle(res).rowGap)||0,d=h+gap,soft=ease('--soft'),spring=ease('--spring'),rec={gap:gap,m:null,on:null},i=items.indexOf(x),n;
     saveHist(hist().filter(function(e){return e.url!==x.url}));
     // no longer an option: the arrows skip it and the rest are numbered anew
     if(i>-1)items.splice(i,1);sel=-1;q.removeAttribute('aria-activedescendant');
@@ -410,12 +414,13 @@
       n.animate({transform:['translateY(0)','translateY('+d+'px)']},{duration:LEAVE,easing:soft,composite:'add'})}
     li.animate({height:[h+'px','0px'],opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'}).onfinish=function(){
       if(li.parentNode!==res)return;
-      if(rec.m)rec.m.cancel();li.remove();
+      drop(rec);li.remove();
       if(leaving())return;
       if(gapA){gapA.cancel();gapA=null}
       if(!res.querySelector('.r-hist'))close();
       // the tooltip does not return while the pointer stays: the button that arrived under it is, to the tooltip, the control just clicked
-      if(hov){tipOver=tipCtl(hov.isConnected?hov:null);hov=null}};
+      if(hov){tipOver=tipCtl(hov.isConnected?hov:null);hov=null}
+      var f=document.activeElement;if(res.contains(f)&&f.matches('.r-x:focus-visible'))tipShow(f)};
     return true}
   // "Clear history": every entry leaves in the same motion, then the list closes. Nothing stays to ride up or to take the gaps
   // back, so the list's own gap closes at the collapse's pace; a new render (refresh) drops that animation
@@ -436,12 +441,16 @@
       li.querySelector('.r-x').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();
         var b=e.currentTarget,held=canHover.matches&&b.matches(':hover')||b.matches(':focus-visible');
         if(!out(li,x,held?'r-brick r-tint':''))return;
-        q.focus({preventScroll:true})});
+        // the focus goes to the button of the entry that takes this one's place: the next, else the previous, else the field.
+        // Its tooltip waits for the motion's end, where the button comes to rest
+        var to=near(li,'nextElementSibling')||near(li,'previousElementSibling');
+        tipMute=true;(to?to.querySelector('.r-x'):q).focus({preventScroll:true});tipMute=false;
+        tell('Removed from history')});
       res.appendChild(li);items.push(x);
     });
     var foot=document.createElement('li');foot.className='r-foot';
     foot.innerHTML='<button type="button" class="r-clear">Clear history</button>';
-    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true})});
+    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
     res.appendChild(foot);res.hidden=false;q.setAttribute('aria-expanded','true');
     res.scrollTop=0;
   }
