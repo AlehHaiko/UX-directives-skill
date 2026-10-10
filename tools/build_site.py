@@ -373,6 +373,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
   </main>
   <span id="page-ready" hidden></span>
   {toc_html}
+  {FOOTER}
 </div>
 <div class="scrim" hidden></div>
 <script src="assets/search-index.js"></script>
@@ -555,6 +556,13 @@ def render_home(chapters, front):
             f'<section><h2 id="chapters">Chapters</h2><div class="ch-grid">{grid}</div></section>' + sections)
     return layout(f"Contents—{BOOK_TITLE}", body, chapters, "index.html", None, f"<ol>{items}</ol>", cover_html=cv, nav_sec=items)
 
+
+# The last line of every page: whose the book is, its licence (LICENSE) and its source. Absolute URLs, so a --base build keeps them.
+# It closes .shell after the "On this page" list, so its two links are the page's last Tab stops; the dots are the chip's drawn ones.
+REPO = "https://github.com/AlehHaiko/UX-directives-skill"
+BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'  # read, not shown: a comma in the dot's place, as in the Recent heading
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span>© 2026 {AUTHOR}</span>{BUL}'
+          f'<a href="{REPO}/blob/main/LICENSE">MIT License</a>{BUL}<a href="{REPO}">Source</a></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
@@ -791,7 +799,7 @@ a{color:var(--link);text-decoration:none}
 /* the Recent heading counts its entries, "Recent • N", with the directive chip's drawn dot and gap */
 .results .r-n{display:inline-flex;align-items:center;gap:6px}
 /* read, not shown: the comma that stands for the dot, so the heading reads "Recent, N" */
-.results .r-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:pre}
+.results .r-sr,.foot .r-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:pre}
 /* "Clear history" ends the Recent heading's row, its right edge on the tiles' right edge (it takes back the row's 4px padding).
    Pointed at or focused it fills with brick under white text, the colour of the edge every entry takes with it; no reflow */
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin-right:-4px;cursor:pointer}
@@ -1028,6 +1036,15 @@ a{color:var(--link);text-decoration:none}
 .crumb-cur{color:var(--ph,#6b6b6b)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .crumb-cur{--ph:#9b9b99}}:root[data-theme="dark"] .crumb-cur{--ph:#9b9b99}
 .cnav{display:flex;flex:none;height:20px;align-items:center}
+/* footer: one quiet line under a hairline, in the main column on the text measure. It is .shell's second row, so the side columns span both rows
+   and stay stuck to the page's end (the first row is 1fr: on a page shorter than the sidebar it takes the spare height, not the footer's);
+   the space above the hairline is .main's bottom padding. Grey as the search placeholder (--ph) */
+.shell{grid-template-rows:1fr auto}.sidebar{grid-column:1;grid-row:1/span 2}.toc{grid-column:3;grid-row:1/span 2}
+.foot{grid-column:2;grid-row:2;min-width:0;padding:0 clamp(16px,3vw,40px) 40px;color:var(--ph,#6b6b6b)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .foot{--ph:#9b9b99}}:root[data-theme="dark"] .foot{--ph:#9b9b99}
+.foot-in{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
+@media (min-width:861px){.side-hidden .foot-in{margin-left:max(0px,calc(100% - var(--measure)))}}
+.foot a{color:inherit}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
@@ -1104,7 +1121,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .dir-meta{display:flex;align-items:center;gap:2px;font-size:11px}
 .chip{background:var(--ch-sel);color:var(--text);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:6px}
-.chip .bul,.r-head .bul{flex:none;width:3px;height:3px;border-radius:50%;background:currentColor}  /* drawn, so its size does not depend on the font */
+.chip .bul,.r-head .bul,.foot .bul{flex:none;width:3px;height:3px;border-radius:50%;background:currentColor}  /* drawn, so its size does not depend on the font */
 .chip.rep{background:transparent;border:1px solid var(--line);color:var(--muted)}
 .dir-title{font-size:16px;margin:0;font-weight:650}
 .dir-body{margin:0}
@@ -1213,6 +1230,8 @@ section>h2.dh.is-stuck::after{opacity:1}
      Fixed resolves against the viewport: the header sticks at 0, so the list starts 6px under it */
   .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
   .main{padding:16px 16px 64px}
+  .foot{grid-column:1;padding:0 16px 32px}
+  .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
   .pager{grid-template-columns:1fr}
   .pg.next{text-align:left;align-items:flex-start}
 }
