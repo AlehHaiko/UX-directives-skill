@@ -368,6 +368,10 @@
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}if(li.classList.contains('r-more')){e.preventDefault();e.stopPropagation();showAll(false);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=sel<0?(d<0?lis.length-1:0):(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
+  // Tab or Shift+Tab that takes the focus out of the list closes it; the focus goes where the browser's own order puts it
+  var tabOut=false;
+  res.addEventListener('keydown',function(e){if(e.key==='Tab'){tabOut=true;setTimeout(function(){tabOut=false},0)}});
+  res.addEventListener('focusout',function(e){if(tabOut&&!res.contains(e.relatedTarget))close()});
   // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
   // it follows the field in the Tab order, and its Enter and Space arrive as clicks
   var qx=q.parentNode.querySelector('.search-x');
