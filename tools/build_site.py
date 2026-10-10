@@ -809,6 +809,8 @@ a{color:var(--link);text-decoration:none}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 /* every chapter number takes the room of the widest ("4.", 14px at 600): the titles start on one vertical, and so do the subcategory numbers under them */
 .sidebar{--nav-n:13.42px}
+/* the subcategory names keep the column they had under a 16px indent and an 8px gap: what the indent gained, the gap after the number gives back */
+.sidebar{--nav-g:calc(8px - (var(--nav-n) + 6px - 16px))}
 .nav-ch-n{flex:none;align-self:flex-start;width:var(--nav-n)}.nav-ch-l{flex:1;min-width:0}@media (hover:hover){.nav-ch-t:hover{text-decoration:none}}
 .nav-ch-h:has(.nav-ch-t[aria-current]){background:var(--ch-sel)}
 .nav-ch-t[aria-current]{font-weight:700}
@@ -854,16 +856,16 @@ a{color:var(--link);text-decoration:none}
 /* the hover fills only where there is a hover: on touch they would stay on the row last tapped */
 @media (hover:hover){.nav-ch li a:hover{background:var(--ch-hov);color:var(--text);text-decoration:none}.nav-ch-h:hover{background:var(--ch-hov)}}
 .nav-ch ul{list-style:none;margin:2px 0 8px;padding:0 0 0 calc(var(--nav-n) + 6px)}
-.nav-ch li a,.nav-ch .nav-cur{display:flex;gap:8px;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
+.nav-ch li a,.nav-ch .nav-cur{display:flex;gap:var(--nav-g);padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4}
 .nav-ch .nav-cur{cursor:default;background:var(--ch-sel);color:var(--text);font-weight:700}
 /* the page's sections under the current item: shown only where "On this page" is hidden (see responsive)
    their text starts in a column the menu already has. Under a subcategory: the subcategory names' column,
-   past the number (.num: 2.4em of 12px) and the 8px gap */
-.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 calc(2.4 * 12px + 8px);font-size:13px}
+   past the number (.num: 2.4em of 12px) and the gap after it */
+.nav-sec{display:none;list-style:none;margin:2px 0 4px;padding:0 0 0 calc(2.4 * 12px + var(--nav-g));font-size:13px}
 .nav-ch .nav-sec a.is-active{background:var(--ch-sel);color:var(--text);font-weight:700}
 /* under a chapter row: the same column, reached without the subcategory list's own indent. It folds with the chapter:
    it is the first thing in the folded element, and its 4px and the list's 2px, which would merge there, stay 6px */
-.nav-ch-c>.nav-sec{margin-bottom:6px;padding-left:calc(var(--nav-n) + 6px + 2.4 * 12px + 8px)}
+.nav-ch-c>.nav-sec{margin-bottom:6px;padding-left:calc(var(--nav-n) + 6px + 2.4 * 12px + var(--nav-g))}
 /* under "Contents" (home page) the list is outside every chapter: the same items in the colours of "Contents" itself,
    their text where the chapters' titles start. An unseen "1." as wide as the chapter numbers are (.nav-ch-n in .nav-ch-h)
    and the row's 6px gap stand before each item */
