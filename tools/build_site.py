@@ -506,7 +506,7 @@ HM_MARK = ('<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill=
 # Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on #1829c4.
 # The emblem keeps a line of Leonardo's, the closing sentence of the Preface's epigraph: it takes the caption's place while the emblem is pointed at
 # or has the keyboard's focus (its one Tab stop); on touch a tap shows it and hides it.
-HM_QUOTE = "\u201cPractice must always be founded on sound theory.\u201d\nLeonardo da Vinci, between 1480 and 1519"
+HM_QUOTE = "Practice must always be founded on sound theory.\nLeonardo da Vinci, between 1480 and 1519"
 HOME_COVER = ('<div class="cover cover-home"><div class="cover-in">'
               '<div class="hm" role="img" tabindex="0" aria-label="Human-Centered Systems Engineering" aria-describedby="hm-q">'
               + HM_MARK.format(stroke="#fff") +
