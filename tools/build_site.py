@@ -1160,6 +1160,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
+  /* the banner's emblem does not grow; its caption and its quote keep their fade */
+  .hm:is(.is-q,:focus-visible) .hm-mark{transform:none}.hm-t,.hm-q{transition:opacity .15s linear!important}
   /* the theme icon keeps a fade between sun and moon and loses the morph */
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
