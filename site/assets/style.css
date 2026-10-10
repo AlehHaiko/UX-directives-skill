@@ -64,7 +64,7 @@ a{color:var(--link);text-decoration:none}
 .search{position:relative;margin-left:auto;width:min(420px,45vw)}
 .search input{width:100%;height:36px;border:1px solid var(--line);background:var(--bg-soft);color:var(--text);border-radius:8px;padding:0 36px 0 34px;font:inherit;font-size:14px}
 .search input::-webkit-search-cancel-button{display:none}
-.search input:focus,.search input:focus-visible{outline:none;border-color:color-mix(in srgb,var(--text) 35%,var(--bg));box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 10%,transparent)}
+.search input:focus,.search input:focus-visible{outline:none;border-color:var(--home-line);box-shadow:0 0 0 3px var(--home-sel)}
 .search input::placeholder{color:var(--ph,#6b6b6b);opacity:1}  /* the one grey text on the site */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .search input{--ph:#9b9b99}}:root[data-theme="dark"] .search input{--ph:#9b9b99}
 .search-ic{position:absolute;left:10px;top:9px;width:18px;height:18px;color:var(--muted);pointer-events:none}
@@ -548,4 +548,4 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b}
 /* Contents tints */
-:root{--home-sel:#cde4ff;--home-hov:#e5f0fe}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40}
+:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-line:#5f92cc}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-line:#3b6da3}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-line:#3b6da3}

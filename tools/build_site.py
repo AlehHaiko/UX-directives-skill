@@ -246,6 +246,19 @@ TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TIN
 # Contents has no chapter: its current item and its hover take the same tints from a sky blue, #8dc2fe (OKLCH hue 252; the banner's own #1829c4 is hue 267).
 HOME_TINTS = {k: tint("#8dc2fe", *TINT_TARGETS[k]) for k in ("sel-l", "hov-l", "sel-d", "hov-d")}
 
+def line_tint(accent, bgs, target=3.0):
+    """Accent hue and chroma at the first lightness step (.001 of OKLCH L, counted from the backgrounds' side)
+    whose hex gives `target` contrast against every background in bgs."""
+    _,C0,h=rgb2oklch(hex2rgb(accent)); bgc=[hex2rgb(b) for b in bgs]; light=lum(bgc[0])>.5
+    for i in range(1001):
+        L=1-i/1000 if light else i/1000; c=C0
+        rgb=oklch2rgb(L,c,h)
+        while not ingamut(rgb) and c>0: c-=0.002; rgb=oklch2rgb(L,c,h)
+        x=rgb2hex(rgb)
+        if all(cr(hex2rgb(x),b)>=target for b in bgc): return x
+# The search field's border while it has the focus: the same sky blue, 3:1 against the page and against the field (--bg-soft).
+HOME_LINE = {"l": line_tint("#8dc2fe", ("#ffffff", "#f7f6f3")), "d": line_tint("#8dc2fe", ("#191919", "#202020"))}
+
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
 def cue_mix(accent, bg):
@@ -629,9 +642,9 @@ def main(base="/", out=None):
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
     h = HOME_TINTS
-    home = (f":root{{--home-sel:{h['sel-l']};--home-hov:{h['hov-l']}}}"
-            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']}}}}}"
-            f":root[data-theme=\"dark\"]{{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']}}}")
+    home = (f":root{{--home-sel:{h['sel-l']};--home-hov:{h['hov-l']};--home-line:{HOME_LINE['l']}}}"
+            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']};--home-line:{HOME_LINE['d']}}}}}"
+            f":root[data-theme=\"dark\"]{{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']};--home-line:{HOME_LINE['d']}}}")
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints */\n" + home + "\n", encoding="utf-8")
     (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
@@ -704,7 +717,7 @@ a{color:var(--link);text-decoration:none}
 .search{position:relative;margin-left:auto;width:min(420px,45vw)}
 .search input{width:100%;height:36px;border:1px solid var(--line);background:var(--bg-soft);color:var(--text);border-radius:8px;padding:0 36px 0 34px;font:inherit;font-size:14px}
 .search input::-webkit-search-cancel-button{display:none}
-.search input:focus,.search input:focus-visible{outline:none;border-color:color-mix(in srgb,var(--text) 35%,var(--bg));box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 10%,transparent)}
+.search input:focus,.search input:focus-visible{outline:none;border-color:var(--home-line);box-shadow:0 0 0 3px var(--home-sel)}
 .search input::placeholder{color:var(--ph,#6b6b6b);opacity:1}  /* the one grey text on the site */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .search input{--ph:#9b9b99}}:root[data-theme="dark"] .search input{--ph:#9b9b99}
 .search-ic{position:absolute;left:10px;top:9px;width:18px;height:18px;color:var(--muted);pointer-events:none}
