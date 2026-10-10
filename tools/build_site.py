@@ -788,6 +788,10 @@ a{color:var(--link);text-decoration:none}
 .results .r-brick a{border-color:var(--brick);box-shadow:inset 0 0 0 1px var(--brick)}
 .results .r-tint a{background:var(--ch-hov,var(--bg))}
 .results .r-tint .r-x{background:var(--ch-live,var(--bg-soft));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--line))}
+/* the Recent heading counts its entries, "Recent • N", with the directive chip's drawn dot and gap */
+.results .r-n{display:inline-flex;align-items:center;gap:6px}
+/* read, not shown: the comma that stands for the dot, so the heading reads "Recent, N" */
+.results .r-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:pre}
 /* "Clear history" ends the Recent heading's row, its right edge on the tiles' right edge (it takes back the row's 4px padding).
    Pointed at or focused it fills with brick under white text, the colour of the edge every entry takes with it; no reflow */
 .results .r-clear{font:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin-right:-4px;cursor:pointer}
@@ -1100,7 +1104,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .dir-meta{display:flex;align-items:center;gap:2px;font-size:11px}
 .chip{background:var(--ch-sel);color:var(--text);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:6px}
-.chip .bul{flex:none;width:3px;height:3px;border-radius:50%;background:currentColor}  /* drawn, so its size does not depend on the font */
+.chip .bul,.r-head .bul{flex:none;width:3px;height:3px;border-radius:50%;background:currentColor}  /* drawn, so its size does not depend on the font */
 .chip.rep{background:transparent;border:1px solid var(--line);color:var(--muted)}
 .dir-title{font-size:16px;margin:0;font-weight:650}
 .dir-body{margin:0}
@@ -1638,6 +1642,8 @@ JS = r"""
     if(i>-1)items.splice(i,1);sel=-1;q.removeAttribute('aria-activedescendant');
     li.className+=' r-out'+(mark?' '+mark:'');li.removeAttribute('role');li.removeAttribute('id');li.setAttribute('aria-hidden','true');li.inert=true;
     [].forEach.call(res.querySelectorAll('li[role=option]'),function(l,k){l.id='r'+k;l.removeAttribute('aria-selected')});
+    // the heading's count follows at the click; with the last entry, or all of them, the heading leaves as it is
+    var c=res.querySelector('.r-c'),left=res.querySelectorAll('.r-hist:not(.r-out)').length;if(c&&left&&!all)c.textContent=left;
     if(calm()){(li._m||[]).forEach(drop);li.remove();if(!res.querySelector('.r-hist'))close();return true}
     (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;if(!all)carry(rec,li);
     // the last entry takes the heading and "Clear history" with it: the list closes when it is gone
@@ -1670,7 +1676,7 @@ JS = r"""
     var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
     // the heading's row ends with "Clear history": it comes before the entries on the screen and in the Tab order
-    var head=document.createElement('li');head.className='r-head';head.innerHTML='Recent<button type="button" class="r-clear">Clear history</button>';
+    var head=document.createElement('li');head.className='r-head';head.innerHTML='<span class="r-n">Recent<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span><span class="r-c">'+h.length+'</span></span><button type="button" class="r-clear">Clear history</button>';
     head.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true});tell('History cleared')});
     res.appendChild(head);
     h.forEach(function(x,i){
