@@ -1656,6 +1656,8 @@ JS = r"""
   // while entries leave, the buttons that pass under a resting pointer raise no tooltip
   res.addEventListener('pointerover',function(e){if(leaving()){hov=e.target;e.stopPropagation()}});
   res.addEventListener('pointerleave',function(){hov=null});
+  // a press that lands on a leaving entry, before the next one is under the pointer, does nothing: the focus stays where it is
+  res.addEventListener('mousedown',function(e){if(leaving()&&!e.target.closest('a,button'))e.preventDefault()});
   function showHist(){
     var h=hist();res.innerHTML='';sel=-1;off=0;items=[];q.removeAttribute('aria-activedescendant');say('');
     if(!h.length){res.hidden=true;q.setAttribute('aria-expanded','false');return}
