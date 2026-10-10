@@ -10,6 +10,11 @@
       cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
     cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq)}
+  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner
+  var hm=cv&&cv.querySelector('.hm'),hmOn={};
+  function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
+  if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
+    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
