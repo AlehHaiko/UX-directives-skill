@@ -81,11 +81,11 @@ a{color:var(--link);text-decoration:none}
 /* one cross for both buttons, sized to their 26px square; 1.875 units of the 20 grid are 1.5px at 16px */
 .search-x svg,.results .r-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
 .search-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
-/* pointed at or focused: the chevron's live step, the page's chapter tint one step denser than selected, edged one step denser
-   still; Contents and the 404 page have no chapter and take the Contents blue. The same on a Recent tile's button, in the tile's chapter */
-@media (hover:hover){.search-x:hover::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep))}}
+/* pointed at or focused: the chevron's live step in the Contents blue, one step denser than selected, edged one step denser still,
+   on every page: the field is one shell component and carries no chapter. A Recent tile's button takes the same step in the tile's chapter */
+@media (hover:hover){.search-x:hover::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
 /* the focus ring goes around the 26px square, inside the field */
-.search-x:focus-visible{outline:none}.search-x:focus-visible::before{background:var(--ch-live,var(--home-live));box-shadow:inset 0 0 0 1px var(--ch-deep,var(--home-deep));outline:2px solid var(--link);outline-offset:2px}
+.search-x:focus-visible{outline:none}.search-x:focus-visible::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep);outline:2px solid var(--link);outline-offset:2px}
 .results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
 /* a Recent tile keeps its hover tint while the pointer or the focus is on its own button */
