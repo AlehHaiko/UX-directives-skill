@@ -504,10 +504,11 @@ HM_MARK = ('<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill=
            '<path d="M723,132l-4-49-30-24v-1l36,16,36-16v1l-30,24-4,49h-4Z"/><path d="M720,63l5-5,5,5-5,6-5-6Z"/></svg>')
 
 # Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on #1829c4.
-# The emblem keeps a line of Leonardo's, the closing sentence of the Preface's epigraph: it takes the caption's place while the emblem is pointed at.
+# The emblem keeps a line of Leonardo's, the closing sentence of the Preface's epigraph: it takes the caption's place while the emblem is pointed at
+# or has the keyboard's focus (its one Tab stop).
 HM_QUOTE = "\u201cPractice must always be founded on sound theory.\u201d\nLeonardo da Vinci, between 1480 and 1519"
 HOME_COVER = ('<div class="cover cover-home"><div class="cover-in">'
-              '<div class="hm" role="img" aria-label="Human-Centered Systems Engineering" aria-describedby="hm-q">'
+              '<div class="hm" role="img" tabindex="0" aria-label="Human-Centered Systems Engineering" aria-describedby="hm-q">'
               + HM_MARK.format(stroke="#fff") +
               '<span class="hm-t">Human-Centered Systems Engineering</span>'
               f'<span class="hm-q" id="hm-q">{HM_QUOTE}</span></div>{{arrows}}</div></div>')
@@ -926,10 +927,12 @@ a{color:var(--link);text-decoration:none}
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .45s var(--spring)}
 .hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft)}
-/* the emblem's quote: .hm.is-q swaps the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script) */
+/* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script) */
 .hm-q{position:absolute;left:50%;top:56px;width:max-content;max-width:calc(100vw - 32px);transform:translateX(-50%);color:#fff;font-size:16px;font-weight:500;line-height:1.3;
   text-align:center;white-space:pre-line;opacity:0;pointer-events:none;transition:opacity .3s var(--soft)}
-.hm.is-q .hm-mark{transform:translateY(-8px) scale(1.2)}.hm.is-q .hm-t{opacity:0}.hm.is-q .hm-q{opacity:1}
+.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0}.hm:is(.is-q,:focus-visible) .hm-q{opacity:1}
+/* its focus ring is the banner arrows' white one, drawn around the grown mark and the quote */
+.hm:focus-visible{outline:none}.hm:focus-visible::after{content:"";position:absolute;inset:-15px 38px;outline:2px solid #fff;border-radius:4px;pointer-events:none}
 /* prev/next arrows at the banner's edges */
 /* the link is a tall 80px strip (easy to hit); the visible 40px circle sits 30px from the edge */
 /* each arrow's hit area runs from the banner edge to the text column; the 40px circle sits 30px from the edge */
@@ -1125,7 +1128,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   /* the sticky heading is just "UX directives": the banner above it names the subcategory; the name stays for screen readers */
   section>h2.dh .arrow{display:none}section>h2.dh .to{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
-  .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.hm-q{top:36px;font-size:11px}.hm.is-q .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
+  .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.hm-q{top:36px;font-size:11px}.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1}.hm:focus-visible::after{inset:-11px 26px}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
   body.nav-open .sidebar{transform:none;visibility:visible;transition:transform .2s ease,visibility 0s}
   body.nav-open{overflow:hidden}
@@ -1168,17 +1171,19 @@ JS = r"""
   // sticky cover: --cover-h comes from CSS alone, so it follows the width; land a #id clear of it
   var cv=document.querySelector('body>.cover');
   // narrow screens: the banner condenses to one line once the page has scrolled by the height it gives up
-  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows has focus
+  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows or its emblem has focus
   if(cv){var narrow=matchMedia('(max-width: 860px)'),craf=0;
     var cmin=function(){craf=0;var cs=getComputedStyle(root),t=parseFloat(cs.getPropertyValue('--cover-full'))-parseFloat(cs.getPropertyValue('--cover-h'));
       cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
-    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq)}
-  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner
+    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq);cv.addEventListener('focusin',creq)}
+  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner;
+  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not
   var hm=cv&&cv.querySelector('.hm'),hmOn={};
   function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
   if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
-    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)})}
+    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)});
+    hm.addEventListener('mousedown',function(e){e.preventDefault()})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
   // smooth scrolling only after the page has settled, so a link to #id lands instantly

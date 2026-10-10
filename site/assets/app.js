@@ -4,17 +4,19 @@
   // sticky cover: --cover-h comes from CSS alone, so it follows the width; land a #id clear of it
   var cv=document.querySelector('body>.cover');
   // narrow screens: the banner condenses to one line once the page has scrolled by the height it gives up
-  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows has focus
+  // (the text has then passed under it, so nothing moves); it stays full while one of its arrows or its emblem has focus
   if(cv){var narrow=matchMedia('(max-width: 860px)'),craf=0;
     var cmin=function(){craf=0;var cs=getComputedStyle(root),t=parseFloat(cs.getPropertyValue('--cover-full'))-parseFloat(cs.getPropertyValue('--cover-h'));
       cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
-    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq)}
-  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner
+    cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq);cv.addEventListener('focusin',creq)}
+  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner;
+  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not
   var hm=cv&&cv.querySelector('.hm'),hmOn={};
   function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
   if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
-    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)})}
+    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)});
+    hm.addEventListener('mousedown',function(e){e.preventDefault()})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
   // smooth scrolling only after the page has settled, so a link to #id lands instantly
