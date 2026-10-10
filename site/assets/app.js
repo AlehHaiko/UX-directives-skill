@@ -52,7 +52,7 @@
     // the icon's hover preview is off from a click until the pointer leaves
     mb.addEventListener('pointerleave',function(){mb.classList.remove('pv-off')});}
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label (the home link's: its emblem's hidden text, while the emblem shows).
-  // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch never.
+  // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
@@ -79,12 +79,33 @@
     var el=tipCtl(e.target);if(el===tipOver)return;tipOver=el;clearTimeout(tipT);
     if(!el){if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();return}
     if(tipOwn||Date.now()-tipGone<TIP_CHAIN)tipShow(el);else tipT=setTimeout(function(){tipShow(el)},TIP_DELAY)});
-  root.addEventListener('pointerleave',function(){tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
+  root.addEventListener('pointerleave',function(e){if(e.pointerType==='touch')return;tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
   document.addEventListener('focusin',function(e){var el=tipCtl(e.target);if(el&&!tipMute&&el.matches(':focus-visible'))tipShow(el)});
   document.addEventListener('focusout',function(e){if(tipOwn&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
-  document.addEventListener('click',tipDismiss,true);
+  document.addEventListener('click',function(e){
+    // the click of a release that ended a long press: it does nothing and the tooltip stays
+    if(holdEat&&Date.now()-holdEat<HOLD_EAT){holdEat=0;e.preventDefault();e.stopImmediatePropagation();return}
+    tipDismiss()},true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')tipDismiss()},true);
   addEventListener('scroll',tipPlace,{passive:true,capture:true});addEventListener('resize',tipHide);document.addEventListener('input',tipPlace);
+  // touch: a press of HOLD on one of these controls shows its tooltip, and the release then does nothing; a release before that, a move over HOLD_MOVE
+  // or a cancelled touch leaves a tap what it was. The tooltip hides HOLD_OUT after the release or at the next touch.
+  // The browser's own long-press menu is off on these controls while a finger is on one (a mouse's right click keeps it)
+  var HOLD=500,HOLD_MOVE=10,HOLD_OUT=1500,HOLD_EAT=800,holdT=0,holdEl=null,holdX=0,holdY=0,holdOn=false,holdEat=0,holdOutT=0;
+  function holdStop(){clearTimeout(holdT);holdT=0;holdEl=null}
+  function holdEnd(e){var shown=holdOn&&!!holdEl;holdStop();if(!shown)return;
+    if(e.type==='touchend'){holdEat=Date.now();if(e.cancelable)e.preventDefault()}
+    holdOutT=setTimeout(function(){holdOn=false;tipHide()},HOLD_OUT)}
+  document.addEventListener('touchstart',function(e){
+    clearTimeout(holdOutT);holdStop();if(holdOn){holdOn=false;tipHide()}
+    var el=e.touches.length===1?tipCtl(e.target):null;if(!el)return;
+    holdEl=el;holdX=e.touches[0].clientX;holdY=e.touches[0].clientY;
+    holdT=setTimeout(function(){holdT=0;holdOn=true;tipShow(el)},HOLD)},{passive:true,capture:true});
+  document.addEventListener('touchmove',function(e){
+    if(holdT&&Math.hypot(e.touches[0].clientX-holdX,e.touches[0].clientY-holdY)>HOLD_MOVE)holdStop()},{passive:true,capture:true});
+  document.addEventListener('touchend',holdEnd,{passive:false,capture:true});
+  document.addEventListener('touchcancel',holdEnd,{passive:true,capture:true});
+  document.addEventListener('contextmenu',function(e){if(holdEl&&tipCtl(e.target))e.preventDefault()},true);
   // chapter menu: independent sections, remembered across pages, collapse/expand all
   // (open/closed state and scroll position are restored inline, before first paint)
   var chs=[].slice.call(document.querySelectorAll('.nav-ch')),tg=document.querySelector('.nav-toggle'),st={};

@@ -151,6 +151,8 @@ a{color:var(--link);text-decoration:none}
 .tip.at-r::before,.tip.at-l::before{top:0;bottom:0;width:7px;height:auto}.tip.at-r::before{left:-7px;right:auto}.tip.at-l::before{left:auto;right:-7px}
 :root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
+/* touch: a long press on an icon-only control shows its tooltip, so the browser's own callout and text selection are off on these controls */
+@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
