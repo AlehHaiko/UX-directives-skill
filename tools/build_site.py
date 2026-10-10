@@ -940,6 +940,7 @@ a{color:var(--link);text-decoration:none}
   .nav-home{margin:calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) -5px calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) 0;padding:calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 13px calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 8px}
 }
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
+@media (hover:hover){.nav-ch li a:hover .num{font-weight:700}}.nav-ch li a:focus-visible .num{font-weight:700}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
 @media (min-width:861px){.side-hidden{--measure:900px}.side-hidden .main>*{margin-left:max(0px,calc(100% - var(--measure)))}}
