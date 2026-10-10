@@ -395,7 +395,8 @@ section>h2{margin-top:36px}
 .c-peach{background:var(--peach)}.c-blue{background:var(--blue)}.c-pink{background:var(--pink)}
 .c-yellow{background:var(--yellow)}.c-green{background:var(--green)}
 h3.fa{font-size:15px;margin:16px 0 8px;font-weight:650}
-.dirs{display:grid;gap:12px}
+/* 16px between the sticky heading and the first card: the room a landing leaves under the stuck heading (.dir's scroll-margin-top), so the first card lands like the rest */
+.dirs{display:grid;gap:12px;margin-top:16px}
 .dir{background:#f7f9fb;border-radius:12px;padding:10px 20px 20px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dir:not(.repealed){background:#22282b}}
 :root[data-theme="dark"] .dir:not(.repealed){background:#22282b}
