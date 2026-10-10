@@ -39,16 +39,18 @@
   var mobile=matchMedia('(max-width: 860px)');
   // opening moves focus into the menu; closing returns it to the button (unless keep)
   // while the mobile menu is open, everything but the top bar and the menu is inert (Tab cannot reach the page under the scrim)
-  function setNav(open,keep){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
+  // opened from the keyboard (kb), the focus goes to the current page's item, which the menu has just shown; its chapter folded, to the first control
+  function setNav(open,keep,kb){var was=document.body.classList.contains('nav-open');document.body.classList.toggle('nav-open',open);scrim.hidden=!open;sync();
     [].forEach.call(document.querySelectorAll('body>*,.shell>*'),function(n){if(!n.matches('.top,.shell,.sidebar,.scrim,.tip,script'))n.inert=open});
-    if(open){var f=side.querySelector('a[href],button');if(f)f.focus({preventScroll:true});showCur()}else if(was&&!keep)mb.focus({preventScroll:true})}
+    if(open){var f=side.querySelector('a[href],button'),c=kb&&side.querySelector('[aria-current]');showCur();
+      if(c&&!c.closest('[hidden]'))focusTarget(c);else if(f)f.focus({preventScroll:true})}else if(was&&!keep)mb.focus({preventScroll:true})}
   // an opened menu shows where the reader is: the current page's item is brought into view, by the shortest way and at once
   function showCur(){var c=side.querySelector('[aria-current]');if(c)c.scrollIntoView({block:'nearest',behavior:'instant'})}
   function sync(){var open=mobile.matches?document.body.classList.contains('nav-open'):!root.classList.contains('side-hidden');
     var t=mobile.matches?(open?'Close panel':'Open panel'):(open?'Hide panel':'Show panel');
     mb.setAttribute('aria-expanded',open);mb.setAttribute('aria-label',t)}
   function setSide(hidden){root.classList.toggle('side-hidden',hidden);sync();if(!hidden)showCur();try{localStorage.setItem('bb-side',hidden?'hidden':'shown')}catch(e){}}
-  if(mb){mb.addEventListener('click',function(){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'));else setSide(!root.classList.contains('side-hidden'))});
+  if(mb){mb.addEventListener('click',function(e){if(mb.matches(':hover'))mb.classList.add('pv-off');if(mobile.matches)setNav(!document.body.classList.contains('nav-open'),false,e.detail===0);else setSide(!root.classList.contains('side-hidden'))});
     scrim.addEventListener('click',function(){setNav(false)});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&mobile.matches&&document.body.classList.contains('nav-open'))setNav(false)});
     mobile.addEventListener('change',function(){if(!mobile.matches)setNav(false,true);else sync()});sync();
