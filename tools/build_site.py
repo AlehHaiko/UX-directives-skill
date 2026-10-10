@@ -1170,9 +1170,11 @@ JS = r"""
   function themeLabel(){var t=isDark()?'Switch to light theme':'Switch to dark theme';tb.setAttribute('aria-label',t)}
   if(tb){tb.addEventListener('click',function(){
     if(tb.matches(':hover'))tb.classList.add('pv-off');
-    root.dataset.theme=isDark()?'light':'dark';themeLabel();
+    // a click that lands on the system theme forgets the stored choice, so the site follows the system again
+    var next=isDark()?'light':'dark',sys=(next==='dark')===sysDark.matches;
+    if(sys)delete root.dataset.theme;else root.dataset.theme=next;themeLabel();
     tb.classList.remove('turn');void tb.offsetWidth;tb.classList.add('turn');
-    try{localStorage.setItem('bb-theme',root.dataset.theme)}catch(e){}
+    try{if(sys)localStorage.removeItem('bb-theme');else localStorage.setItem('bb-theme',next)}catch(e){}
   });
     // the hover preview comes back once the pointer has left; the icon morphs again once the turn is over
     tb.addEventListener('pointerleave',function(){tb.classList.remove('pv-off')});
