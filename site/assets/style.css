@@ -97,7 +97,7 @@ a{color:var(--link);text-decoration:none}
 @media (hover:hover){.results .r-fix a:hover,.results .r-more a:hover{border-color:var(--link)}}
 .results .r-fix[aria-selected="true"] a,.results .r-more[aria-selected="true"] a{border-color:var(--link)}
 /* one line of text makes the row 43.594 high; a finger gets 44 */
-.results .r-more a{min-height:44px}
+.results .r-fix a,.results .r-more a{min-height:44px}
 .results[hidden]{display:none}
 .results{scrollbar-width:thin;scrollbar-color:transparent transparent;scrollbar-gutter:stable}
 .results.is-scrolling{scrollbar-color:color-mix(in srgb,var(--text) 40%,transparent) transparent}
