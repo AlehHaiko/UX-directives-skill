@@ -282,7 +282,8 @@
     return attempt()||attempt(deadWords())}
   function fixLi(fix){return '<li role="option" id="r0" class="r-fix" data-q="'+escH(fix).replace(/"/g,'&quot;')+'"><a href="#">Did you mean <span class="r-t">'+escH(fix)+'</span>?</a></li>'}
   function applyFix(li){q.value=li.getAttribute('data-q');q.parentNode.classList.add('has-val');run();q.focus({preventScroll:true})}
-  function run(){
+  // all: the cap of 30 is lifted (only showAll passes it; every other call caps again)
+  function run(all){
     var v=norm(q.value.trim());res.innerHTML='';sel=-1;off=0;q.removeAttribute('aria-activedescendant');
     if(!v){res.hidden=true;q.setAttribute('aria-expanded','false');say('');return}
     var gs=groups(v),terms=[].concat.apply([],gs),scored=[],some=[],any=false;
@@ -299,9 +300,10 @@
     // nothing matches every group: fall back to entries matching any, most groups first, then the usual score
     if(!scored.length&&gs.length>1&&some.length){any=true;scored=some}
     scored.sort(function(a,b){return any&&b[2]-a[2]||b[0]-a[0]});
-    items=scored.slice(0,30).map(function(p){return p[1]});
-    var n=scored.length,count=!n?'No results':n>30?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
-    if(any)count='No directive matches all words. Showing '+(n>30?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';
+    var n=scored.length,cut=n>30&&all!==true;
+    items=(cut?scored.slice(0,30):scored).map(function(p){return p[1]});
+    var count=!n?'No results':cut?'Showing 30 of '+n+' results':n===1?'1 result':n+' results';
+    if(any)count='No directive matches all words. Showing '+(cut?'30 of '+n+' that match':n===1?'the 1 that matches':n+' that match')+' any.';
     // any-word matches only: a typo in one word may hide an exact match. Suggest the correction if it matches every word
     var anyFix=any&&correct(q.value,findsAll);
     say(count+(anyFix?' Did you mean '+anyFix+'?':''));
@@ -323,8 +325,15 @@
       li.innerHTML='<a href="'+x.url+'"><span class="r-id">'+hl(x.id,terms)+'</span><span class="r-t">'+hl(x.title,terms)+'</span><span class="r-b">'+hl(x.body,terms)+(x.sub?' · '+hl(x.sub,terms):'')+'</span></a>';
       res.appendChild(li);
     });
+    // over 30: the last option shows the rest (arrows reach it, Enter or a click runs it), the look of the suggestion row
+    if(cut)res.insertAdjacentHTML('beforeend','<li role="option" id="r'+(30+off)+'" class="r-more"><a href="#"><span class="r-t">Show all '+n+' results</span></a></li>');
     res.hidden=false;q.setAttribute('aria-expanded','true');
   }
+  // the same query without the cap; the 31st result takes the selection (keys: the focus stays in the field) or the focus
+  function showAll(keys){
+    run(true);var i=30+off,li=res.querySelectorAll('li[role=option]')[i];if(!li)return;
+    if(keys){sel=i;li.setAttribute('aria-selected','true');li.scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+i)}
+    else li.querySelector('a').focus()}
   var rst;res.addEventListener('scroll',function(){res.classList.add('is-scrolling');clearTimeout(rst);rst=setTimeout(function(){res.classList.remove('is-scrolling')},900)},{passive:true});
   // ---- history: results opened from search, newest first (max 8)
   var HK='bb-search-hist';
@@ -349,7 +358,7 @@
   }
   function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
-  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
+  res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}if(li.classList.contains('r-more')){e.preventDefault();e.stopPropagation();showAll(false);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=sel<0?(d<0?lis.length-1:0):(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
   q.addEventListener('input',refresh);
   // the clear button: empties the field, keeps the focus in it (no blur on mousedown) and shows Recent;
@@ -361,7 +370,7 @@
     if(e.key==='ArrowDown'){e.preventDefault();if(res.hidden)refresh();else move(1)}
     else if(e.key==='ArrowUp'){e.preventDefault();if(res.hidden)refresh();else move(-1)}
     // Enter on a closed list reopens the results for the current query; on an open list it follows the selection
-    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li&&li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}if(li){var a=li.querySelector('a'),it=items[(sel<0?0:sel)-off];if(!li.classList.contains('r-hist')&&it)remember(it);location.href=a.href}}
+    else if(e.key==='Enter'){if(res.hidden){if(q.value.trim()){e.preventDefault();run()}return}var lis=res.querySelectorAll('li[role=option]');var li=lis[sel]||lis[0];if(li&&li.classList.contains('r-fix')){e.preventDefault();applyFix(li);return}if(li&&li.classList.contains('r-more')){e.preventDefault();showAll(true);return}if(li){var a=li.querySelector('a'),it=items[(sel<0?0:sel)-off];if(!li.classList.contains('r-hist')&&it)remember(it);location.href=a.href}}
     // Escape: first closes the list and keeps the text, second clears the text, third leaves the field
     else if(e.key==='Escape'){
       if(!res.hidden){e.preventDefault();close()}
