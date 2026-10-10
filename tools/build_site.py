@@ -927,14 +927,18 @@ a{color:var(--link);text-decoration:none}
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .5s var(--spring)}
-.hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .45s var(--soft) .15s}
+.hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
 /* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script).
-   The mark moves as a card lifts under the pointer (.5s, the spring); caption and quote cross-fade where they stand: the one that leaves goes in .3s,
-   the one that comes takes the time and the curve the panel folds with (.45s, soft) and starts .15s later, so the two are never half-shown over each other */
-.hm-q{position:absolute;left:50%;top:56px;width:max-content;max-width:calc(100vw - 32px);transform:translateX(-50%);color:#fff;font-size:18px;font-weight:500;line-height:1.3;
-  text-align:center;opacity:0;pointer-events:none;transition:opacity .3s var(--soft)}
-.hm-a{display:block;font-size:.75em;color:rgba(255,255,255,.75)}
-.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0;transition:opacity .3s var(--soft)}.hm:is(.is-q,:focus-visible) .hm-q{opacity:1;transition:opacity .45s var(--soft) .15s}
+   Everything that arrives moves on the mark's spring (.5s): the mark grows as a card lifts under the pointer, the quote rises --hm-rise into place and
+   its attribution follows .075s behind it; the caption gives way upward and comes back down the same way. What leaves goes in .3s on the soft curve, and what
+   arrives starts .15s later, so the two texts are never half-shown over each other */
+.hm{--hm-rise:14px}
+.hm-q{position:absolute;left:50%;top:56px;width:max-content;max-width:calc(100vw - 32px);transform:translate(-50%,var(--hm-rise));color:#fff;font-size:18px;font-weight:500;line-height:1.3;
+  text-align:center;opacity:0;pointer-events:none;transition:opacity .3s var(--soft),transform .3s var(--soft)}
+.hm-a{display:block;font-size:.75em;color:rgba(255,255,255,.75);opacity:0;transform:translateY(calc(var(--hm-rise)/2));transition:opacity .3s var(--soft),transform .3s var(--soft)}
+.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-8px) scale(1.2)}.hm:is(.is-q,:focus-visible) .hm-t{opacity:0;transform:translateY(calc(var(--hm-rise)*-.7));transition:opacity .3s var(--soft),transform .3s var(--soft)}
+.hm:is(.is-q,:focus-visible) .hm-q{opacity:1;transform:translate(-50%,0);transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
+.hm:is(.is-q,:focus-visible) .hm-a{opacity:1;transform:none;transition:opacity .3s var(--soft) .225s,transform .5s var(--spring) .225s}
 /* its focus ring is the banner arrows' white one, drawn around the grown mark and the quote */
 .hm:focus-visible{outline:none}.hm:focus-visible::after{content:"";position:absolute;inset:-15px 28px;outline:2px solid #fff;border-radius:4px;pointer-events:none}
 /* prev/next arrows at the banner's edges */
@@ -1134,8 +1138,8 @@ section>h2.dh.is-stuck::after{opacity:1}
   .cover-in{gap:8px;padding:0 52px}.cv-1{font-size:11px}.cv-2{font-size:21px}.cover-ch .cv-1{font-size:17px}
   /* the quote is as large as one line clear of the arrow allows: its width is 24.6 times its font size, and 75px keep it 8px from the chevron on both sides;
      the width is the banner's own (cqw), so a scrollbar that takes room does not push the line onto the chevron; the focus ring is as wide as that line */
-  .hm{gap:8px}.hm-mark{width:34px}.hm-t{font-size:14px}.cover-home{container-type:inline-size;--hm-q:clamp(11px,calc((100vw - 75px)/24.6),13.34px)}@supports (width:1cqw){.cover-home{--hm-q:clamp(11px,calc((100cqw - 75px)/24.6),13.34px)}}
-  .hm-q{top:36px;font-size:var(--hm-q)}.hm-a{font-size:10px}.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1}.hm:focus-visible::after{inset:-11px auto;left:50%;width:calc(24.6em + 6px);margin-left:calc(-12.3em - 3px);font-size:var(--hm-q)}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
+  .hm{gap:8px;--hm-rise:10px}.hm-mark{width:34px}.hm-t{font-size:14px}.cover-home{container-type:inline-size;--hm-q:clamp(11px,calc((100vw - 75px)/24.6),13.34px)}@supports (width:1cqw){.cover-home{--hm-q:clamp(11px,calc((100cqw - 75px)/24.6),13.34px)}}
+  .hm-q{top:36px;font-size:var(--hm-q)}.hm-a{font-size:10px}.hm:is(.is-q,:focus-visible) .hm-mark{transform:translateY(-7px) scale(1.15)}.cover.is-min .hm.is-q .hm-t{opacity:1;transform:none}.hm:focus-visible::after{inset:-11px auto;left:50%;width:calc(24.6em + 6px);margin-left:calc(-12.3em - 3px);font-size:var(--hm-q)}.cv-arr{width:52px}.cv-prev::before{left:6px}.cv-prev svg{left:11.7px}.cv-next::before{right:6px}.cv-next svg{right:11.7px}.cv-prev{left:0}.cv-next{right:0}
   .sidebar{position:fixed;left:0;top:var(--top);bottom:0;width:min(86vw,320px);height:auto;background:var(--bg);z-index:40;transform:translateX(-102%);visibility:hidden;overscroll-behavior:contain;transition:transform .2s ease,visibility 0s .2s}
   body.nav-open .sidebar{transform:none;visibility:visible;transition:transform .2s ease,visibility 0s}
   body.nav-open{overflow:hidden}
@@ -1167,8 +1171,9 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
-  /* the banner's emblem does not grow; its caption and its quote keep their fade */
-  .hm:is(.is-q,:focus-visible) .hm-mark{transform:none}.hm-t,.hm-q{transition:opacity .15s linear!important}
+  /* the banner's emblem does not grow and its texts do not move; caption, quote and attribution keep their fade */
+  .hm:is(.is-q,:focus-visible) .hm-mark,.hm:is(.is-q,:focus-visible) .hm-t,.hm .hm-a{transform:none}.hm .hm-q{transform:translateX(-50%)}
+  .hm .hm-t,.hm .hm-q,.hm .hm-a{transition:opacity .15s linear!important}
   /* the theme icon keeps a fade between sun and moon and loses the morph */
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
