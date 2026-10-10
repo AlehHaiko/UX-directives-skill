@@ -1354,7 +1354,9 @@ JS = r"""
   // result count for screen readers, announced once typing pauses
   var status=document.getElementById('q-status'),sayT;
   function say(t){clearTimeout(sayT);sayT=setTimeout(function(){if(status)status.textContent=t},400)}
-  function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant')}
+  // a closed list keeps no selection: the next opening renders it anew
+  function close(){res.hidden=true;sel=-1;q.setAttribute('aria-expanded','false');q.removeAttribute('aria-activedescendant');
+    [].forEach.call(res.querySelectorAll('[aria-selected]'),function(l){l.removeAttribute('aria-selected')})}
   // the chapter title (BB_CHAPTERS, by chapter number x.c) is searched but never shown
   idx.forEach(function(x){x._h=norm(x.id+' '+x.title+' '+x.body+' '+(x.sub||'')+' '+(chTitles[x.c]||''))});
   // the book's words with their frequencies, most frequent first: counted once from the text the matcher searches,
