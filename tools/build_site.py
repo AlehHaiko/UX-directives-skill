@@ -1608,7 +1608,7 @@ JS = r"""
   function remember(x){var h=hist().filter(function(e){return e.url!==x.url});h.unshift({id:x.id,title:x.title,c:x.c,url:x.url,q:q.value.trim()});saveHist(h.slice(0,8))}
   // ---- a Recent entry leaves: it fades and gives up its height on --soft while what follows rides up into its place on --spring
   // (the menu's fold and a card's lift). Storage and the option list change at the click; the node goes when the motion ends
-  var LEAVE=450,hov=null;
+  var LEAVE=450,hov=null,gapA=null;
   function leaving(){return !res.hidden&&!!res.querySelector('.r-out')}
   function ease(n){return getComputedStyle(root).getPropertyValue(n).trim()||'ease-out'}
   function stays(li){do li=li.nextElementSibling;while(li&&li.classList.contains('r-out'));return li}
@@ -1616,7 +1616,7 @@ JS = r"""
   // collapse's pace, and hands it on if it leaves too
   function carry(rec,li){var t=rec.m?rec.m.currentTime:0,nx=stays(li);if(rec.m)rec.m.cancel();rec.m=null;if(!nx)return;
     rec.m=nx.animate({marginTop:['0px',-rec.gap+'px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards',composite:'add'});rec.m.currentTime=t;(nx._m=nx._m||[]).push(rec)}
-  function out(li,x,mark){
+  function out(li,x,mark,all){
     if(li.classList.contains('r-out'))return false;
     var h=li.getBoundingClientRect().height,gap=parseFloat(getComputedStyle(res).rowGap)||0,d=h+gap,soft=ease('--soft'),spring=ease('--spring'),rec={gap:gap,m:null},i=items.indexOf(x),n;
     saveHist(hist().filter(function(e){return e.url!==x.url}));
@@ -1624,19 +1624,27 @@ JS = r"""
     if(i>-1)items.splice(i,1);sel=-1;q.removeAttribute('aria-activedescendant');
     li.className+=' r-out'+(mark?' '+mark:'');li.removeAttribute('role');li.removeAttribute('id');li.setAttribute('aria-hidden','true');li.inert=true;
     [].forEach.call(res.querySelectorAll('li[role=option]'),function(l,k){l.id='r'+k;l.removeAttribute('aria-selected')});
-    (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;carry(rec,li);
+    (li._m||[]).forEach(function(r){carry(r,li)});li._m=null;if(!all)carry(rec,li);
+    // the last entry takes the heading and "Clear history" with it: the list closes when it is gone
+    if(!res.querySelector('.r-hist:not(.r-out)'))[].forEach.call(res.querySelectorAll('.r-head,.r-foot'),function(n){n.inert=true;n.animate({opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'})});
     // the layout moves what follows at the collapse's pace; the difference to the spring is added as a transform that ends at 0
-    if(spring!==soft)for(n=li.nextElementSibling;n;n=n.nextElementSibling){
+    if(!all&&spring!==soft)for(n=li.nextElementSibling;n;n=n.nextElementSibling){
       n.animate({transform:['translateY(0)','translateY('+-d+'px)']},{duration:LEAVE,easing:spring,composite:'add'});
       n.animate({transform:['translateY(0)','translateY('+d+'px)']},{duration:LEAVE,easing:soft,composite:'add'})}
     li.animate({height:[h+'px','0px'],opacity:[1,0]},{duration:LEAVE,easing:soft,fill:'forwards'}).onfinish=function(){
       if(li.parentNode!==res)return;
       if(rec.m)rec.m.cancel();li.remove();
       if(leaving())return;
+      if(gapA){gapA.cancel();gapA=null}
       if(!res.querySelector('.r-hist'))close();
       // the tooltip does not return while the pointer stays: the button that arrived under it is, to the tooltip, the control just clicked
       if(hov){tipOver=tipCtl(hov.isConnected?hov:null);hov=null}};
     return true}
+  // "Clear history": every entry leaves in the same motion, then the list closes. Nothing stays to ride up or to take the gaps
+  // back, so the list's own gap closes at the collapse's pace; a new render (refresh) drops that animation
+  function outAll(mark){var ls=[].slice.call(res.querySelectorAll('.r-hist:not(.r-out)')),xs=items.slice();if(!ls.length)return;
+    gapA=res.animate({rowGap:[getComputedStyle(res).rowGap,'0px']},{duration:LEAVE,easing:ease('--soft'),fill:'forwards'});
+    ls.forEach(function(li,i){out(li,xs[i],mark,true)});saveHist([])}
   // while entries leave, the buttons that pass under a resting pointer raise no tooltip
   res.addEventListener('pointerover',function(e){if(leaving()){hov=e.target;e.stopPropagation()}});
   res.addEventListener('pointerleave',function(){hov=null});
@@ -1656,11 +1664,11 @@ JS = r"""
     });
     var foot=document.createElement('li');foot.className='r-foot';
     foot.innerHTML='<button type="button" class="r-clear">Clear history</button>';
-    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();saveHist([]);showHist();q.focus({preventScroll:true})});
+    foot.querySelector('button').addEventListener('click',function(e){e.stopPropagation();var b=e.currentTarget;outAll(canHover.matches&&b.matches(':hover')||b.matches(':focus-visible')?'r-brick':'');q.focus({preventScroll:true})});
     res.appendChild(foot);res.hidden=false;q.setAttribute('aria-expanded','true');
     res.scrollTop=0;
   }
-  function refresh(){q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
+  function refresh(){if(gapA){gapA.cancel();gapA=null}q.parentNode.classList.toggle('has-val',!!q.value);if(q.value.trim())run();else showHist()}
   // remember what was opened from the list
   res.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var li=a.closest('li');if(li.classList.contains('r-fix')){e.preventDefault();e.stopPropagation();applyFix(li);return}if(li.classList.contains('r-more')){e.preventDefault();e.stopPropagation();showAll(false);return}var i=[].indexOf.call(res.querySelectorAll('li[role=option]'),li)-off;if(i>-1&&items[i]&&!li.classList.contains('r-hist'))remember(items[i])});
   function move(d){var lis=res.querySelectorAll('li[role=option]');if(!lis.length)return;sel=sel<0?(d<0?lis.length-1:0):(sel+d+lis.length)%lis.length;lis.forEach(function(l,i){l.setAttribute('aria-selected',i===sel)});lis[sel].scrollIntoView({block:'nearest'});q.setAttribute('aria-activedescendant','r'+sel)}
