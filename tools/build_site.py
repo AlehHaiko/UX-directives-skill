@@ -243,6 +243,8 @@ TINT_TARGETS = {  # (background, contrast, max chroma)
 TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10, .12), "live-l": ("#ffffff", 1.30, .20), "deep-l": ("#ffffff", 1.40, .24)}}
 TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TINT_TARGETS.items()}
          for n, v in PALETTE.items()}
+# Contents has no chapter: its current item and its hover take the same tints from the home banner's blue (.cover-home).
+HOME_TINTS = {k: tint("#1829c4", *TINT_TARGETS[k]) for k in ("sel-l", "hov-l", "sel-d", "hov-d")}
 
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
@@ -626,7 +628,11 @@ def main(base="/", out=None):
         + "window.BB_VOCAB=" + json.dumps(vocab, ensure_ascii=False, separators=(",", ":")) + ";\n", encoding="utf-8")
     # search results carry their chapter's tints (class rc1…rc9)
     rc = "".join(f".rc{n}{{--ch-sel-l:{t['sel-l']};--ch-hov-l:{t['hov-l']};--ch-sel-d:{t['sel-d']};--ch-hov-d:{t['hov-d']}}}" for n, t in TINTS.items())
-    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n", encoding="utf-8")
+    h = HOME_TINTS
+    home = (f":root{{--home-sel:{h['sel-l']};--home-hov:{h['hov-l']}}}"
+            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']}}}}}"
+            f":root[data-theme=\"dark\"]{{--home-sel:{h['sel-d']};--home-hov:{h['hov-d']}}}")
+    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints */\n" + home + "\n", encoding="utf-8")
     (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
     print(f"Built {1 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories; {n_dirs} directive IDs indexed.")
@@ -808,8 +814,8 @@ a{color:var(--link);text-decoration:none}
 .nav-toggle>span{grid-area:1/1}
 .nav-toggle[data-state="collapse"] .l-e,.nav-toggle[data-state="expand"] .l-c{visibility:hidden}
 .nav-toggle,.nav-home,.nav-ch-h,.nav-ch li a{transition:background-color .35s var(--soft)}
-.nav-home.is-cur{background:var(--bg-soft);text-decoration:none}
-@media (hover:hover){a.nav-home:hover{background:var(--bg-soft);text-decoration:none}}
+.nav-home.is-cur{background:var(--home-sel);text-decoration:none}
+@media (hover:hover){a.nav-home:hover{background:var(--home-hov);text-decoration:none}}
 .nav-home.is-cur{cursor:default}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
@@ -880,8 +886,8 @@ a{color:var(--link);text-decoration:none}
 .sidebar>.nav-sec li::before{content:"1.";flex:none;width:var(--nav-n);visibility:hidden;font-size:14px;font-weight:600;line-height:1;margin-right:6px}
 .sidebar>.nav-sec a{flex:1;min-width:0}
 .sidebar>.nav-sec a{display:flex;padding:4px 8px;border-radius:6px;color:var(--muted);line-height:1.4;transition:background-color .35s var(--soft)}
-@media (hover:hover){.sidebar>.nav-sec a:hover{background:var(--bg-soft);color:var(--text);text-decoration:none}}
-.sidebar>.nav-sec a.is-active{background:var(--bg-soft);color:var(--text);text-decoration:none}
+@media (hover:hover){.sidebar>.nav-sec a:hover{background:var(--home-hov);color:var(--text);text-decoration:none}}
+.sidebar>.nav-sec a.is-active{background:var(--home-sel);color:var(--text);text-decoration:none}
 .sidebar>.nav-sec a.is-active{font-weight:700}
 @media (hover:none){
   /* one geometry for every filled shape in the menu, taken from the chevron's box (above): 1.5px clear of its row's top and bottom
@@ -909,7 +915,7 @@ a{color:var(--link);text-decoration:none}
 .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
 .toc a{display:block;padding:4px 12px;color:var(--muted);margin-left:-1px;border-left:2px solid transparent}
 .toc a{border-radius:0 6px 6px 0;transition:background-color .35s var(--soft)}
-@media (hover:hover){.toc a:hover{color:var(--text);text-decoration:none;background:var(--ch-hov,var(--bg-soft))}.toc:not([style]) a:hover{background:var(--bg-soft)}}
+@media (hover:hover){.toc a:hover{color:var(--text);text-decoration:none;background:var(--ch-hov,var(--bg-soft))}.toc:not([style]) a:hover{background:var(--home-hov)}}
 .toc a.is-active{color:var(--text);border-left-color:var(--text);font-weight:700}
 
 /* covers */
