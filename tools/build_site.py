@@ -928,7 +928,7 @@ a{color:var(--link);text-decoration:none}
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .hm-mark{width:49px;overflow:visible;stroke-width:1.25;transition:transform .5s var(--spring)}
 .hm-t{color:#fff;font-size:21px;font-weight:500;letter-spacing:.08em;line-height:1;text-transform:uppercase;transition:opacity .3s var(--soft) .15s,transform .5s var(--spring) .15s}
-/* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; the pointer holds it for as long as it is in the banner (script).
+/* the emblem's quote: .hm.is-q and keyboard focus swap the caption for it and the mark grows upward; a pointer on the mark shows it, the mark and the quote keep it (script).
    Everything that arrives moves on the mark's spring (.5s): the mark grows as a card lifts under the pointer, the quote rises --hm-rise into place and
    its attribution follows .075s behind it; the caption gives way upward and comes back down the same way. What leaves goes in .3s on the soft curve, and what
    arrives starts .15s later, so the two texts are never half-shown over each other */
@@ -1191,17 +1191,28 @@ JS = r"""
       cv.classList.toggle('is-min',narrow.matches&&t>0&&scrollY>t&&!cv.contains(document.activeElement))};
     var creq=function(){if(!craf)craf=requestAnimationFrame(cmin)};
     cmin();addEventListener('scroll',creq,{passive:true});narrow.addEventListener('change',cmin);cv.addEventListener('focusout',creq);cv.addEventListener('focusin',creq)}
-  // the Contents banner's emblem shows its quote (.hm.is-q) from the moment a mouse is on it until the mouse leaves the banner;
-  // keyboard focus shows it too (CSS), and only the keyboard gives that focus: a press on the emblem does not.
-  // Touch: a tap on the emblem shows the quote and the next tap hides it; a touch anywhere else and a scroll of the page hide it too
-  var hm=cv&&cv.querySelector('.hm'),hmOn={},hmTouch=false;
+  // the Contents banner's emblem shows its quote (.hm.is-q) while a mouse is on the mark itself: the drawn square of svg.hm-mark, grown or not.
+  // The mark and the quote keep it, with the strip between the two, so the pointer can reach the text; anywhere else it goes after HM_OUT.
+  // The zone is worked out from coordinates, not from :hover: the mark moves and grows under a pointer that stands still.
+  // Keyboard focus shows the quote too (CSS), and only the keyboard gives that focus: a press on the mark does not.
+  // Touch: a tap on the mark shows the quote and the next tap hides it; a tap on the quote keeps it; a touch anywhere else and a scroll of the page hide it
+  var hm=cv&&cv.querySelector('.hm'),hmMark=hm&&hm.querySelector('.hm-mark'),hmQ=hm&&hm.querySelector('.hm-q'),hmOn={},hmT=0,hmTouch=false,HM_OUT=200;
   function hmSet(k,v){hmOn[k]=v;hm.classList.toggle('is-q',!!(hmOn.over||hmOn.tap))}
-  if(hm){hm.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')hmSet('over',true)});
-    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmSet('over',false)});
+  function hmIn(x,y,r){return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
+  // 1: on the mark (where it is now, or where it rests: the top of .hm, centred); 2: on the shown quote or between it and the mark; 0: elsewhere
+  function hmAt(e){if(cv.classList.contains('is-min'))return 0;
+    var x=e.clientX,y=e.clientY,r=hmMark.getBoundingClientRect(),b=hm.getBoundingClientRect(),w=parseFloat(getComputedStyle(hmMark).width),l=b.left+(b.width-w)/2;
+    if(hmIn(x,y,r)||hmIn(x,y,{left:l,right:l+w,top:b.top,bottom:b.top+w}))return 1;
+    if(!hm.matches('.is-q,:focus-visible'))return 0;
+    var q=hmQ.getBoundingClientRect();return hmIn(x,y,{left:q.left,right:q.right,top:Math.min(q.top,r.bottom),bottom:q.bottom})?2:0}
+  function hmOut(){if(hmOn.over&&!hmT)hmT=setTimeout(function(){hmT=0;hmSet('over',false)},HM_OUT)}
+  if(hm){cv.addEventListener('pointermove',function(e){if(e.pointerType==='touch')return;var z=hmAt(e);
+      if(z===1||z===2&&hmOn.over){clearTimeout(hmT);hmT=0;if(!hmOn.over)hmSet('over',true)}else hmOut()});
+    cv.addEventListener('pointerleave',function(e){if(e.pointerType!=='touch')hmOut()});
     hm.addEventListener('mousedown',function(e){e.preventDefault()});
     hm.addEventListener('pointerdown',function(e){hmTouch=e.pointerType==='touch'});
-    hm.addEventListener('click',function(){if(hmTouch&&!cv.classList.contains('is-min'))hmSet('tap',!hmOn.tap)});
-    document.addEventListener('pointerdown',function(e){if(hmOn.tap&&!hm.contains(e.target))hmSet('tap',false)},true);
+    hm.addEventListener('click',function(e){if(hmTouch&&hmAt(e)===1)hmSet('tap',!hmOn.tap)});
+    document.addEventListener('pointerdown',function(e){if(hmOn.tap&&!(cv.contains(e.target)&&hmAt(e)))hmSet('tap',false)},true);
     addEventListener('scroll',function(){if(hmOn.tap)hmSet('tap',false)},{passive:true})}
   // enable transitions only after the first frames, so restored state does not animate
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.remove('preload')})});
