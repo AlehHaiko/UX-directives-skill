@@ -191,7 +191,7 @@
   var toc=document.querySelector('.toc');
   if(toc){var cueEl=null,cueY=0,cueT=0,acc=getComputedStyle(toc).getPropertyValue('--ch-accent').trim();
     // ring colour per theme: the chapter accent, darkened where the build found it below 3:1 on the page background
-    var mix={"#ee82ee":[10,0],"#3ee439":[20,0],"#00ffff":[28,0],"#ffa528":[15,0],"#fff500":[30,0],"#ffd596":[25,0],"#ffa500":[15,0],"#1ef58d":[24,0],"#28fff1":[28,0]}[acc];
+    var mix={"#ee82ee":[10,0],"#3ee439":[20,0],"#00ffff":[28,0],"#ffa528":[15,0],"#fff500":[30,0],"#ffd596":[25,0],"#58ccff":[18,0],"#1ef58d":[24,0],"#28fff1":[28,0]}[acc];
     if(mix)['--cue-l','--cue-d'].forEach(function(k,i){if(mix[i]!==null)root.style.setProperty(k,mix[i]?'color-mix(in oklab,'+acc+',#000 '+mix[i]+'%)':acc)});
     var cueNow=function(){clearTimeout(cueT);removeEventListener('scroll',cueWait);removeEventListener('scrollend',cueEnd);
       var el=cueEl;cueEl=null;if(!el)return;el.classList.remove('cue');

@@ -36,7 +36,7 @@ PALETTE = {
     4: ("#2a040e", "#611c31", 0.1, "#ffe1c3", "#ffa528", "#d9730d"),
     5: ("#110c33", "#2c4597", 0.1, "#e1ebea", "#fff500", "#cb912f"),  # accent was #e7fb0b (lime); pure yellow, same contrast class
     6: ("#151627", "#373b55", 0.2, "#e1dee5", "#ffd596", "#9f6b53"),
-    7: ("#192125", "#343e41", 0.4, "#e8e9e5", "#ffa500", "#d9730d"),
+    7: ("#192125", "#343e41", 0.4, "#e8e9e5", "#58ccff", "#d9730d"),  # accent was #ffa500 (orange, 2° of hue from chapter 4); azure, OKLCH hue 230
     8: ("#1b1831", "#4a4378", 0.2, "#e7e6ef", "#1ef58d", "#448361"),
     9: ("#241d1c", "#3f3632", 0.4, "#fbead9", "#28fff1", "#337ea9"),
 }
