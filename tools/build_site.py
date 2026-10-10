@@ -243,8 +243,8 @@ TINT_TARGETS = {  # (background, contrast, max chroma)
 TINT_OVERRIDES = {5: {"sel-l": ("#ffffff", 1.20, .16), "hov-l": ("#ffffff", 1.10, .12), "live-l": ("#ffffff", 1.30, .20), "deep-l": ("#ffffff", 1.40, .24)}}
 TINTS = {n: {k: tint(v[4], *TINT_OVERRIDES.get(n, {}).get(k, t)) for k, t in TINT_TARGETS.items()}
          for n, v in PALETTE.items()}
-# Contents has no chapter: its current item and its hover take the same tints from the home banner's blue (.cover-home).
-HOME_TINTS = {k: tint("#1829c4", *TINT_TARGETS[k]) for k in ("sel-l", "hov-l", "sel-d", "hov-d")}
+# Contents has no chapter: its current item and its hover take the same tints from a sky blue, #8dc2fe (OKLCH hue 252; the banner's own #1829c4 is hue 267).
+HOME_TINTS = {k: tint("#8dc2fe", *TINT_TARGETS[k]) for k in ("sel-l", "hov-l", "sel-d", "hov-d")}
 
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
