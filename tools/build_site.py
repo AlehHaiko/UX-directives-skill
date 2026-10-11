@@ -1129,10 +1129,12 @@ section>h2.dh.is-stuck::after{opacity:1}
 .dir.repealed .dir-body{color:var(--muted);margin:0}
 
 /* pager */
-.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:48px;padding-top:8px}
-.pg{display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-radius:10px;color:var(--text);transition:background-color .35s var(--soft),transform .6s var(--spring)}
+/* one row at every width. The texts stand on the text column's edges: each half's box reaches past its outer edge by its own side padding (--pg-x), as the menu rows do */
+.pager{--pg-x:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:48px;padding-top:8px}
+.pg{display:flex;flex-direction:column;gap:4px;min-width:0;padding:12px var(--pg-x);border-radius:10px;color:var(--text);transition:background-color .35s var(--soft),transform .6s var(--spring)}
 @media (hover:hover){.pg:not(.empty):hover{text-decoration:none;background:var(--ch-hov);transform:translateY(-4px) scale(1.02)}}
-.pg.next{text-align:right;align-items:flex-end}
+.pg.prev{margin-left:calc(-1*var(--pg-x))}
+.pg.next{margin-right:calc(-1*var(--pg-x));text-align:right;align-items:flex-end}
 .pg-dir{font-size:12px;color:var(--muted)}
 .pg-ar{display:inline-block;transition:transform .5s var(--spring)}
 @media (hover:hover){.pg.prev:hover .pg-ar{transform:translateX(-4px)}.pg.next:hover .pg-ar{transform:translateX(4px)}}
@@ -1232,8 +1234,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
   .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
-  .pager{grid-template-columns:1fr}
-  .pg.next{text-align:left;align-items:flex-start}
+  .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
 }
 /* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text.
    Touch target: the link takes taps 4px beyond its 36px box on every side, 44x44; the drawn emblem and the focus ring keep their size */
