@@ -566,10 +566,15 @@ BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'
 # no dot between the groups, the hidden comma stays, so the text read does not change
 SR = '<span class="r-sr">, </span>'
 FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source")]
-FOOT_R = [(f"{REPO}/discussions", "Feedback"), ("https://github.com/sponsors/AlehHaiko", "Sponsor")]
+# The two signs of the right group, drawn on a 12 grid at the header icons' 1.5px (search, theme, menu, cross), round ends and joints:
+# a speech bubble for Feedback, the heart of GitHub Sponsors for Sponsor. Outlines in the link's own colour, inside the link
+ICON_TALK = ('<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.75 1.5h6.5a1.25 1.25 0 0 1 1.25 1.25v4.25'
+             'a1.25 1.25 0 0 1-1.25 1.25H6.25L3.75 10.5V8.25H2.75A1.25 1.25 0 0 1 1.5 7V2.75A1.25 1.25 0 0 1 2.75 1.5z"/></svg>')
+ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.25L2.3 6.6A2.6 2.6 0 0 1 6 2.95a2.6 2.6 0 0 1 3.7 3.65z"/></svg>'
+FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK), ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART)]
 FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 {AUTHOR}</span>'
           + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_L) + '</span><span class="foot-g">'
-          + "".join(f'<span class="foot-i">{BUL if n else SR}<a href="{h}">{t}</a></span>' for n, (h, t) in enumerate(FOOT_R))
+          + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il" href="{h}">{ic}{t}</a></span>' for n, (h, t, ic) in enumerate(FOOT_R))
           + '</span></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
@@ -1055,6 +1060,9 @@ a{color:var(--link);text-decoration:none}
 .foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
+/* a sign before its word, inside the link: 12px, 4px from the word, so its ink stands 4.75px off, as the pager's arrow from "Previous" (4.72px) */
+.foot-il{display:inline-flex;align-items:center;gap:4px}
+.foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}

@@ -376,6 +376,9 @@ a{color:var(--link);text-decoration:none}
 .foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
+/* a sign before its word, inside the link: 12px, 4px from the word, so its ink stands 4.75px off, as the pager's arrow from "Previous" (4.72px) */
+.foot-il{display:inline-flex;align-items:center;gap:4px}
+.foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
