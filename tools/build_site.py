@@ -562,7 +562,8 @@ def render_home(chapters, front):
 REPO = "https://github.com/AlehHaiko/UX-directives-skill"
 BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'  # read, not shown: a comma in the dot's place, as in the Recent heading
 FOOTER = (f'<footer class="foot"><p class="foot-in"><span>© 2026 {AUTHOR}</span>{BUL}'
-          f'<a href="{REPO}/blob/main/LICENSE">MIT License</a>{BUL}<a href="{REPO}">Source</a></p></footer>')
+          f'<a href="{REPO}/blob/main/LICENSE">MIT License</a>{BUL}<a href="{REPO}">Source</a>{BUL}'
+          f'<a href="{REPO}/discussions">Feedback</a>{BUL}<a href="https://github.com/sponsors/AlehHaiko">Sponsor</a></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
