@@ -561,9 +561,11 @@ def render_home(chapters, front):
 # It closes .shell after the "On this page" list, so its two links are the page's last Tab stops; the dots are the chip's drawn ones.
 REPO = "https://github.com/AlehHaiko/UX-directives-skill"
 BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'  # read, not shown: a comma in the dot's place, as in the Recent heading
-FOOTER = (f'<footer class="foot"><p class="foot-in"><span>© 2026 {AUTHOR}</span>{BUL}'
-          f'<a href="{REPO}/blob/main/LICENSE">MIT License</a>{BUL}<a href="{REPO}">Source</a>{BUL}'
-          f'<a href="{REPO}/discussions">Feedback</a>{BUL}<a href="https://github.com/sponsors/AlehHaiko">Sponsor</a></p></footer>')
+# a dot travels with the link it precedes: the pair does not break, the line wraps only before a dot
+FOOT_LINKS = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source"), (f"{REPO}/discussions", "Feedback"),
+              ("https://github.com/sponsors/AlehHaiko", "Sponsor")]
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span>© 2026 {AUTHOR}</span>'
+          + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_LINKS) + '</p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
@@ -1045,6 +1047,7 @@ a{color:var(--link);text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .foot{--ph:#9b9b99}}:root[data-theme="dark"] .foot{--ph:#9b9b99}
 .foot-in{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
 @media (min-width:861px){.side-hidden .foot-in{margin-left:max(0px,calc(100% - var(--measure)))}}
+.foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
