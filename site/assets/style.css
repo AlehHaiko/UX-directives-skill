@@ -371,8 +371,9 @@ a{color:var(--link);text-decoration:none}
 .shell{grid-template-rows:1fr auto}.sidebar{grid-column:1;grid-row:1/span 2}.toc{grid-column:3;grid-row:1/span 2}
 .foot{grid-column:2;grid-row:2;min-width:0;padding:0 clamp(16px,3vw,40px) 40px;color:var(--ph,#6b6b6b)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .foot{--ph:#9b9b99}}:root[data-theme="dark"] .foot{--ph:#9b9b99}
-.foot-in{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
+.foot-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
 @media (min-width:861px){.side-hidden .foot-in{margin-left:max(0px,calc(100% - var(--measure)))}}
+.foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
@@ -564,6 +565,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
   .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
+  .foot-in{row-gap:28px}  /* the groups' lines stand 44.5px apart, so the touch targets of one line do not reach into the other's */
   .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
 }
 /* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text.

@@ -561,11 +561,16 @@ def render_home(chapters, front):
 # It closes .shell after the "On this page" list, so its two links are the page's last Tab stops; the dots are the chip's drawn ones.
 REPO = "https://github.com/AlehHaiko/UX-directives-skill"
 BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'  # read, not shown: a comma in the dot's place, as in the Recent heading
-# a dot travels with the link it precedes: the pair does not break, the line wraps only before a dot
-FOOT_LINKS = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source"), (f"{REPO}/discussions", "Feedback"),
-              ("https://github.com/sponsors/AlehHaiko", "Sponsor")]
-FOOTER = (f'<footer class="foot"><p class="foot-in"><span>© 2026 {AUTHOR}</span>'
-          + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_LINKS) + '</p></footer>')
+# a dot travels with the link it precedes: the pair does not break, a group wraps only before a dot.
+# Two groups: the book's own lines at the column's left edge, the reader's two ways to answer at its right;
+# no dot between the groups, the hidden comma stays, so the text read does not change
+SR = '<span class="r-sr">, </span>'
+FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source")]
+FOOT_R = [(f"{REPO}/discussions", "Feedback"), ("https://github.com/sponsors/AlehHaiko", "Sponsor")]
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 {AUTHOR}</span>'
+          + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_L) + '</span><span class="foot-g">'
+          + "".join(f'<span class="foot-i">{BUL if n else SR}<a href="{h}">{t}</a></span>' for n, (h, t) in enumerate(FOOT_R))
+          + '</span></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
@@ -1045,8 +1050,9 @@ a{color:var(--link);text-decoration:none}
 .shell{grid-template-rows:1fr auto}.sidebar{grid-column:1;grid-row:1/span 2}.toc{grid-column:3;grid-row:1/span 2}
 .foot{grid-column:2;grid-row:2;min-width:0;padding:0 clamp(16px,3vw,40px) 40px;color:var(--ph,#6b6b6b)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .foot{--ph:#9b9b99}}:root[data-theme="dark"] .foot{--ph:#9b9b99}
-.foot-in{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
+.foot-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 6px;max-width:var(--measure);margin:0 auto 0 max(0px,calc((100% - var(--measure)) / 2));padding-top:16px;border-top:1px solid var(--line);font-size:11px;line-height:1.5;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
 @media (min-width:861px){.side-hidden .foot-in{margin-left:max(0px,calc(100% - var(--measure)))}}
+.foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
@@ -1238,6 +1244,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
   .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
+  .foot-in{row-gap:28px}  /* the groups' lines stand 44.5px apart, so the touch targets of one line do not reach into the other's */
   .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
 }
 /* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text.
