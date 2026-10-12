@@ -3,7 +3,7 @@
 This repository holds *The Blue Book of UX Directives* by Aleh Haiko in two forms:
 
 - `ux-directives/` — a Claude skill: `SKILL.md` plus the full book in `references/` (`index.md`, `chapter_1.md` … `chapter_9.md`).
-- `site/` — the book as a static website, published by Vercel at https://lab.alehhaiko.com on every push to `main`.
+- `site/` — the book as a static website, read at https://alehhaiko.com/ux/. Vercel publishes it on every push to `main` at https://ux-directives.vercel.app, and the portfolio site proxies `/ux/` to that address. `vercel.json` holds redirects only: every path on the old host `lab.alehhaiko.com` goes to the same path under https://alehhaiko.com/ux/ (308).
 
 `ux-directives.skill` is a zip of `ux-directives/` for installing the skill in Claude.
 
@@ -20,6 +20,8 @@ Rebuild from the repository root (Python 3, no dependencies):
 ```
 python3 tools/build_site.py
 ```
+
+This is the normal build: it is made for `/ux/` (`--base` defaults to `/ux/`). Pages link to each other relatively, so the base shows in one place only, `<base href="/ux/">` in `404.html`; every page but `404.html` carries `<link rel="canonical">` with its address under https://alehhaiko.com/ux/. `--base PATH` builds for another path.
 
 `--out PATH` writes the complete site (pages, assets and copies of the favicons) to another folder instead of `site/`; it combines with `--base` and refuses a non-empty folder that has no `index.html`.
 
@@ -48,17 +50,17 @@ Healthy output: `Built 72 pages: 1 home, 9 chapters, 62 subcategories; 555 direc
 **Link check (every pass, with the quick check).** From the repository root:
 
 ```
-python3 tools/check_links.py
+python3 tools/check_links.py --base /ux/
 ```
 
 Healthy output, two lines:
 
 ```
-pages 73, local links checked 8252, missing 0, anchors checked 1990, anchors missing 0, external skipped 293
+pages 73, local links checked 8252, missing 0, anchors checked 1990, anchors missing 0, external skipped 365
 index links checked 617, missing 0, anchors checked 555, anchors missing 0
 ```
 
-The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched. For a build made with `--base /ux/ --out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
+The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched; the 72 canonical links are among them. `--base /ux/` is the base `site/` is built for: without the flag the links of `404.html` are reported missing (82). For a build made with `--out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
 
 **Local preview.** `file://` loads pages without CSS and JS, so serve the folder:
 
@@ -66,7 +68,7 @@ The first line covers every `href` and `src` in the HTML pages, the second every
 python3 -m http.server 8000 -d site
 ```
 
-Open `http://localhost:8000/`. Check at 360px wide and at desktop width, in light and dark themes.
+Open `http://localhost:8000/`. Check at 360px wide and at desktop width, in light and dark themes. `404.html` resolves its links under `/ux/`, so served this way, from the root, it has no styles; to see it, serve the folder under `/ux/`.
 
 **Review by the owner (the "ready for check" step).** Push the branch. Vercel builds a preview for every branch except `main`:
 
@@ -74,9 +76,9 @@ Open `http://localhost:8000/`. Check at 360px wide and at desktop width, in ligh
 https://ux-directives-git-<branch>-alehhaiko-6562s-projects.vercel.app/
 ```
 
-Previews require being signed in to Vercel. The fingerprint is the short hash of the branch's last commit (`git rev-parse --short HEAD`); report it with "Ready for check".
+Previews require being signed in to Vercel. A preview serves the site from its root, so its 404 page has no styles; that is expected. The fingerprint is the short hash of the branch's last commit (`git rev-parse --short HEAD`); report it with "Ready for check".
 
-**Release.** After the owner's go, fast-forward `main` to the branch and push. Vercel publishes `main` to https://lab.alehhaiko.com within a minute.
+**Release.** After the owner's go, fast-forward `main` to the branch and push. Vercel publishes `main` within a minute; the book is then at https://alehhaiko.com/ux/.
 
 **Commits.** Use the owner's time zone: `TZ=America/Los_Angeles git commit ...`.
 
