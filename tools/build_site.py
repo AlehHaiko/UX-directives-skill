@@ -294,6 +294,9 @@ NAV_RESTORE = ("(function(){var st={},y=null,sb=document.getElementById('sidebar
                "if(c&&c.offsetTop>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2;}})();")
 
 
+CANONICAL = "https://alehhaiko.com/ux/"  # where the book is read; an absolute URL, so no --base changes it
+
+
 def norm_base(path):
     """The site's base path with one leading and one trailing slash: "" and "/" give "/", "book" gives "/book/"."""
     path = path.strip().strip("/")
@@ -304,6 +307,8 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
     # Pages link to each other relatively and need no <base>. base_href is for a page served at any URL depth.
     base_tag = f'<base href="{esc(base_href)}">\n' if base_href else ""
     robots = '<meta name="robots" content="noindex">\n' if noindex else ""
+    # every page of the book names its one address; 404.html (noindex) names none
+    canon = "" if noindex else f'<link rel="canonical" href="{CANONICAL}{"" if current_file == "index.html" else current_file}">\n'
     # nav_sec: the page's "On this page" items, repeated under the current menu item where that list is hidden (style.css, .nav-sec)
     # a chapter page's go under the chapter row, inside the element the chevron folds; the home page's under "Contents"
     sec = f'<ol class="nav-sec">{nav_sec}</ol>' if nav_sec else ""
@@ -338,7 +343,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 {base_tag}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc or BOOK_SUBTITLE)}">
-{robots}<link rel="icon" href="assets/favicon.ico" sizes="any">
+{canon}{robots}<link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
