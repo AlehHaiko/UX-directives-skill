@@ -3,7 +3,7 @@
 This repository holds *The Blue Book of UX Directives* by Aleh Haiko in two forms:
 
 - `ux-directives/` — a Claude skill: `SKILL.md` plus the full book in `references/` (`index.md`, `chapter_1.md` … `chapter_9.md`).
-- `site/` — the book as a static website, read at https://alehhaiko.com/ux/. Vercel publishes it on every push to `main` at https://ux-directives.vercel.app, and the portfolio site proxies `/ux/` to that address. `vercel.json` holds redirects only: every path on the old host `lab.alehhaiko.com` goes to the same path under https://alehhaiko.com/ux/ (308).
+- `site/` — the book as a static website, read at https://alehhaiko.com/ux/. Vercel publishes it on every push to `main` at https://ux-directives.vercel.app, and the portfolio site proxies `/ux/` to that address. `site/vercel.json` (the Vercel project's Root Directory is `site`, so a `vercel.json` at the repository root is never read) holds redirects only: every path on the old host `lab.alehhaiko.com` goes to the same path under https://alehhaiko.com/ux/ (308).
 
 `ux-directives.skill` is a zip of `ux-directives/` for installing the skill in Claude.
 
@@ -13,7 +13,7 @@ The Markdown in `ux-directives/references/` is the only source of the book's tex
 
 - To change the book, edit the Markdown, then rebuild the site.
 - To change the website's layout, styles or behavior, edit `tools/build_site.py` (templates, CSS and JS live in it), then rebuild.
-- Never edit files in `site/` by hand, except the static favicons in `site/assets/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`). The next build overwrites everything else.
+- Never edit files in `site/` by hand, except the static favicons in `site/assets/` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`) and `site/vercel.json`. The build does not write or remove these; it overwrites everything else.
 
 Rebuild from the repository root (Python 3, no dependencies):
 
