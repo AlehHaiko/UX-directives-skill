@@ -4,7 +4,7 @@
 Source of truth: ux-directives/references/*.md (the same files the skill uses).
 Run from the repository root:
     python3 tools/build_site.py [--base /path/] [--out PATH]
---base is the URL path the site is served from (default "/").
+--base is the URL path the site is served from (default "/ux/": the book is read at https://alehhaiko.com/ux/).
 --out is the folder the site is written to (default site/).
 Writes the HTML pages and 404.html to the output folder and refreshes its assets/. No dependencies.
 Favicons in site/assets/ are static files and are not touched; a build to another folder copies them there.
@@ -602,10 +602,10 @@ def render_404(chapters):
 
 # ---------------------------------------------------------------- build
 DIR_INDEX = {}
-BASE = "/"  # URL path the site is served from; set by --base
+BASE = "/ux/"  # URL path the site is served from; set by --base
 
 
-def main(base="/", out=None):
+def main(base=BASE, out=None):
     global BASE
     BASE = norm_base(base)
     HERE = Path(out).expanduser().resolve() if out else SITE
@@ -1785,8 +1785,8 @@ JS = r"""
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Build the static site for The Blue Book of UX Directives.")
-    ap.add_argument("--base", default="/", metavar="PATH",
-                    help='URL path the site is served from, for example "/book/" (default: "/")')
+    ap.add_argument("--base", default=BASE, metavar="PATH",
+                    help='URL path the site is served from, for example "/book/" (default: "/ux/")')
     ap.add_argument("--out", default=None, metavar="PATH",
                     help="folder the site is written to (default: site/)")
     args = ap.parse_args()
