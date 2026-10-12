@@ -2,7 +2,7 @@
 
 > A Claude skill that applies **The Blue Book of UX Directives** to design work: audits, design reviews, topic lookups, and requirements — every finding cited by directive ID.
 
-**Author: [Aleh Haiko](https://www.alehhaiko.com)** · **Read the book online: [lab.alehhaiko.com](https://lab.alehhaiko.com)**
+**Author: [Aleh Haiko](https://www.alehhaiko.com)** · **Read the book online: [alehhaiko.com/ux](https://alehhaiko.com/ux/)**
 
 ---
 
@@ -75,7 +75,7 @@ UX-directives-skill/
 │   └── references/
 │       ├── index.md           ← map: chapters, subcategories, general provisions
 │       └── chapter_1.md … chapter_9.md
-├── site/                      ← the book as a static website (lab.alehhaiko.com), generated
+├── site/                      ← the book as a static website (alehhaiko.com/ux/), generated
 ├── tools/
 │   └── build_site.py          ← builds site/ from ux-directives/references/
 ├── CLAUDE.md                  ← instructions for Claude Code in this repository
@@ -88,7 +88,7 @@ The previous version of the skill (a single `SKILL.md` that relied on project kn
 
 ## Website
 
-[lab.alehhaiko.com](https://lab.alehhaiko.com) is the book as a static website. Vercel publishes the `site/` folder on every push to `main`.
+[alehhaiko.com/ux](https://alehhaiko.com/ux/) is the book as a static website. Vercel publishes the `site/` folder on every push to `main`.
 
 `site/` is generated: do not edit its HTML, CSS or JS by hand. Change the book in `ux-directives/references/*.md` (or the page templates, styles and scripts in `tools/build_site.py`), then rebuild from the repository root:
 
