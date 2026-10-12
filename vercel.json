@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "lab.alehhaiko.com" }],
+      "destination": "https://alehhaiko.com/ux/:path*",
+      "permanent": true
+    }
+  ]
+}
