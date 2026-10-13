@@ -557,9 +557,10 @@ section>h2.dh.is-stuck::after{opacity:1}
 .sch-id .dir{margin-top:16px}
 /* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, its line at 2.5px; the other parts' lines step back.
    The pressed part alone has a 2px edge of the text's colour, so pressing and releasing each show, under the pointer too. The ring of the keyboard's focus stands outside that edge */
-.js .id-p{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+/* what can be pressed has an edge the static form has not: 1px, the chapter's deepest tint */
+.js .id-p{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 0 0 1px var(--ch-deep)}
 .id-p.on{background:var(--ch-sel)}
-.id-p[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--text)}
+.js .id-p[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--text)}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
