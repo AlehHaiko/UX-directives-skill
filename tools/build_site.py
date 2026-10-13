@@ -755,12 +755,41 @@ def roles_table():
             f'</tr></thead><tbody role="rowgroup">{rows}</tbody></table></div>')
 
 
+# Scheme 1, the anatomy of an ID. The ID stands large, in its three parts; from each part a line rises, turns and points at what the part means.
+# The lines are drawn in SVG over one grid: the part's cell is as wide as the numbers below say, so every x is known; only the rows' heights are not,
+# and the upright pieces stretch over them (preserveAspectRatio none, the stroke does not scale). The names are text and links, the directive is the book's card.
+# Without script it is whole. With it (app.js) a part is a button: pointed at, focused or pressed it lights its line and its name, and the arrow keys step through the parts
+ID_X = {"ch": (22, 44), "sub": (72, 94), "dir": (170, 192)}  # a part's centre and where its line ends, in px from the grid's left
+ID_SAMPLE = "76/02"
+
+
+def scheme_id(chapters):
+    ch = chapters[int(ID_SAMPLE[0]) - 1]
+    sub = next(x for x in ch["subs"] if x["num"] == int(ID_SAMPLE[1]))
+    d = next(x for x in sub["directives"] if x["id"] == ID_SAMPLE)
+    href = f'{sub["file"]}#{ID_SAMPLE.replace("/", "-")}'
+    names = [("ch", ID_SAMPLE[0], f'<a href="{ch["file"]}">Chapter {ch["n"]}, {esc(ch["title"])}</a>'),
+             ("sub", ID_SAMPLE[1], f'<a href="{sub["file"]}">Subcategory {sub["code"]}, {esc(sub["name"])}</a>'),
+             ("dir", ID_SAMPLE[3:], f'directive {int(ID_SAMPLE[3:])}')]
+    rows = "".join(f'<p class="id-l" data-p="{k}" id="id-l-{k}"><span class="sr">{n}: </span>{t}</p>' for k, n, t in names)
+    lines = "".join(
+        f'<svg class="id-c id-e" data-p="{k}" viewBox="0 0 200 24" aria-hidden="true"><path d="M{c} 24V16a4 4 0 0 1 4-4H{e}M{e - 5} 7.5l5 4.5-5 4.5"/></svg>'
+        f'<svg class="id-c id-v" data-p="{k}" viewBox="0 0 200 10" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M{c} 0V10"/></svg>'
+        for k, (c, e) in ID_X.items())
+    parts = "".join(f'<span class="id-p" data-p="{k}">{n}</span>' + ('<span class="id-s" aria-hidden="true">/</span>' if k == "sub" else "") for k, n, _ in names)
+    card = (f'<div class="dir"><p class="dir-meta"><a class="chip" href="{href}">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</a></p>'
+            f'<p class="dir-title">{inline(d["title"])}</p><p class="dir-body">{inline(d["body"])}</p></div>')
+    return (f'<figure class="sch sch-id" style="{chapter_vars(ch["n"])}" aria-labelledby="sch-id-t"><figcaption class="sch-t" id="sch-id-t">Anatomy of an ID</figcaption>'
+            f'<div class="id-g">{rows}{lines}<p class="id-n" role="group" aria-label="The parts of {ID_SAMPLE}">{parts}</p></div>{card}'
+            f'<p class="sch-n">Subcategory 9.10 uses three digits, <code>910/05</code>.</p></figure>')
+
+
 def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{inner}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
     parts = [
         f'<div class="hero"><h1>{SKILL_TITLE}</h1><p class="hero-s">{inline(SKILL_LEDE)}</p></div>',
-        sec(f'<p>{inline(SKILL_INTRO)}</p>'),
+        sec(f'<p>{inline(SKILL_INTRO)}</p>' + scheme_id(chapters)),
         sec(md_blocks(SKILL_CAN)),
         sec(md_blocks(SKILL_CANNOT)),
         sec(md_blocks(SKILL_INSTALL_1) + '<p id="in-code"><strong>Claude Code:</strong></p>' + code_block(SKILL_CLONE, "commands", "in-code")
@@ -1423,6 +1452,30 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:hover){.code-copy:hover{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
 .code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
 @media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
+/* a scheme: a figure in a hairline box, its name in the "On this page" heading's small capitals */
+.sch{margin:24px 0 8px;padding:20px;border:1px solid var(--line);border-radius:12px}
+.sch-t{margin:0 0 16px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.sch-n{margin:14px 0 0;font-size:13px}
+/* scheme 1. One grid: three rows of names, an 8px row, the ID. A name starts where its part's line ends (6px after the arrow), so the leftmost part has the top row, the names read in the ID's order and no line crosses a name.
+   Lines: the text's colour at 1.5px; the elbow is its row's first line (24px), the upright runs from under it to the ID. They take no pointer: the parts and the names do */
+.id-g{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto 8px auto;row-gap:4px}
+.id-l{grid-column:1;justify-self:start;margin:0;padding:0 6px;border-radius:6px;font-size:14px;line-height:24px;transition:background-color .2s var(--soft)}
+.id-l[data-p="ch"]{grid-row:1;margin-left:44px}.id-l[data-p="sub"]{grid-row:2;margin-left:94px}.id-l[data-p="dir"]{grid-row:3;margin-left:192px}
+.id-c{grid-column:1;width:200px;fill:none;stroke:var(--text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:opacity .2s var(--soft)}
+.id-e{height:24px;align-self:start}.id-v{height:auto;align-self:stretch;margin-top:24px;min-height:0}
+.id-e[data-p="ch"]{grid-row:1}.id-e[data-p="sub"]{grid-row:2}.id-e[data-p="dir"]{grid-row:3}
+.id-v[data-p="ch"]{grid-row:1/5}.id-v[data-p="sub"]{grid-row:2/5}.id-v[data-p="dir"]{grid-row:3/5}
+.id-n{grid-row:5;grid-column:1;display:flex;gap:6px;margin:0;font:600 48px/64px var(--mono)}
+.id-p{width:44px;text-align:center;border-radius:8px;background:var(--ch-hov);transition:background-color .2s var(--soft)}
+.id-p[data-p="dir"]{width:72px}.id-s{width:28px;text-align:center}
+.sch-id .dir{margin-top:16px}
+/* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, a 2px edge of the text's colour round the part, its line at 2.5px;
+   the other parts' lines step back. The ring of the keyboard's focus stands outside that edge */
+.js .id-p{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.id-p.on{background:var(--ch-sel);box-shadow:inset 0 0 0 2px var(--text)}
+.id-l.on{background:var(--ch-sel)}
+.id-c.on{stroke-width:2.5}
+.sch-id.has-on .id-c:not(.on){opacity:.3}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
@@ -1899,6 +1952,21 @@ JS = r"""
     function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
     b.addEventListener('click',function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.textContent).then(function(){done(true)},byHand);else byHand()})});
+  // scheme 1 (the skill's page): the parts of an ID. A part is a button, the three one Tab stop: the arrow keys, Home and End move between them.
+  // What is lit is the part under the pointer, else the focused one, else the pressed one (a click, a tap, Enter or Space press a part; the same again releases it).
+  // A name lights its part too, and a press on a name, off its link, presses the part. Lit: the part, its line and its name (style.css, .on)
+  var idg=document.querySelector('.sch-id');
+  if(idg){var idPs=[].slice.call(idg.querySelectorAll('.id-p')),idAll=[].slice.call(idg.querySelectorAll('[data-p]')),idPin=null,idHov=null,idFoc=null;
+    var idShow=function(){var k=idHov||idFoc||idPin;idg.classList.toggle('has-on',!!k);idAll.forEach(function(n){n.classList.toggle('on',n.dataset.p===k)})};
+    var idPress=function(k){idPin=idPin===k?null:k;idPs.forEach(function(p){p.setAttribute('aria-pressed',p.dataset.p===idPin)});idShow()};
+    var idGo=function(i){i=Math.max(0,Math.min(idPs.length-1,i));idPs.forEach(function(p,j){p.tabIndex=j===i?0:-1});idPs[i].focus()};
+    idPs.forEach(function(p,i){p.setAttribute('role','button');p.tabIndex=i?-1:0;p.setAttribute('aria-pressed','false');p.setAttribute('aria-describedby','id-l-'+p.dataset.p);
+      p.addEventListener('focus',function(){idFoc=p.dataset.p;idShow()});p.addEventListener('blur',function(){idFoc=null;idShow()});
+      p.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var k=e.key,to=k==='ArrowRight'||k==='ArrowDown'?i+1:k==='ArrowLeft'||k==='ArrowUp'?i-1:k==='Home'?0:k==='End'?idPs.length-1:null;
+        if(to!==null){e.preventDefault();idGo(to)}else if(k==='Enter'||k===' '){e.preventDefault();idPress(p.dataset.p)}})});
+    idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
+    idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
+    idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

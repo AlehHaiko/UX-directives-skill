@@ -313,6 +313,21 @@
     function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
     b.addEventListener('click',function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.textContent).then(function(){done(true)},byHand);else byHand()})});
+  // scheme 1 (the skill's page): the parts of an ID. A part is a button, the three one Tab stop: the arrow keys, Home and End move between them.
+  // What is lit is the part under the pointer, else the focused one, else the pressed one (a click, a tap, Enter or Space press a part; the same again releases it).
+  // A name lights its part too, and a press on a name, off its link, presses the part. Lit: the part, its line and its name (style.css, .on)
+  var idg=document.querySelector('.sch-id');
+  if(idg){var idPs=[].slice.call(idg.querySelectorAll('.id-p')),idAll=[].slice.call(idg.querySelectorAll('[data-p]')),idPin=null,idHov=null,idFoc=null;
+    var idShow=function(){var k=idHov||idFoc||idPin;idg.classList.toggle('has-on',!!k);idAll.forEach(function(n){n.classList.toggle('on',n.dataset.p===k)})};
+    var idPress=function(k){idPin=idPin===k?null:k;idPs.forEach(function(p){p.setAttribute('aria-pressed',p.dataset.p===idPin)});idShow()};
+    var idGo=function(i){i=Math.max(0,Math.min(idPs.length-1,i));idPs.forEach(function(p,j){p.tabIndex=j===i?0:-1});idPs[i].focus()};
+    idPs.forEach(function(p,i){p.setAttribute('role','button');p.tabIndex=i?-1:0;p.setAttribute('aria-pressed','false');p.setAttribute('aria-describedby','id-l-'+p.dataset.p);
+      p.addEventListener('focus',function(){idFoc=p.dataset.p;idShow()});p.addEventListener('blur',function(){idFoc=null;idShow()});
+      p.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var k=e.key,to=k==='ArrowRight'||k==='ArrowDown'?i+1:k==='ArrowLeft'||k==='ArrowUp'?i-1:k==='Home'?0:k==='End'?idPs.length-1:null;
+        if(to!==null){e.preventDefault();idGo(to)}else if(k==='Enter'||k===' '){e.preventDefault();idPress(p.dataset.p)}})});
+    idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
+    idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
+    idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
