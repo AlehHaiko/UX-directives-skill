@@ -836,20 +836,20 @@ def scheme_steps(chapters):
 
 
 def scheme_roles(chapters):
-    """Scheme 3, pick a role: the roles' table as one choice of eight. Role buttons (one radio group), a strip of the nine chapters in their own colours,
-    and the chosen role's row: why, the chapters it starts in (lit in the strip and named, as links) and what to start with. It is in the page hidden:
+    """Scheme 3, pick a role: the roles' table as one choice of eight. Role buttons (one radio group) and the chosen role's row: why, the chapters it starts in
+    (a strip of the nine chapters, the role's lit in their own colours, and under it their names, as links) and what to start with. It is in the page hidden:
     app.js shows it and hides the table, which says the same and is the form without script."""
     btns = "".join(f'<button class="sch-btn" type="button" role="radio" aria-checked="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}">{esc(r)}</button>'
                    for i, (r, _, _, _) in enumerate(SKILL_ROLES))
-    strip = "".join(f'<span class="rl-c" style="{chapter_vars(c["n"])}">{c["n"]}</span>' for c in chapters)
     rows = ""
     for i, (r, why, start, chs) in enumerate(SKILL_ROLES):
         names = "".join(f'<li><a href="{c["file"]}"><span class="mono">{c["n"]}.</span> {esc(c["title"])}</a></li>' for c in chapters if c["n"] in chs)
+        strip = "".join(f'<span class="rl-c{" lit" if c["n"] in chs else ""}" style="{chapter_vars(c["n"])}">{c["n"]}</span>' for c in chapters)
         first = "".join(f"<li>{inline(x)}</li>" for x in start.split(" · "))
-        rows += (f'<div class="rl-i" data-ch="{" ".join(map(str, chs))}"{"" if i == 0 else " hidden"}><p class="rl-k">Why</p><p>{inline(why)}</p>'
-                 f'<p class="rl-k">Chapters</p><ul>{names}</ul><p class="rl-k">Start with</p><ul>{first}</ul></div>')
+        rows += (f'<div class="rl-i"{"" if i == 0 else " hidden"}><p class="rl-k">Why</p><p>{inline(why)}</p>'
+                 f'<p class="rl-k">Chapters</p><div class="rl-ch" aria-hidden="true">{strip}</div><ul>{names}</ul><p class="rl-k">Start with</p><ul>{first}</ul></div>')
     return (f'<figure class="sch sch-rl" aria-labelledby="sch-rl-t" hidden><figcaption class="sch-t" id="sch-rl-t">Pick a role</figcaption>'
-            f'<div class="rl-g" role="radiogroup" aria-labelledby="sch-rl-t">{btns}</div><div class="rl-ch" aria-hidden="true">{strip}</div>{rows}</figure>')
+            f'<div class="rl-g" role="radiogroup" aria-labelledby="sch-rl-t">{btns}</div>{rows}</figure>')
 
 
 def render_skill(chapters):
@@ -1601,12 +1601,12 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* a choice changes its ground and its text at once: a ground that faded under a text that had already changed would hide the word for the fade's length */
 .sch-btn[role="radio"]{transition:none}
 .sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
-.rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 0}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
+.rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
 .rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono)}
 .rl-c.lit{background:var(--ch-dark);border-color:var(--ch-dark);color:var(--ch-accent)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rl-c.lit{border-color:var(--ch-accent)}}
 :root[data-theme="dark"] .rl-c.lit{border-color:var(--ch-accent)}
-.rl-i{font-size:14px;line-height:1.5}
+.rl-i{margin-top:4px;font-size:14px;line-height:1.5}
 .rl-i p{margin:0}.rl-i .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .rl-i ul{list-style:none;margin:0;padding:0}.rl-i li+li{margin-top:2px}
 /* a finger's targets: the links of a list stand in rows of 44px, and a row's link takes taps over the whole row */
@@ -2122,11 +2122,11 @@ JS = r"""
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
   // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
-  // The chosen role's row shows, its chapters are lit in the strip. The table says the same for a page without script: here it is hidden
+  // The chosen role's row shows, with its chapters lit in its strip. The table says the same for a page without script: here it is hidden
   var rlg=document.querySelector('.sch-rl');
-  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlC=[].slice.call(rlg.querySelectorAll('.rl-c')),rlT=document.querySelector('.tbl');
-    var rlSet=function(i,go){var on=rlI[i].dataset.ch.split(' ');rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
-      rlI.forEach(function(r,j){if(j===i)r.removeAttribute('hidden');else r.setAttribute('hidden','until-found')});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
+  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlT=document.querySelector('.tbl');
+    var rlSet=function(i,go){rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
+      rlI.forEach(function(r,j){if(j===i)r.removeAttribute('hidden');else r.setAttribute('hidden','until-found')});if(go)rlB[i].focus()};
     rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
       b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
         to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
