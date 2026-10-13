@@ -1186,7 +1186,9 @@ a{color:var(--link);text-decoration:none}
 /* the row after the chapters: "Skill for Claude", under a rule. The Contents row's box, its tints and its current look; no button beside it, so it is as wide as the menu */
 /* it is the one way to the page, so it does not scroll away with the chapters: it stands at the menu's lower edge (sticky) on the menu's ground, its rule over it,
    and takes its place under the last chapter when the list is scrolled to its end */
-.nav-x{display:flex;position:sticky;bottom:0;z-index:1;margin:8px 0 6px;padding:8px 0;border-top:1px solid var(--line);background:var(--bg)}
+/* a sticky box stops at the menu's padding (40px at its foot), and the chapters would show in that strip under the row: the row is let down by those 40px,
+   to the menu's very edge, and keeps 16px of its own under the pill */
+.nav-x{display:flex;position:sticky;bottom:-40px;z-index:1;margin:8px 0 6px;padding:8px 0 16px;border-top:1px solid var(--line);background:var(--bg)}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 /* every chapter number takes the room of the widest ("4.", 14px at 600): the titles start on one vertical, and so do the subcategory numbers under them */
