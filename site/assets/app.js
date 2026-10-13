@@ -296,8 +296,9 @@
       if(consent==='granted')ahGa();
       focusTarget(document.getElementById('main'));consentHint();consentSay()});
     cx.addEventListener('click',consentClose);
-    // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
-    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
+    // Escape closes the bar that the cross can close, last of three: the open drawer takes the key first, then the search (its list, its text, its focus:
+    // every Escape pressed in it). The key is read on its way down, before the drawer's and the field's own handlers change what it is asked about
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open')&&!(e.target.closest&&e.target.closest('.search')))consentClose()},true);
     if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
     if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
     try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}

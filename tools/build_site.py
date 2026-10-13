@@ -822,7 +822,7 @@ a{color:var(--link);text-decoration:none}
 @media (hover:hover){.search-x:hover::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
 /* the focus ring goes around the 26px square, inside the field */
 .search-x:focus-visible{outline:none}.search-x:focus-visible::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep);outline:2px solid var(--link);outline-offset:2px}
-.results{position:absolute;top:42px;left:0;right:0;max-height:70vh;overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.results{position:absolute;top:42px;left:0;right:0;max-height:min(70vh,calc(100vh - var(--top) - var(--consent-h,0px) - 4px));overflow:auto;overscroll-behavior:contain;margin:0;padding:8px;list-style:none;display:grid;gap:6px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .results li a{display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);line-height:1.35}
 /* a Recent tile keeps its hover tint while the pointer or the focus is on its own button */
 @media (hover:hover){.results li a:hover,.results li:has(.r-x:hover) a{background:var(--ch-hov,var(--bg));border-color:var(--ch-sel,var(--line));text-decoration:none}}
@@ -919,7 +919,7 @@ a{color:var(--link);text-decoration:none}
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
 .sidebar{width:var(--side);transition:transform .45s var(--soft),opacity .3s var(--soft),visibility 0s}
 @media (min-width:861px){.side-hidden .shell{--side-w:0px}.side-hidden .sidebar{transform:translateX(-100%);opacity:0;visibility:hidden;transition:transform .45s var(--soft),opacity .3s var(--soft),visibility 0s .45s}}
-.sidebar{position:sticky;top:calc(var(--top) + var(--cover-h));height:calc(100vh - var(--top) - var(--cover-h));overflow:auto;scrollbar-gutter:stable;padding:36px 12px 40px 20px;font-size:14px;scrollbar-width:thin;scrollbar-color:transparent transparent}
+.sidebar{position:sticky;top:calc(var(--top) + var(--cover-h));height:calc(100vh - var(--top) - var(--cover-h) - var(--consent-h,0px));overflow:auto;scrollbar-gutter:stable;padding:36px 12px 40px 20px;font-size:14px;scrollbar-width:thin;scrollbar-color:transparent transparent}
 .sidebar.is-scrolling{scrollbar-color:color-mix(in srgb,var(--text) 40%,transparent) transparent}
 .sidebar::-webkit-scrollbar{width:8px}.sidebar::-webkit-scrollbar-track{background:transparent}
 .sidebar::-webkit-scrollbar-thumb{background:transparent;border-radius:8px}
@@ -1028,7 +1028,7 @@ a{color:var(--link);text-decoration:none}
 .main{--pad:clamp(16px,3vw,40px);min-width:0;padding:28px var(--pad) 80px}
 .main>*{max-width:var(--measure);margin-left:max(0px,calc((100% - var(--measure)) / 2));margin-right:auto;transition:max-width .45s var(--soft),margin-left .45s var(--soft)}
 @media (min-width:861px){.side-hidden{--measure:900px}.side-hidden .main>*{margin-left:max(0px,calc(100% - var(--measure)))}}
-.toc{position:sticky;top:calc(var(--top) + var(--cover-h));height:calc(100vh - var(--top) - var(--cover-h));overflow:auto;padding:44px 16px 28px;font-size:13px}
+.toc{position:sticky;top:calc(var(--top) + var(--cover-h));height:calc(100vh - var(--top) - var(--cover-h) - var(--consent-h,0px));overflow:auto;padding:44px 16px 28px;font-size:13px}
 .toc-h{margin:0 0 8px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:11px}
 .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
 .toc a{display:block;padding:4px 12px;color:var(--muted);margin-left:-1px;border-left:2px solid transparent}
@@ -1324,6 +1324,9 @@ section>h2.dh.is-stuck::after{opacity:1}
 .consent,.consent-btn{-webkit-user-select:text;user-select:text}
 .consent-x{-webkit-user-select:none;user-select:none}
 body{padding-bottom:var(--consent-h,0px)}
+/* nothing stands under the shown bar: the menu and the "On this page" list end at its top (their heights above), the search results end 8px over it
+   (16px on a narrow screen, as over the window's edge), and what the keyboard focuses is scrolled clear of it */
+html{scroll-padding-bottom:var(--consent-h,0px)}
 
 /* responsive */
 @media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}.nav-sec{display:block}}
@@ -1367,7 +1370,7 @@ body{padding-bottom:var(--consent-h,0px)}
   .search-x{width:44px;height:44px}.search-x::before{inset:9px}
   /* the list leaves the field's column: under the header, the screen's width less 16px gutters, as tall as the screen allows.
      Fixed resolves against the viewport: the header sticks at 0, so the list starts 6px under it */
-  .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
+  .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - var(--consent-h,0px) - 22px);max-height:calc(100dvh - var(--top) - var(--consent-h,0px) - 22px)}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
   .foot a,.foot-b{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
@@ -1690,8 +1693,9 @@ JS = r"""
       if(consent==='granted')ahGa();
       focusTarget(document.getElementById('main'));consentHint();consentSay()});
     cx.addEventListener('click',consentClose);
-    // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
-    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
+    // Escape closes the bar that the cross can close, last of three: the open drawer takes the key first, then the search (its list, its text, its focus:
+    // every Escape pressed in it). The key is read on its way down, before the drawer's and the field's own handlers change what it is asked about
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open')&&!(e.target.closest&&e.target.closest('.search')))consentClose()},true);
     if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
     if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
     try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}
