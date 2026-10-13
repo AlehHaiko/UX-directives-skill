@@ -1570,7 +1570,7 @@ section>h2.dh.is-stuck::after{opacity:1}
    The buttons are the consent bar's text button; one that has nowhere to go is faint and takes no hover. The step's own ring and its line down are not drawn: the rail has them */
 .st-bar{margin-bottom:16px}
 .st-rail{display:flex;align-items:center;list-style:none;margin:0 0 14px;padding:0}
-.st-dot{flex:none;transition:opacity .2s var(--soft),background-color .2s var(--soft)}
+.st-dot{flex:none;transition:opacity .2s var(--soft)}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
 .st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
 .st-ln .st-lv{position:absolute;left:4px;top:0;width:calc(100% - 8px);height:12px}.st-ln .st-la{position:absolute;right:3px;top:0;width:8px;height:12px}
@@ -1592,9 +1592,11 @@ section>h2.dh.is-stuck::after{opacity:1}
    Under it the role's row of the table, each cell under its column's name in the table's small capitals */
 .sch-rl{margin-top:12px}
 .rl-g{display:flex;flex-wrap:wrap;gap:8px}
+/* a choice changes its ground and its text at once: a ground that faded under a text that had already changed would hide the word for the fade's length */
+.sch-btn[role="radio"]{transition:none}
 .sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
 .rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 0}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
-.rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono);transition:background-color .2s var(--soft),color .2s var(--soft),border-color .2s var(--soft)}
+.rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono)}
 .rl-c.lit{background:var(--ch-dark);border-color:var(--ch-dark);color:var(--ch-accent)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rl-c.lit{border-color:var(--ch-accent)}}
 :root[data-theme="dark"] .rl-c.lit{border-color:var(--ch-accent)}
