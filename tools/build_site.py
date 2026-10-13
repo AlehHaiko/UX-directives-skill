@@ -1548,7 +1548,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* scheme 2. A step: its number in a ring, its name beside it, under the name the fragment in a box on the soft ground, the file it comes from over it in small type.
    Under the ring a line runs down to the next step's ring and ends in an arrowhead */
 .st-list{list-style:none;margin:0;padding:0}
-.st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}.st-i[hidden]{display:none}
+.st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}
 .st-num,.st-dot{display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--text);border-radius:50%;font:600 13px/1 var(--mono)}
 .st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}
 .st-b{grid-column:2;min-width:0;padding:6px 0 18px}.st-i:last-child .st-b{padding-bottom:0}
@@ -1581,7 +1581,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
-.sch-st.is-js .st-i{display:block}.sch-st.is-js .st-i[hidden]{display:none}
+/* a step that is not shown is folded as the menu's lists are (hidden="until-found"): it takes no room, and find-in-page still reaches its text and opens it (app.js) */
+.sch-st.is-js .st-i{display:block}
 .sch-st.is-js .st-num,.sch-st.is-js .st-dn{display:none}
 .sch-st.is-js .st-b{padding-bottom:0}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
@@ -1763,7 +1764,9 @@ html{scroll-padding-bottom:var(--consent-h,0px)}
   .hm .hm-t,.hm .hm-q{transition:opacity .15s linear!important}
   /* the theme icon keeps a fade between sun and moon and loses the morph */
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
-@media print{.top,.sidebar,.toc,.pager,.scrim,.consent{display:none!important}body{padding-bottom:0}.shell{display:block}.main{padding:0}}
+@media print{.top,.sidebar,.toc,.pager,.scrim,.consent{display:none!important}body{padding-bottom:0}.shell{display:block}.main{padding:0}
+  /* the skill's page on paper is its form without script: every step, the roles' table, no controls */
+  .st-bar,.sch-rl,.code-copy{display:none!important}.sch-st .st-i[hidden],.tbl[hidden]{display:block!important;content-visibility:visible!important}.st-i+.st-i{margin-top:16px}}
 """
 
 JS = r"""
@@ -2101,13 +2104,15 @@ JS = r"""
   var stg=document.querySelector('.sch-st');
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stR=[].slice.call(stg.querySelectorAll('.st-rail>li')),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stAt=-1;
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
-      stI.forEach(function(li,j){li.hidden=j!==i;li.classList.remove('in')});
+      stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')});
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
       // the rail's items: rings at the even places, lines between them
       stR.forEach(function(li,j){li.classList.toggle('is-cur',j===2*i);li.classList.toggle('is-done',j<2*i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
       stg.querySelector('.st-cn').textContent='Step '+(i+1)+' of '+stI.length;stg.querySelector('.st-ct').textContent=': '+stI[i].querySelector('.st-h').textContent};
     stg.classList.add('is-js');stg.querySelector('.st-bar').hidden=false;stSet(0);
+    // find-in-page lands in a folded step: that step is shown
+    stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
@@ -2116,12 +2121,14 @@ JS = r"""
   var rlg=document.querySelector('.sch-rl');
   if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlC=[].slice.call(rlg.querySelectorAll('.rl-c')),rlT=document.querySelector('.tbl');
     var rlSet=function(i,go){var on=rlI[i].dataset.ch.split(' ');rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
-      rlI.forEach(function(r,j){r.hidden=j!==i});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
+      rlI.forEach(function(r,j){if(j===i)r.removeAttribute('hidden');else r.setAttribute('hidden','until-found')});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
     rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
       b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
         to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
         if(to!==null){e.preventDefault();rlSet(to,true)}})});
-    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0)}
+    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0);
+    // find-in-page lands in a folded role's row: that role is chosen
+    rlI.forEach(function(r,j){r.addEventListener('beforematch',function(){rlSet(j)})})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

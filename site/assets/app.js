@@ -333,13 +333,15 @@
   var stg=document.querySelector('.sch-st');
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stR=[].slice.call(stg.querySelectorAll('.st-rail>li')),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stAt=-1;
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
-      stI.forEach(function(li,j){li.hidden=j!==i;li.classList.remove('in')});
+      stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')});
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
       // the rail's items: rings at the even places, lines between them
       stR.forEach(function(li,j){li.classList.toggle('is-cur',j===2*i);li.classList.toggle('is-done',j<2*i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
       stg.querySelector('.st-cn').textContent='Step '+(i+1)+' of '+stI.length;stg.querySelector('.st-ct').textContent=': '+stI[i].querySelector('.st-h').textContent};
     stg.classList.add('is-js');stg.querySelector('.st-bar').hidden=false;stSet(0);
+    // find-in-page lands in a folded step: that step is shown
+    stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
@@ -348,12 +350,14 @@
   var rlg=document.querySelector('.sch-rl');
   if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlC=[].slice.call(rlg.querySelectorAll('.rl-c')),rlT=document.querySelector('.tbl');
     var rlSet=function(i,go){var on=rlI[i].dataset.ch.split(' ');rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
-      rlI.forEach(function(r,j){r.hidden=j!==i});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
+      rlI.forEach(function(r,j){if(j===i)r.removeAttribute('hidden');else r.setAttribute('hidden','until-found')});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
     rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
       b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
         to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
         if(to!==null){e.preventDefault();rlSet(to,true)}})});
-    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0)}
+    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0);
+    // find-in-page lands in a folded role's row: that role is chosen
+    rlI.forEach(function(r,j){r.addEventListener('beforematch',function(){rlSet(j)})})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
