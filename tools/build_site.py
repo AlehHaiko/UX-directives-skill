@@ -1540,10 +1540,11 @@ section>h2.dh.is-stuck::after{opacity:1}
 .id-p{width:44px;text-align:center;border-radius:8px;background:var(--ch-hov);transition:background-color .2s var(--soft)}
 .id-p[data-p="dir"]{width:72px}.id-s{width:28px;text-align:center}
 .sch-id .dir{margin-top:16px}
-/* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, a 2px edge of the text's colour round the part, its line at 2.5px;
-   the other parts' lines step back. The ring of the keyboard's focus stands outside that edge */
+/* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, its line at 2.5px; the other parts' lines step back.
+   The pressed part alone has a 2px edge of the text's colour, so pressing and releasing each show, under the pointer too. The ring of the keyboard's focus stands outside that edge */
 .js .id-p{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.id-p.on{background:var(--ch-sel);box-shadow:inset 0 0 0 2px var(--text)}
+.id-p.on{background:var(--ch-sel)}
+.id-p[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--text)}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
@@ -2087,7 +2088,7 @@ JS = r"""
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
     b.addEventListener('click',function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.textContent).then(function(){done(true)},byHand);else byHand()})});
   // scheme 1 (the skill's page): the parts of an ID. A part is a button, the three one Tab stop: the arrow keys, Home and End move between them.
-  // What is lit is the part under the pointer, else the focused one, else the pressed one (a click, a tap, Enter or Space press a part; the same again releases it).
+  // What is lit is the part under the pointer, else the one the keyboard focused (a pointer's own focus lights nothing), else the pressed one (a click, a tap, Enter or Space press a part; the same again releases it).
   // A name lights its part too, and a press on a name, off its link, presses the part. Lit: the part, its line and its name (style.css, .on)
   var idg=document.querySelector('.sch-id');
   if(idg){var idPs=[].slice.call(idg.querySelectorAll('.id-p')),idAll=[].slice.call(idg.querySelectorAll('[data-p]')),idPin=null,idHov=null,idFoc=null;
@@ -2095,7 +2096,7 @@ JS = r"""
     var idPress=function(k){idPin=idPin===k?null:k;idPs.forEach(function(p){p.setAttribute('aria-pressed',p.dataset.p===idPin)});idShow()};
     var idGo=function(i){i=Math.max(0,Math.min(idPs.length-1,i));idPs.forEach(function(p,j){p.tabIndex=j===i?0:-1});idPs[i].focus()};
     idPs.forEach(function(p,i){p.setAttribute('role','button');p.tabIndex=i?-1:0;p.setAttribute('aria-pressed','false');p.setAttribute('aria-describedby','id-l-'+p.dataset.p);
-      p.addEventListener('focus',function(){idFoc=p.dataset.p;idShow()});p.addEventListener('blur',function(){idFoc=null;idShow()});
+      p.addEventListener('focus',function(){idFoc=p.matches(':focus-visible')?p.dataset.p:null;idShow()});p.addEventListener('blur',function(){idFoc=null;idShow()});
       p.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var k=e.key,to=k==='ArrowRight'||k==='ArrowDown'?i+1:k==='ArrowLeft'||k==='ArrowUp'?i-1:k==='Home'?0:k==='End'?idPs.length-1:null;
         if(to!==null){e.preventDefault();idGo(to)}else if(k==='Enter'||k===' '){e.preventDefault();idPress(p.dataset.p)}})});
     idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});

@@ -555,10 +555,11 @@ section>h2.dh.is-stuck::after{opacity:1}
 .id-p{width:44px;text-align:center;border-radius:8px;background:var(--ch-hov);transition:background-color .2s var(--soft)}
 .id-p[data-p="dir"]{width:72px}.id-s{width:28px;text-align:center}
 .sch-id .dir{margin-top:16px}
-/* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, a 2px edge of the text's colour round the part, its line at 2.5px;
-   the other parts' lines step back. The ring of the keyboard's focus stands outside that edge */
+/* with script a part is a button. The lit part: the chapter's selected tint under the part and under its name, its line at 2.5px; the other parts' lines step back.
+   The pressed part alone has a 2px edge of the text's colour, so pressing and releasing each show, under the pointer too. The ring of the keyboard's focus stands outside that edge */
 .js .id-p{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.id-p.on{background:var(--ch-sel);box-shadow:inset 0 0 0 2px var(--text)}
+.id-p.on{background:var(--ch-sel)}
+.id-p[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--text)}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
