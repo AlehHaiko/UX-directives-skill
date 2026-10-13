@@ -576,10 +576,11 @@ FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source")]
 ICON_TALK = ('<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.75 1.5h6.5a1.25 1.25 0 0 1 1.25 1.25v4.25'
              'a1.25 1.25 0 0 1-1.25 1.25H6.25L3.75 10.5V8.25H2.75A1.25 1.25 0 0 1 1.5 7V2.75A1.25 1.25 0 0 1 2.75 1.5z"/></svg>')
 ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.25L2.3 6.6A2.6 2.6 0 0 1 6 2.95a2.6 2.6 0 0 1 3.7 3.65z"/></svg>'
-FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK), ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART)]
+# the last field is the link's class: it names the colour its sign takes while the link is pointed at or focused (style.css, --in)
+FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb"), ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp")]
 FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 {AUTHOR}</span>'
           + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_L) + '</span><span class="foot-g">'
-          + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il" href="{h}">{ic}{t}</a></span>' for n, (h, t, ic) in enumerate(FOOT_R))
+          + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}">{ic}{t}</a></span>' for n, (h, t, ic, c) in enumerate(FOOT_R))
           + '</span></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
@@ -1067,7 +1068,14 @@ a{color:var(--link);text-decoration:none}
 .foot a{color:inherit}
 /* a sign before its word, inside the link: 12px, 4px from the word, so its ink stands 4.75px off, as the pager's arrow from "Previous" (4.72px) */
 .foot-il{display:inline-flex;align-items:center;gap:4px}
-.foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .35s var(--soft)}
+/* the link pointed at or focused: its sign takes a colour of its own, as LinkedIn's sign does in the portfolio's footer. Feedback's is lilac, Sponsor's pink
+   (GitHub Primer): #8250df and #bf3989 on the light page, the lighter #a371f7 and #db61a2 on the dark one. The word keeps the footer's grey */
+.foot-fb{--in:#8250df}.foot-sp{--in:#bf3989}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .foot-fb{--in:#a371f7}:root:not([data-theme="light"]) .foot-sp{--in:#db61a2}}
+:root[data-theme="dark"] .foot-fb{--in:#a371f7}:root[data-theme="dark"] .foot-sp{--in:#db61a2}
+@media (hover:hover){.foot-il:hover .foot-ic{stroke:var(--in)}}
+.foot-il:focus-visible .foot-ic{stroke:var(--in)}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
