@@ -621,8 +621,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 .rl-i{font-size:14px;line-height:1.5}
 .rl-i p{margin:0}.rl-i .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .rl-i ul{list-style:none;margin:0;padding:0}.rl-i li+li{margin-top:2px}
-/* a finger's targets: the links of a list stand in rows of 44px */
-@media (hover:none){.rl-i li{padding:11.5px 0}.rl-i li+li{margin-top:0}}
+/* a finger's targets: the links of a list stand in rows of 44px, and a row's link takes taps over the whole row */
+@media (hover:none){.rl-i li{position:relative;padding:11.5px 0}.rl-i li+li{margin-top:0}.rl-i li a::after{content:"";position:absolute;inset:0}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
