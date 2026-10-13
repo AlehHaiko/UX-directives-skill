@@ -163,7 +163,7 @@ a{color:var(--link);text-decoration:none}
 /* hover previews the click: the column leaves a shown panel's icon and returns to a hidden one's; after a click, not until the pointer has left */
 @media (hover:hover){.side-hidden .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:none;opacity:1}
   :root:not(.side-hidden) .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:scaleX(0);opacity:0}}
-/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up); the shadow is the results list's */
+/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up: in the footer and in the consent bar); the shadow is the results list's */
 .tip{position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:5px 9px;border:1px solid var(--text);border-radius:6px;background:var(--text);color:#fff;
   font-size:12px;font-weight:500;line-height:1.35;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px) scale(.94);
   transition:opacity .15s var(--soft),transform .15s var(--soft),visibility 0s .15s}
@@ -177,7 +177,7 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 /* touch: a long press on an icon-only control shows its tooltip, so the browser's own callout and text selection are off on these controls */
-@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
+@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
@@ -388,6 +388,14 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .foot-fb{--in:#a371f7}:root[data-theme="dark"] .foot-sp{--in:#db61a2}
 @media (hover:hover){.foot-il:hover .foot-ic{stroke:var(--in)}}
 .foot-il:focus-visible .foot-ic{stroke:var(--in)}
+/* the consent button: a button that reads as the group's links do; under the pointer it is underlined as they are. Its sign is the footer's grey while
+   analytics is off and Google Analytics' orange while it is on (--ga, build_site.py: GA_LINE); pointed at or focused it is orange either way, by the links' own rule (--in) */
+.foot-b{--in:var(--ga);appearance:none;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+@media (hover:hover){.foot-b:hover{text-decoration:underline}}
+.foot-b[data-ga="on"] .foot-ic{stroke:var(--ga)}
+.foot-bl{display:inline-grid}.foot-bl>span{grid-area:1/1}
+.foot-b[data-ga="on"] [data-s="off"],.foot-b:not([data-ga="on"]) [data-s="on"]{visibility:hidden}
+html:not(.js) .foot-js{display:none}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
@@ -626,7 +634,7 @@ body{padding-bottom:var(--consent-h,0px)}
   .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
-  .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
+  .foot a,.foot-b{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
   .foot-in{row-gap:28px}  /* the groups' lines stand 44.5px apart, so the touch targets of one line do not reach into the other's */
   .consent-sh{padding:0 16px}.consent-pad{padding:12px 0}
   .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
@@ -648,5 +656,5 @@ body{padding-bottom:var(--consent-h,0px)}
 @media print{.top,.sidebar,.toc,.pager,.scrim,.consent{display:none!important}body{padding-bottom:0}.shell{display:block}.main{padding:0}}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137;--ch-live-l:#fec3fd;--ch-live-d:#5c305c;--ch-deep-l:#feb3fd;--ch-deep-d:#6b346b}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16;--ch-live-l:#a8e6a3;--ch-live-d:#1d491a;--ch-deep-l:#95de8f;--ch-deep-d:#1a5417}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e;--ch-live-l:#6ee9e8;--ch-live-d:#014848;--ch-deep-l:#3ce2e1;--ch-deep-d:#055252}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a;--ch-live-l:#ffce99;--ch-live-d:#5d3801;--ch-deep-l:#ffc17b;--ch-deep-d:#694003}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08;--ch-live-l:#f0e710;--ch-live-d:#454202;--ch-deep-l:#e8df01;--ch-deep-d:#4e4b00}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508;--ch-live-l:#fad091;--ch-live-d:#583b01;--ch-deep-l:#f0c688;--ch-deep-d:#634301}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a;--ch-live-l:#ffce94;--ch-live-d:#5c3902;--ch-deep-l:#fec176;--ch-deep-d:#684001}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c;--ch-live-l:#97e8b2;--ch-live-d:#014b27;--ch-deep-l:#7ee1a1;--ch-deep-d:#02552d}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b;--ch-live-l:#71eadf;--ch-live-d:#044944;--ch-deep-l:#42e2d6;--ch-deep-d:#03524d}
-/* Contents tints, the brick edge */
-:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-live:#b9d9ff;--home-deep:#a8d0ff;--home-line:#5f92cc;--brick:#da674b;--brick-fill:#c35338}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33}
+/* Contents tints, the brick edge, the consent button's orange */
+:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-live:#b9d9ff;--home-deep:#a8d0ff;--home-line:#5f92cc;--brick:#da674b;--brick-fill:#c35338;--ga:#c88802}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}

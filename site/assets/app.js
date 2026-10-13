@@ -90,39 +90,46 @@
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label (the home link's: its emblem's hidden text, while the emblem shows).
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  // The footer's links have it too: each keeps its word as its name, and the tooltip's text is its aria-description, where the link leads.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a',TIP_DELAY=400,TIP_CHAIN=300;
-  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
+  // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x',TIP_DELAY=400,TIP_CHAIN=300;
+  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
-  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below.
+  // centred on the control, 8px clear of the viewport's edges, and on the page's side of it: under a control of the header; above a control of the footer
+  // or of the consent bar, and above any control that has no room below. With no room above, under it after all.
   // A chapter chevron has the next chevron right under it: its tooltip stands beside it, on the right, or on the left when the right has no room;
   // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above)
   function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
     var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,side=tipOwn.matches('.chev'),x,y,up=false,sl=false;
     if(side){sl=r.right+6+w>vw-8;x=Math.round(sl?r.left-6-w:r.right+6);y=Math.round(Math.max(0,Math.min(r.top+r.height/2-h/2,innerHeight-h)))}
-    else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
+    else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=(tipPin||tipOwn.closest('.consent,.foot')||r.bottom+6+h>innerHeight-8)&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
     tip.classList.toggle('up',up);tip.classList.toggle('at-r',side&&!sl);tip.classList.toggle('at-l',sl);tip.style.left=x+'px';tip.style.top=y+'px';
     tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
   // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
   function tipText(el){if(el.matches('.brand')){var m=el.querySelector('.brand-m');return m&&m.offsetWidth?m.textContent:''}
     return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')||el.getAttribute('aria-description')}
-  function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
-  function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  function tipShow(el,say){clearTimeout(tipT);clearTimeout(hintT);hintDue=false;var t=say||tipText(el);if(!t)return;tipPin=!!say;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
+  function tipHide(){clearTimeout(tipT);clearTimeout(hintT);tipPin=hintDue=false;if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  // a hint: the same label shown by script over a control, above it, with words of its own (the answer just given, over the footer's consent button).
+  // It is pinned: it stays HINT_HOLD whatever the pointer and the focus do elsewhere, longer while the pointer is on it or on its control, and then leaves
+  // as any tooltip does. A click on its control, Escape, another control's tooltip or a resize end it at once
+  function hintShow(el,say){tipShow(el,say);if(!tipOwn)return;
+    hintT=setTimeout(function(){hintDue=true;if(!(canHover.matches&&(el.matches(':hover')||tip.matches(':hover'))))tipHide()},HINT_HOLD)}
   // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
-  function tipDismiss(){tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
+  function tipDismiss(keep){if(!keep)tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
   document.addEventListener('pointerover',function(e){
     if(e.pointerType==='touch'||!canHover.matches||tip.contains(e.target))return;
+    if(tipPin){if(hintDue&&tipCtl(e.target)!==tipOwn)tipHide();return}
     var el=tipCtl(e.target);if(el===tipOver)return;tipOver=el;clearTimeout(tipT);
     if(!el){if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();return}
     if(tipOwn||Date.now()-tipGone<TIP_CHAIN)tipShow(el);else tipT=setTimeout(function(){tipShow(el)},TIP_DELAY)});
-  root.addEventListener('pointerleave',function(e){if(e.pointerType==='touch')return;tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
+  root.addEventListener('pointerleave',function(e){if(e.pointerType==='touch')return;if(tipPin){if(hintDue)tipHide();return}tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
   document.addEventListener('focusin',function(e){var el=tipCtl(e.target);if(el&&!tipMute&&el.matches(':focus-visible'))tipShow(el)});
-  document.addEventListener('focusout',function(e){if(tipOwn&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
+  document.addEventListener('focusout',function(e){if(tipOwn&&!tipPin&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
   document.addEventListener('click',function(e){
     // the click of a release that ended a long press: it does nothing and the tooltip stays
     if(holdEat&&Date.now()-holdEat<HOLD_EAT){holdEat=0;e.preventDefault();e.stopImmediatePropagation();return}
-    tipDismiss()},true);
+    tipDismiss(tipPin&&tipCtl(e.target)!==tipOwn)},true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')tipDismiss()},true);
   addEventListener('scroll',tipPlace,{passive:true,capture:true});addEventListener('resize',tipHide);document.addEventListener('input',tipPlace);
   // touch: a press of HOLD on one of these controls shows its tooltip, and the release then does nothing; a release before that, a move over HOLD_MOVE
@@ -244,7 +251,11 @@
   // The answer that holds is not offered again: its button states the fact instead ("Analytics allowed", "Analytics declined"), aria-disabled, so it keeps
   // its place in the Tab order and is read out, and a press on it does nothing.
   // The body keeps the bar's height free at its bottom, so the footer can be scrolled clear of it.
+  // Brought back from the footer with an answer given, the bar has a cross: it and Escape close the bar and change nothing, and the focus returns to the footer's button.
+  // An answer given, the footer's button says so once in a hint over it ("You allowed analytics", "You declined analytics"): at once if the button is in view,
+  // or when it first comes into view; after the reload that follows a withdrawal, on the new page.
   // The answer is also said aloud, in a status line that is not drawn (.consent-say): what was answered and where to change it.
+  // The footer's button says "GA on" or "GA off" (data-ga; the words are in the page, CSS shows the one that holds) and shows the bar again, with the focus on the button that can be pressed.
   // Declining after analytics was allowed removes Google Analytics' cookies (_ga, _ga_*: this host's and .alehhaiko.com's) and loads the page anew,
   // without it; the focus then goes to the text, as after any answer.
   var cb=document.querySelector('.consent'),CONSENT='ah-consent',consent=null;
@@ -259,31 +270,37 @@
         b.textContent=(is?CONSENT_FACT:CONSENT_ACT)[v];if(is)b.setAttribute('aria-disabled','true');else b.removeAttribute('aria-disabled')})}
     var can=on&&!!consent;cb.classList.toggle('can-close',can);cx.hidden=!can;
     cb.hidden=!on;consentRoom()}
+  var CONSENT_HINT={granted:'You allowed analytics',denied:'You declined analytics'},hintIO=null;
+  function consentHint(){if(hintIO){hintIO.disconnect();hintIO=null}if(!cs||!window.IntersectionObserver||!CONSENT_HINT[consent])return;var say=CONSENT_HINT[consent];
+    hintIO=new IntersectionObserver(function(en){if(!en[en.length-1].isIntersecting)return;hintIO.disconnect();hintIO=null;hintShow(cs,say)},{threshold:1});hintIO.observe(cs)}
   var csay=document.querySelector('.consent-say'),CONSENT_SAY={granted:'You allowed analytics. Change it with GA in the footer.',denied:'You declined analytics. Change it with GA in the footer.'};
   // the line is emptied first and filled a moment later, so the same words are read out again after the same answer
   function consentSay(){if(!csay||!CONSENT_SAY[consent])return;csay.textContent='';setTimeout(function(){csay.textContent=CONSENT_SAY[consent]},100)}
-  function consentClose(){consentShow(false)}
-  var cx=document.querySelector('.consent-x');
+  function consentClose(){consentShow(false);if(cs)cs.focus({preventScroll:true})}
+  var cs=document.querySelector('.foot-b'),cx=document.querySelector('.consent-x');
+  function consentMark(){if(cs)cs.dataset.ga=consent==='granted'?'on':'off'}
   if(cb){
+    consentMark();
     var consentX=0,consentY=0;cb.addEventListener('pointerdown',function(e){consentX=e.clientX;consentY=e.clientY});
     cb.addEventListener('click',function(e){var b=e.target.closest('[data-consent]');if(!b||b.getAttribute('aria-disabled')==='true')return;
       // the buttons' words can be selected: a pointer's click that moved over HOLD_MOVE since it went down, or leaves a selection in the button, was a drag, not a press
       var sel=getSelection();if(e.detail&&(Math.hypot(e.clientX-consentX,e.clientY-consentY)>HOLD_MOVE||sel&&!sel.isCollapsed&&b.contains(sel.anchorNode)))return;
       var was=consent;consent=b.dataset.consent;
       try{localStorage.setItem(CONSENT,consent)}catch(err){}
-      consentShow(false);
+      consentShow(false);consentMark();
       if(consent==='denied'&&was==='granted'){
         document.cookie.split(';').forEach(function(c){var n=c.split('=')[0].trim();if(!/^_ga(_|$)/.test(n))return;
           ['',';domain='+location.hostname,';domain=.alehhaiko.com'].forEach(function(d){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'+d})});
         try{sessionStorage.setItem(CONSENT+'-focus','1')}catch(err){}
         location.reload();return}
       if(consent==='granted')ahGa();
-      focusTarget(document.getElementById('main'));consentSay()});
+      focusTarget(document.getElementById('main'));consentHint();consentSay()});
     cx.addEventListener('click',consentClose);
     // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
     if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
-    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentSay()}}catch(e){}
+    if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
+    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}
     if(!consent)consentShow(true)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;

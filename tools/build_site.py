@@ -265,6 +265,12 @@ BRICK = {k: line_tint("#b8492e", (bg, *(t["hov-" + k] for t in TINTS.values())))
 # white 4.5:1 (the light theme's edge is too light for small text); the dark theme's edge already does.
 BRICK_FILL = {"l": line_tint("#b8492e", ("#ffffff",), 4.5), "d": BRICK["d"]}
 assert all(cr(hex2rgb(v), hex2rgb("#ffffff")) >= 4.5 for v in BRICK_FILL.values())
+# The sign of the footer's consent button while analytics is on, or the button is pointed at or focused: Google Analytics' orange (#f9ab00, OKLCH hue 76),
+# 3:1 against the footer's ground, the page's. Where the orange itself gives it (the dark page), it stays as it is; where it does not (the light page),
+# it is darkened as the brick is solved: the first lightness step that does.
+def ga_tint(bg, accent="#f9ab00"): return accent if cr(hex2rgb(accent), hex2rgb(bg)) >= 3 else line_tint(accent, (bg,))
+GA_LINE = {"l": ga_tint("#ffffff"), "d": ga_tint("#191919")}
+assert all(cr(hex2rgb(GA_LINE[k]), hex2rgb(bg)) >= 3 for k, bg in (("l", "#ffffff"), ("d", "#191919")))
 
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
@@ -372,7 +378,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="expect" href="#page-ready" blocking="render">
-<script>document.documentElement.classList.add('cvc');try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>
+<script>document.documentElement.classList.add('cvc','js');try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>
 {GA_HEAD}
 </head>
 <body class="has-toc">
@@ -612,10 +618,16 @@ ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path 
 # the last field is the link's class: it names the colour its sign takes while the link is pointed at or focused (style.css, --in)
 FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb", "Leave feedback on GitHub"),
           ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp", "Sponsor on GitHub")]
+# The consent button stands after Sponsor and says what holds: "GA off" (no answer yet, or declined) or "GA on" (allowed). It brings the consent banner back.
+# A button that reads as the group's links do, its sign three bars. Both words are in the page, in one cell, and CSS shows the one that holds (data-ga, app.js),
+# so the button is as wide as the wider in either state and nothing before it moves; the hidden word is not read out. It works by script: without it the item is not shown
+ICON_BARS = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 10V6.5M6 10V2.5M9.5 10V5"/></svg>'
+FOOT_GA = (f'<span class="foot-i foot-js">{BUL}<button class="foot-il foot-b" type="button" data-ga="off" aria-description="Google Analytics: allow or decline">'
+           f'{ICON_BARS}<span class="foot-bl"><span data-s="off">GA off</span><span data-s="on">GA on</span></span></button></span>')
 FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a class="foot-a" href="{AUTHOR_URL}" aria-description="{AUTHOR_TIP}">{AUTHOR}</a></span>'
           + "".join(f'<span class="foot-i">{BUL}<a href="{h}" aria-description="{d}">{t}</a></span>' for h, t, d in FOOT_L) + '</span><span class="foot-g">'
           + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}" aria-description="{d}">{ic}{t}</a></span>' for n, (h, t, ic, c, d) in enumerate(FOOT_R))
-          + '</span></p></footer>')
+          + FOOT_GA + '</span></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
@@ -712,11 +724,11 @@ def main(base=BASE, out=None):
                  f"--ch-live-l:{t['live-l']};--ch-live-d:{t['live-d']};--ch-deep-l:{t['deep-l']};--ch-deep-d:{t['deep-d']}}}" for n, t in TINTS.items())
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
-                    f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]}")
+                    f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]};--ga:{GA_LINE[k]}")
     home = (f":root{{{hv('l')}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
             f":root[data-theme=\"dark\"]{{{hv('d')}}}")
-    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints, the brick edge */\n" + home + "\n", encoding="utf-8")
+    (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints, the brick edge, the consent button's orange */\n" + home + "\n", encoding="utf-8")
     (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
     print(f"Built {1 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories; {n_dirs} directive IDs indexed.")
@@ -887,7 +899,7 @@ a{color:var(--link);text-decoration:none}
 /* hover previews the click: the column leaves a shown panel's icon and returns to a hidden one's; after a click, not until the pointer has left */
 @media (hover:hover){.side-hidden .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:none;opacity:1}
   :root:not(.side-hidden) .menu-btn:hover:not(.pv-off) .ic-panel .col{transform:scaleX(0);opacity:0}}
-/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up); the shadow is the results list's */
+/* tooltip of an icon-only control: one element, placed by script under the control (above it with .up: in the footer and in the consent bar); the shadow is the results list's */
 .tip{position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:5px 9px;border:1px solid var(--text);border-radius:6px;background:var(--text);color:#fff;
   font-size:12px;font-weight:500;line-height:1.35;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px) scale(.94);
   transition:opacity .15s var(--soft),transform .15s var(--soft),visibility 0s .15s}
@@ -901,7 +913,7 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 /* touch: a long press on an icon-only control shows its tooltip, so the browser's own callout and text selection are off on these controls */
-@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
+@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
@@ -1112,6 +1124,14 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .foot-fb{--in:#a371f7}:root[data-theme="dark"] .foot-sp{--in:#db61a2}
 @media (hover:hover){.foot-il:hover .foot-ic{stroke:var(--in)}}
 .foot-il:focus-visible .foot-ic{stroke:var(--in)}
+/* the consent button: a button that reads as the group's links do; under the pointer it is underlined as they are. Its sign is the footer's grey while
+   analytics is off and Google Analytics' orange while it is on (--ga, build_site.py: GA_LINE); pointed at or focused it is orange either way, by the links' own rule (--in) */
+.foot-b{--in:var(--ga);appearance:none;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+@media (hover:hover){.foot-b:hover{text-decoration:underline}}
+.foot-b[data-ga="on"] .foot-ic{stroke:var(--ga)}
+.foot-bl{display:inline-grid}.foot-bl>span{grid-area:1/1}
+.foot-b[data-ga="on"] [data-s="off"],.foot-b:not([data-ga="on"]) [data-s="on"]{visibility:hidden}
+html:not(.js) .foot-js{display:none}
 .cn{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--text)}
 .cn svg{width:18.2px;height:18.2px;fill:none;stroke:currentColor;stroke-width:2.6374;stroke-linecap:round;stroke-linejoin:round}
 a.cn{transition:background-color .25s var(--soft)}@media (hover:hover){a.cn:hover{background:var(--ch-hov);text-decoration:none}}
@@ -1350,7 +1370,7 @@ body{padding-bottom:var(--consent-h,0px)}
   .results{position:fixed;top:calc(var(--top) + 6px);left:16px;right:16px;max-height:calc(100vh - var(--top) - 22px);max-height:calc(100dvh - var(--top) - 22px)}
   .main{padding:16px 16px 64px}
   .foot{grid-column:1;padding:0 16px 32px}
-  .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
+  .foot a,.foot-b{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
   .foot-in{row-gap:28px}  /* the groups' lines stand 44.5px apart, so the touch targets of one line do not reach into the other's */
   .consent-sh{padding:0 16px}.consent-pad{padding:12px 0}
   .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
@@ -1464,39 +1484,46 @@ JS = r"""
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label (the home link's: its emblem's hidden text, while the emblem shows).
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  // The footer's links have it too: each keeps its word as its name, and the tooltip's text is its aria-description, where the link leads.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a',TIP_DELAY=400,TIP_CHAIN=300;
-  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
+  // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x',TIP_DELAY=400,TIP_CHAIN=300;
+  var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
-  // under the control and centred on it, 8px clear of the viewport's edges; above it when there is no room below.
+  // centred on the control, 8px clear of the viewport's edges, and on the page's side of it: under a control of the header; above a control of the footer
+  // or of the consent bar, and above any control that has no room below. With no room above, under it after all.
   // A chapter chevron has the next chevron right under it: its tooltip stands beside it, on the right, or on the left when the right has no room;
   // it stays level with its row up to the viewport's very edge (an 8px margin there would push it onto the row above)
   function tipPlace(){if(!tipOwn)return;var r=tipOwn.getBoundingClientRect();if(!r.width&&!r.height){tipHide();return}
     var w=tip.offsetWidth,h=tip.offsetHeight,vw=root.clientWidth,cx=r.left+r.width/2,side=tipOwn.matches('.chev'),x,y,up=false,sl=false;
     if(side){sl=r.right+6+w>vw-8;x=Math.round(sl?r.left-6-w:r.right+6);y=Math.round(Math.max(0,Math.min(r.top+r.height/2-h/2,innerHeight-h)))}
-    else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=r.bottom+6+h>innerHeight-8&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
+    else{x=Math.round(Math.max(8,Math.min(cx-w/2,vw-w-8)));up=(tipPin||tipOwn.closest('.consent,.foot')||r.bottom+6+h>innerHeight-8)&&r.top-6-h>=8;y=Math.round(up?r.top-6-h:r.bottom+6)}
     tip.classList.toggle('up',up);tip.classList.toggle('at-r',side&&!sl);tip.classList.toggle('at-l',sl);tip.style.left=x+'px';tip.style.top=y+'px';
     tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
   // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
   function tipText(el){if(el.matches('.brand')){var m=el.querySelector('.brand-m');return m&&m.offsetWidth?m.textContent:''}
     return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')||el.getAttribute('aria-description')}
-  function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
-  function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  function tipShow(el,say){clearTimeout(tipT);clearTimeout(hintT);hintDue=false;var t=say||tipText(el);if(!t)return;tipPin=!!say;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
+  function tipHide(){clearTimeout(tipT);clearTimeout(hintT);tipPin=hintDue=false;if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
+  // a hint: the same label shown by script over a control, above it, with words of its own (the answer just given, over the footer's consent button).
+  // It is pinned: it stays HINT_HOLD whatever the pointer and the focus do elsewhere, longer while the pointer is on it or on its control, and then leaves
+  // as any tooltip does. A click on its control, Escape, another control's tooltip or a resize end it at once
+  function hintShow(el,say){tipShow(el,say);if(!tipOwn)return;
+    hintT=setTimeout(function(){hintDue=true;if(!(canHover.matches&&(el.matches(':hover')||tip.matches(':hover'))))tipHide()},HINT_HOLD)}
   // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
-  function tipDismiss(){tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
+  function tipDismiss(keep){if(!keep)tipHide();tipMute=true;setTimeout(function(){tipMute=false},0)}
   document.addEventListener('pointerover',function(e){
     if(e.pointerType==='touch'||!canHover.matches||tip.contains(e.target))return;
+    if(tipPin){if(hintDue&&tipCtl(e.target)!==tipOwn)tipHide();return}
     var el=tipCtl(e.target);if(el===tipOver)return;tipOver=el;clearTimeout(tipT);
     if(!el){if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();return}
     if(tipOwn||Date.now()-tipGone<TIP_CHAIN)tipShow(el);else tipT=setTimeout(function(){tipShow(el)},TIP_DELAY)});
-  root.addEventListener('pointerleave',function(e){if(e.pointerType==='touch')return;tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
+  root.addEventListener('pointerleave',function(e){if(e.pointerType==='touch')return;if(tipPin){if(hintDue)tipHide();return}tipOver=null;if(tipOwn&&!tipOwn.matches(':focus-visible'))tipHide();else clearTimeout(tipT)});
   document.addEventListener('focusin',function(e){var el=tipCtl(e.target);if(el&&!tipMute&&el.matches(':focus-visible'))tipShow(el)});
-  document.addEventListener('focusout',function(e){if(tipOwn&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
+  document.addEventListener('focusout',function(e){if(tipOwn&&!tipPin&&tipCtl(e.target)===tipOwn&&tipOver!==tipOwn)tipHide()});
   document.addEventListener('click',function(e){
     // the click of a release that ended a long press: it does nothing and the tooltip stays
     if(holdEat&&Date.now()-holdEat<HOLD_EAT){holdEat=0;e.preventDefault();e.stopImmediatePropagation();return}
-    tipDismiss()},true);
+    tipDismiss(tipPin&&tipCtl(e.target)!==tipOwn)},true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')tipDismiss()},true);
   addEventListener('scroll',tipPlace,{passive:true,capture:true});addEventListener('resize',tipHide);document.addEventListener('input',tipPlace);
   // touch: a press of HOLD on one of these controls shows its tooltip, and the release then does nothing; a release before that, a move over HOLD_MOVE
@@ -1618,7 +1645,11 @@ JS = r"""
   // The answer that holds is not offered again: its button states the fact instead ("Analytics allowed", "Analytics declined"), aria-disabled, so it keeps
   // its place in the Tab order and is read out, and a press on it does nothing.
   // The body keeps the bar's height free at its bottom, so the footer can be scrolled clear of it.
+  // Brought back from the footer with an answer given, the bar has a cross: it and Escape close the bar and change nothing, and the focus returns to the footer's button.
+  // An answer given, the footer's button says so once in a hint over it ("You allowed analytics", "You declined analytics"): at once if the button is in view,
+  // or when it first comes into view; after the reload that follows a withdrawal, on the new page.
   // The answer is also said aloud, in a status line that is not drawn (.consent-say): what was answered and where to change it.
+  // The footer's button says "GA on" or "GA off" (data-ga; the words are in the page, CSS shows the one that holds) and shows the bar again, with the focus on the button that can be pressed.
   // Declining after analytics was allowed removes Google Analytics' cookies (_ga, _ga_*: this host's and .alehhaiko.com's) and loads the page anew,
   // without it; the focus then goes to the text, as after any answer.
   var cb=document.querySelector('.consent'),CONSENT='ah-consent',consent=null;
@@ -1633,31 +1664,37 @@ JS = r"""
         b.textContent=(is?CONSENT_FACT:CONSENT_ACT)[v];if(is)b.setAttribute('aria-disabled','true');else b.removeAttribute('aria-disabled')})}
     var can=on&&!!consent;cb.classList.toggle('can-close',can);cx.hidden=!can;
     cb.hidden=!on;consentRoom()}
+  var CONSENT_HINT={granted:'You allowed analytics',denied:'You declined analytics'},hintIO=null;
+  function consentHint(){if(hintIO){hintIO.disconnect();hintIO=null}if(!cs||!window.IntersectionObserver||!CONSENT_HINT[consent])return;var say=CONSENT_HINT[consent];
+    hintIO=new IntersectionObserver(function(en){if(!en[en.length-1].isIntersecting)return;hintIO.disconnect();hintIO=null;hintShow(cs,say)},{threshold:1});hintIO.observe(cs)}
   var csay=document.querySelector('.consent-say'),CONSENT_SAY={granted:'You allowed analytics. Change it with GA in the footer.',denied:'You declined analytics. Change it with GA in the footer.'};
   // the line is emptied first and filled a moment later, so the same words are read out again after the same answer
   function consentSay(){if(!csay||!CONSENT_SAY[consent])return;csay.textContent='';setTimeout(function(){csay.textContent=CONSENT_SAY[consent]},100)}
-  function consentClose(){consentShow(false)}
-  var cx=document.querySelector('.consent-x');
+  function consentClose(){consentShow(false);if(cs)cs.focus({preventScroll:true})}
+  var cs=document.querySelector('.foot-b'),cx=document.querySelector('.consent-x');
+  function consentMark(){if(cs)cs.dataset.ga=consent==='granted'?'on':'off'}
   if(cb){
+    consentMark();
     var consentX=0,consentY=0;cb.addEventListener('pointerdown',function(e){consentX=e.clientX;consentY=e.clientY});
     cb.addEventListener('click',function(e){var b=e.target.closest('[data-consent]');if(!b||b.getAttribute('aria-disabled')==='true')return;
       // the buttons' words can be selected: a pointer's click that moved over HOLD_MOVE since it went down, or leaves a selection in the button, was a drag, not a press
       var sel=getSelection();if(e.detail&&(Math.hypot(e.clientX-consentX,e.clientY-consentY)>HOLD_MOVE||sel&&!sel.isCollapsed&&b.contains(sel.anchorNode)))return;
       var was=consent;consent=b.dataset.consent;
       try{localStorage.setItem(CONSENT,consent)}catch(err){}
-      consentShow(false);
+      consentShow(false);consentMark();
       if(consent==='denied'&&was==='granted'){
         document.cookie.split(';').forEach(function(c){var n=c.split('=')[0].trim();if(!/^_ga(_|$)/.test(n))return;
           ['',';domain='+location.hostname,';domain=.alehhaiko.com'].forEach(function(d){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'+d})});
         try{sessionStorage.setItem(CONSENT+'-focus','1')}catch(err){}
         location.reload();return}
       if(consent==='granted')ahGa();
-      focusTarget(document.getElementById('main'));consentSay()});
+      focusTarget(document.getElementById('main'));consentHint();consentSay()});
     cx.addEventListener('click',consentClose);
     // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
     document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
     if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
-    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentSay()}}catch(e){}
+    if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
+    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}
     if(!consent)consentShow(true)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
