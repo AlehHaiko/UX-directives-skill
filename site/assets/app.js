@@ -343,6 +343,17 @@
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
+  // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
+  // The chosen role's row shows, its chapters are lit in the strip. The table says the same for a page without script: here it is hidden
+  var rlg=document.querySelector('.sch-rl');
+  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlC=[].slice.call(rlg.querySelectorAll('.rl-c')),rlT=document.querySelector('.tbl');
+    var rlSet=function(i,go){var on=rlI[i].dataset.ch.split(' ');rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
+      rlI.forEach(function(r,j){r.hidden=j!==i});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
+    rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
+      b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
+        to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
+        if(to!==null){e.preventDefault();rlSet(to,true)}})});
+    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

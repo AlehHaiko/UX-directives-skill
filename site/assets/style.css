@@ -593,7 +593,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .st-ctl{display:flex;align-items:center;gap:12px}
 .st-count{flex:1;margin:0;text-align:center;font-size:14px}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
-@media (hover:hover){.sch-btn:not([aria-disabled="true"]):hover{background:var(--home-hov)}}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
 .sch-st.is-js .st-i{display:block}.sch-st.is-js .st-i[hidden]{display:none}
@@ -602,6 +602,22 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
+/* scheme 3. The roles are the schemes' button in a row that wraps; the chosen one is filled with the text's colour, as the rail's shown step is.
+   The strip: nine squares, a chapter each; the chosen role's chapters take their own ground and accent (the chapter cards'), the rest are an outline.
+   Under it the role's row of the table, each cell under its column's name in the table's small capitals */
+.sch-rl{margin-top:12px}
+.rl-g{display:flex;flex-wrap:wrap;gap:8px}
+.sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
+.rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 0}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
+.rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono);transition:background-color .2s var(--soft),color .2s var(--soft),border-color .2s var(--soft)}
+.rl-c.lit{background:var(--ch-dark);border-color:var(--ch-dark);color:var(--ch-accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rl-c.lit{border-color:var(--ch-accent)}}
+:root[data-theme="dark"] .rl-c.lit{border-color:var(--ch-accent)}
+.rl-i{font-size:14px;line-height:1.5}
+.rl-i p{margin:0}.rl-i .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.rl-i ul{list-style:none;margin:0;padding:0}.rl-i li+li{margin-top:2px}
+/* a finger's targets: the links of a list stand in rows of 44px */
+@media (hover:none){.rl-i li{padding:11.5px 0}.rl-i li+li{margin-top:0}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}

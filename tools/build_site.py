@@ -835,6 +835,23 @@ def scheme_steps(chapters):
             f'{bar}<ol class="st-list" role="list">{items}</ol></figure>')
 
 
+def scheme_roles(chapters):
+    """Scheme 3, pick a role: the roles' table as one choice of eight. Role buttons (one radio group), a strip of the nine chapters in their own colours,
+    and the chosen role's row: why, the chapters it starts in (lit in the strip and named, as links) and what to start with. It is in the page hidden:
+    app.js shows it and hides the table, which says the same and is the form without script."""
+    btns = "".join(f'<button class="sch-btn" type="button" role="radio" aria-checked="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}">{esc(r)}</button>'
+                   for i, (r, _, _, _) in enumerate(SKILL_ROLES))
+    strip = "".join(f'<span class="rl-c" style="{chapter_vars(c["n"])}">{c["n"]}</span>' for c in chapters)
+    rows = ""
+    for i, (r, why, start, chs) in enumerate(SKILL_ROLES):
+        names = "".join(f'<li><a href="{c["file"]}"><span class="mono">{c["n"]}.</span> {esc(c["title"])}</a></li>' for c in chapters if c["n"] in chs)
+        first = "".join(f"<li>{inline(x)}</li>" for x in start.split(" · "))
+        rows += (f'<div class="rl-i" data-ch="{" ".join(map(str, chs))}"{"" if i == 0 else " hidden"}><p class="rl-k">Why</p><p>{inline(why)}</p>'
+                 f'<p class="rl-k">Chapters</p><ul>{names}</ul><p class="rl-k">Start with</p><ul>{first}</ul></div>')
+    return (f'<figure class="sch sch-rl" aria-labelledby="sch-rl-t" hidden><figcaption class="sch-t" id="sch-rl-t">Pick a role</figcaption>'
+            f'<div class="rl-g" role="radiogroup" aria-labelledby="sch-rl-t">{btns}</div><div class="rl-ch" aria-hidden="true">{strip}</div>{rows}</figure>')
+
+
 def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{inner}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
@@ -849,7 +866,7 @@ def render_skill(chapters):
         f'<section class="sk">{scheme_steps(chapters)}</section>',
         sec(md_blocks(SKILL_SHARPER)),
         sec(md_blocks(SKILL_EXAMPLE)),
-        sec(md_blocks("## Who it might be for") + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
+        sec(md_blocks("## Who it might be for") + scheme_roles(chapters) + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
         sec(md_blocks(SKILL_LIMITS)),
         sec(md_blocks(SKILL_GET)),
         '<p class="sr sk-say" role="status"></p>',  # what a copy button did, said aloud (app.js)
@@ -1561,7 +1578,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .st-ctl{display:flex;align-items:center;gap:12px}
 .st-count{flex:1;margin:0;text-align:center;font-size:14px}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
-@media (hover:hover){.sch-btn:not([aria-disabled="true"]):hover{background:var(--home-hov)}}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
 .sch-st.is-js .st-i{display:block}.sch-st.is-js .st-i[hidden]{display:none}
@@ -1570,6 +1587,22 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
+/* scheme 3. The roles are the schemes' button in a row that wraps; the chosen one is filled with the text's colour, as the rail's shown step is.
+   The strip: nine squares, a chapter each; the chosen role's chapters take their own ground and accent (the chapter cards'), the rest are an outline.
+   Under it the role's row of the table, each cell under its column's name in the table's small capitals */
+.sch-rl{margin-top:12px}
+.rl-g{display:flex;flex-wrap:wrap;gap:8px}
+.sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
+.rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 0}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
+.rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono);transition:background-color .2s var(--soft),color .2s var(--soft),border-color .2s var(--soft)}
+.rl-c.lit{background:var(--ch-dark);border-color:var(--ch-dark);color:var(--ch-accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rl-c.lit{border-color:var(--ch-accent)}}
+:root[data-theme="dark"] .rl-c.lit{border-color:var(--ch-accent)}
+.rl-i{font-size:14px;line-height:1.5}
+.rl-i p{margin:0}.rl-i .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.rl-i ul{list-style:none;margin:0;padding:0}.rl-i li+li{margin-top:2px}
+/* a finger's targets: the links of a list stand in rows of 44px */
+@media (hover:none){.rl-i li{padding:11.5px 0}.rl-i li+li{margin-top:0}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
@@ -2076,6 +2109,17 @@ JS = r"""
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
+  // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
+  // The chosen role's row shows, its chapters are lit in the strip. The table says the same for a page without script: here it is hidden
+  var rlg=document.querySelector('.sch-rl');
+  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlC=[].slice.call(rlg.querySelectorAll('.rl-c')),rlT=document.querySelector('.tbl');
+    var rlSet=function(i,go){var on=rlI[i].dataset.ch.split(' ');rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
+      rlI.forEach(function(r,j){r.hidden=j!==i});rlC.forEach(function(c){c.classList.toggle('lit',on.indexOf(c.textContent)>-1)});if(go)rlB[i].focus()};
+    rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
+      b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
+        to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
+        if(to!==null){e.preventDefault();rlSet(to,true)}})});
+    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
