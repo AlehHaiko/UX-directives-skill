@@ -570,6 +570,9 @@ BUL = '<span class="r-sr">, </span><span class="bul" aria-hidden="true"></span>'
 # Two groups: the book's own lines at the column's left edge, the reader's two ways to answer at its right;
 # no dot between the groups, the hidden comma stays, so the text read does not change
 SR = '<span class="r-sr">, </span>'
+# the author's name is the way back to his site, the portfolio the book is read under: a link as the footer's other two text links are
+# (the footer's grey, underlined when pointed at, the same tab); the year before it stays text
+AUTHOR_URL = "https://alehhaiko.com/"
 FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source")]
 # The two signs of the right group, drawn on a 12 grid at the header icons' 1.5px (search, theme, menu, cross), round ends and joints:
 # a speech bubble for Feedback, the heart of GitHub Sponsors for Sponsor. Outlines in the link's own colour, inside the link
@@ -578,7 +581,7 @@ ICON_TALK = ('<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path 
 ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.25L2.3 6.6A2.6 2.6 0 0 1 6 2.95a2.6 2.6 0 0 1 3.7 3.65z"/></svg>'
 # the last field is the link's class: it names the colour its sign takes while the link is pointed at or focused (style.css, --in)
 FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb"), ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp")]
-FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 {AUTHOR}</span>'
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a href="{AUTHOR_URL}">{AUTHOR}</a></span>'
           + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_L) + '</span><span class="foot-g">'
           + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}">{ic}{t}</a></span>' for n, (h, t, ic, c) in enumerate(FOOT_R))
           + '</span></p></footer>')
