@@ -81,4 +81,4 @@ Turn each relevant directive into a testable statement that keeps its ID as the 
 
 ## Source
 
-Aleh Haiko, *The Blue Book of UX Directives: A Uniform Code for Human-Centered Digital Systems* — https://www.alehhaiko.com/the-blue-book-of-ux-directives
+Aleh Haiko, *The Blue Book of UX Directives: A Uniform Code for Human-Centered Digital Systems* — https://alehhaiko.com/ux/

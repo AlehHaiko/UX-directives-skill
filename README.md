@@ -2,7 +2,7 @@
 
 > A Claude skill that applies **The Blue Book of UX Directives** to design work: audits, design reviews, topic lookups, and requirements — every finding cited by directive ID.
 
-**Author: [Aleh Haiko](https://www.alehhaiko.com)** · **Read the book online: [alehhaiko.com/ux](https://alehhaiko.com/ux/)**
+**Author: [Aleh Haiko](https://www.alehhaiko.com)** · **Read the book online: [alehhaiko.com/ux](https://alehhaiko.com/ux/)** · **About the skill: [alehhaiko.com/ux/skill.html](https://alehhaiko.com/ux/skill.html)**
 
 ---
 
@@ -40,6 +40,8 @@ This skill bundles the full text of the book, so Claude cites exact directives i
 Download [`ux-directives.skill`](./ux-directives.skill) from this repository and add it to Claude as a skill (in Claude's settings, where skills are managed). The file is a zip of the [`ux-directives/`](./ux-directives) folder, so you can also upload that folder zipped.
 
 Claude uses the skill on its own when a task calls for it. You don't need to mention the skill by name.
+
+What the skill can and cannot do, step-by-step install for Claude.ai and Claude Code, and how to audit with it: [Skill for Claude](https://alehhaiko.com/ux/skill.html).
 
 ---
 

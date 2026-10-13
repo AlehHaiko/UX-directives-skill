@@ -25,7 +25,9 @@ This is the normal build: it is made for `/ux/` (`--base` defaults to `/ux/`). P
 
 `--out PATH` writes the complete site (pages, assets and copies of the favicons) to another folder instead of `site/`; it combines with `--base` and refuses a non-empty folder that has no `index.html`.
 
-The build prints the page count (72 pages: 1 home, 9 chapters, 62 subcategories). If it changes, a chapter or subcategory heading was added, renamed or removed.
+The build prints the page count (73 pages: 1 home, 9 chapters, 62 subcategories, 1 skill page). If it changes, a chapter or subcategory heading was added, renamed or removed.
+
+`skill.html` ("Skill for Claude") is the one page that is not the book: what the skill does, how to install it and how to audit with it. Its text and its three diagrams live in `tools/build_site.py` (`SKILL_*`, `scheme_*`, `render_skill`); it is not in the search index.
 
 ## After changing the Markdown
 
@@ -45,7 +47,7 @@ There are no automated tests. These are the checks, in the order the work rules 
 python3 tools/build_site.py && git diff --stat
 ```
 
-Healthy output: `Built 72 pages: 1 home, 9 chapters, 62 subcategories; 555 directive IDs indexed.` `site/` then holds 73 HTML files: the 72 pages plus `404.html`. The diff touches only the files the pass meant to change (a template or CSS/JS change rewrites all 72 pages and `site/assets/`; that is expected).
+Healthy output: `Built 73 pages: 1 home, 9 chapters, 62 subcategories, 1 skill page; 555 directive IDs indexed.` `site/` then holds 74 HTML files: the 73 pages plus `404.html`. The diff touches only the files the pass meant to change (a template or CSS/JS change rewrites all 73 pages and `site/assets/`; that is expected).
 
 **Link check (every pass, with the quick check).** From the repository root:
 
@@ -56,11 +58,11 @@ python3 tools/check_links.py --base /ux/
 Healthy output, two lines:
 
 ```
-pages 73, local links checked 8252, missing 0, anchors checked 1990, anchors missing 0, external skipped 438
+pages 74, local links checked 8482, missing 0, anchors checked 2046, anchors missing 0, external skipped 455
 index links checked 617, missing 0, anchors checked 555, anchors missing 0
 ```
 
-The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched; the 72 canonical links are among them. `--base /ux/` is the base `site/` is built for: without the flag the links of `404.html` are reported missing (82). For a build made with `--out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
+The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched; the 73 canonical links are among them. `--base /ux/` is the base `site/` is built for: without the flag the links of `404.html` are reported missing (83). For a build made with `--out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
 
 **Local preview.** `file://` loads pages without CSS and JS, so serve the folder:
 
