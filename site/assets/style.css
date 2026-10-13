@@ -376,6 +376,8 @@ a{color:var(--link);text-decoration:none}
 .foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
+/* the author's name stands in a line of text, not in a .foot-i: a box of the line's height, as the other links are (16.5px; 44.5px with the touch padding) */
+.foot-a{display:inline-block}
 /* a sign before its word, inside the link: 12px, 4px from the word, so its ink stands 4.75px off, as the pager's arrow from "Previous" (4.72px) */
 .foot-il{display:inline-flex;align-items:center;gap:4px}
 .foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .35s var(--soft)}

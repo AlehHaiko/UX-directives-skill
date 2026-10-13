@@ -585,7 +585,7 @@ ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path 
 # the last field is the link's class: it names the colour its sign takes while the link is pointed at or focused (style.css, --in)
 FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb", "Leave feedback on GitHub"),
           ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp", "Sponsor on GitHub")]
-FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a href="{AUTHOR_URL}" aria-description="{AUTHOR_TIP}">{AUTHOR}</a></span>'
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a class="foot-a" href="{AUTHOR_URL}" aria-description="{AUTHOR_TIP}">{AUTHOR}</a></span>'
           + "".join(f'<span class="foot-i">{BUL}<a href="{h}" aria-description="{d}">{t}</a></span>' for h, t, d in FOOT_L) + '</span><span class="foot-g">'
           + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}" aria-description="{d}">{ic}{t}</a></span>' for n, (h, t, ic, c, d) in enumerate(FOOT_R))
           + '</span></p></footer>')
@@ -1073,6 +1073,8 @@ a{color:var(--link);text-decoration:none}
 .foot-g{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}  /* a group that stands alone on its line starts at the left edge */
 .foot-i{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}  /* the dot and its link: one item of the row, the same 6px between them */
 .foot a{color:inherit}
+/* the author's name stands in a line of text, not in a .foot-i: a box of the line's height, as the other links are (16.5px; 44.5px with the touch padding) */
+.foot-a{display:inline-block}
 /* a sign before its word, inside the link: 12px, 4px from the word, so its ink stands 4.75px off, as the pager's arrow from "Previous" (4.72px) */
 .foot-il{display:inline-flex;align-items:center;gap:4px}
 .foot-ic{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke .35s var(--soft)}
