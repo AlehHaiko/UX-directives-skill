@@ -237,6 +237,54 @@
       var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(mk).scrollMarginTop)||0);
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
+  // analytics consent: the choice lives in localStorage "ah-consent" ("granted" or "denied"; the portfolio the book is read under keeps the same key).
+  // Until there is one the bar is shown and Google Analytics is not loaded (ahGa, the page's head: it loads on alehhaiko.com alone, the bar shows on every host).
+  // Storage that fails keeps the choice for this page: the bar comes back on the next load.
+  // The text's second line says what holds now: analytics stays off until allowed, is on, or is off; the words that carry it are bold.
+  // The answer that holds is not offered again: its button states the fact instead ("Analytics allowed", "Analytics declined"), aria-disabled, so it keeps
+  // its place in the Tab order and is read out, and a press on it does nothing.
+  // The body keeps the bar's height free at its bottom, so the footer can be scrolled clear of it.
+  // The answer is also said aloud, in a status line that is not drawn (.consent-say): what was answered and where to change it.
+  // Declining after analytics was allowed removes Google Analytics' cookies (_ga, _ga_*: this host's and .alehhaiko.com's) and loads the page anew,
+  // without it; the focus then goes to the text, as after any answer.
+  var cb=document.querySelector('.consent'),CONSENT='ah-consent',consent=null;
+  try{consent=localStorage.getItem(CONSENT)}catch(e){}
+  if(consent!=='granted'&&consent!=='denied')consent=null;
+  function consentRoom(){root.style.setProperty('--consent-h',cb.hidden?'0px':cb.offsetHeight+'px')}
+  var CONSENT_SAYS={granted:'You <strong>allowed</strong> it. Current state is <strong>on</strong>.',denied:'You <strong>declined</strong> it. Current state is <strong>off</strong>.'};
+  var CONSENT_ACT={granted:'Allow analytics',denied:'Decline analytics'},CONSENT_FACT={granted:'Analytics allowed',denied:'Analytics declined'};
+  function consentShow(on){
+    if(on){cb.querySelector('.consent-s').innerHTML=CONSENT_SAYS[consent]||'It stays <strong>off</strong> unless you allow it.';
+      [].forEach.call(cb.querySelectorAll('[data-consent]'),function(b){var v=b.dataset.consent,is=v===consent;
+        b.textContent=(is?CONSENT_FACT:CONSENT_ACT)[v];if(is)b.setAttribute('aria-disabled','true');else b.removeAttribute('aria-disabled')})}
+    var can=on&&!!consent;cb.classList.toggle('can-close',can);cx.hidden=!can;
+    cb.hidden=!on;consentRoom()}
+  var csay=document.querySelector('.consent-say'),CONSENT_SAY={granted:'You allowed analytics. Change it with GA in the footer.',denied:'You declined analytics. Change it with GA in the footer.'};
+  // the line is emptied first and filled a moment later, so the same words are read out again after the same answer
+  function consentSay(){if(!csay||!CONSENT_SAY[consent])return;csay.textContent='';setTimeout(function(){csay.textContent=CONSENT_SAY[consent]},100)}
+  function consentClose(){consentShow(false)}
+  var cx=document.querySelector('.consent-x');
+  if(cb){
+    var consentX=0,consentY=0;cb.addEventListener('pointerdown',function(e){consentX=e.clientX;consentY=e.clientY});
+    cb.addEventListener('click',function(e){var b=e.target.closest('[data-consent]');if(!b||b.getAttribute('aria-disabled')==='true')return;
+      // the buttons' words can be selected: a pointer's click that moved over HOLD_MOVE since it went down, or leaves a selection in the button, was a drag, not a press
+      var sel=getSelection();if(e.detail&&(Math.hypot(e.clientX-consentX,e.clientY-consentY)>HOLD_MOVE||sel&&!sel.isCollapsed&&b.contains(sel.anchorNode)))return;
+      var was=consent;consent=b.dataset.consent;
+      try{localStorage.setItem(CONSENT,consent)}catch(err){}
+      consentShow(false);
+      if(consent==='denied'&&was==='granted'){
+        document.cookie.split(';').forEach(function(c){var n=c.split('=')[0].trim();if(!/^_ga(_|$)/.test(n))return;
+          ['',';domain='+location.hostname,';domain=.alehhaiko.com'].forEach(function(d){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'+d})});
+        try{sessionStorage.setItem(CONSENT+'-focus','1')}catch(err){}
+        location.reload();return}
+      if(consent==='granted')ahGa();
+      focusTarget(document.getElementById('main'));consentSay()});
+    cx.addEventListener('click',consentClose);
+    // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
+    if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
+    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentSay()}}catch(e){}
+    if(!consent)consentShow(true)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

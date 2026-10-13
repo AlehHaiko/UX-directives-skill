@@ -297,6 +297,30 @@ NAV_RESTORE = ("(function(){var st={},y=null,sb=document.getElementById('sidebar
 CANONICAL = "https://alehhaiko.com/ux/"  # where the book is read; an absolute URL, so no --base changes it
 
 
+# Analytics consent, the portfolio's (alehhaiko.com, src/template.html): the same texts, the same key in localStorage ("ah-consent": the book is read
+# on the portfolio's origin, so an answer given on either holds on both) and the same Google Analytics property.
+# GA_HEAD stands in every page's head: ahGa loads Google Analytics, on alehhaiko.com alone and once; it is called at once when the stored answer is
+# "granted", and by app.js when the reader allows. The script is added by code, never as a tag: the pages gain no link.
+GA_ID = "G-45BSXVMG5G"
+GA_HEAD = ("<script>function ahGa(){if(location.hostname!=='alehhaiko.com'||window.gtag)return;window.dataLayer=window.dataLayer||[];"
+           "window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','" + GA_ID + "');"
+           "var ga=document.createElement('script');ga.async=true;ga.src='https://www.googletagmanager.com/gtag/js?id=" + GA_ID + "';"
+           "document.head.appendChild(ga)}try{if(localStorage.getItem('ah-consent')==='granted')ahGa()}catch(e){}</script>")
+# The banner follows the skip link in the source, so the keyboard reaches its buttons before the header's. It is hidden in the markup and shown by script
+# alone: without script nothing is counted and nothing is asked. The script after it shows it while the page is parsed, when no answer is stored, so the
+# page's first frame has it (a page arriving by a view transition keeps the bar in place); app.js does the rest.
+CONSENT = ('<div class="consent" role="region" aria-label="Analytics consent" hidden><div class="consent-sh"><div class="consent-pad"><div class="consent-in">'
+           '<div class="consent-t"><p>Google Analytics counts visits here: pages, referrer, device, rough location. It uses cookies and sends data to Google.</p>'
+           '<p class="consent-s">It stays <strong>off</strong> unless you allow it.</p></div>'
+           '<p class="consent-b"><button class="consent-btn" type="button" data-consent="granted">Allow analytics</button>'
+           '<button class="consent-btn" type="button" data-consent="denied">Decline analytics</button></p>'
+           f'<button class="consent-x" type="button" aria-label="Close" hidden>{ICON_X}</button></div></div></div></div>\n'
+           "<script>(function(c){try{var v=localStorage.getItem('ah-consent');if(v==='granted'||v==='denied')return}catch(e){}c.hidden=false})"
+           "(document.querySelector('.consent'))</script>")
+# the answer is also said aloud: a status line that is not drawn, filled by app.js
+CONSENT_SAY = '<p class="sr consent-say" role="status"></p>'
+
+
 def norm_base(path):
     """The site's base path with one leading and one trailing slash: "" and "/" give "/", "book" gives "/book/"."""
     path = path.strip().strip("/")
@@ -349,9 +373,11 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
 <link rel="stylesheet" href="assets/style.css">
 <link rel="expect" href="#page-ready" blocking="render">
 <script>document.documentElement.classList.add('cvc');try{{var t=localStorage.getItem('bb-theme');if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem('bb-side')==='hidden')document.documentElement.classList.add('side-hidden');}}catch(e){{}}</script>
+{GA_HEAD}
 </head>
 <body class="has-toc">
 <a class="skip" href="#main">Skip to content</a>
+{CONSENT}
 <header class="top"><div class="top-in">
   <button class="menu-btn" aria-label="Hide panel" aria-expanded="true" aria-controls="sidebar"><svg class="ic-panel" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5"/><rect class="col" x="4.75" y="5.75" width="4" height="8.5" rx="1"/></svg><svg class="ic-burger" viewBox="0 0 20 20" aria-hidden="true"><path class="l1" d="M3.5 6h13"/><path class="l2" d="M3.5 10h13"/><path class="l3" d="M3.5 14h13"/></svg></button>
   <a class="brand" href="index.html"><span class="brand-t">{BOOK_TITLE}</span><span class="brand-m">{HM_MARK.format(stroke="currentColor")}<span class="sr">{BOOK_TITLE}</span></span></a>
@@ -381,6 +407,7 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
   {FOOTER}
 </div>
 <div class="scrim" hidden></div>
+{CONSENT_SAY}
 <script src="assets/search-index.js"></script>
 <script src="assets/app.js"></script>
 </body>
@@ -1228,6 +1255,56 @@ section>h2.dh.is-stuck::after{opacity:1}
 .go svg{width:20.7px;height:20.7px;margin:-1.35px 0;fill:none;stroke:currentColor;stroke-width:2.029;stroke-linecap:round;stroke-linejoin:round}
 @media (hover:hover){.tile:hover .go,.ch-card:hover .go{transform:translateX(5px)}}
 
+/* the consent banner: a bar at the window's bottom, the header's mirror: the page's ground and a hairline over it, the window wide, and its content
+   between the header's own edges: the text starts where the header's title does (the bar's 20px, the menu button's 36px, the 16px after it), the last
+   control ends where the theme button does. Up to 860px wide the bar's content starts and ends at the window's 16px.
+   Not a dialog: nothing is dimmed, the page under it works, and the body keeps the bar's height free under the footer (--consent-h, app.js).
+   It comes and goes at once, without motion; across a page change it stays in place (a view-transition group of its own).
+   Shown by script alone: without it nothing is counted and the bar stays hidden.
+   Under the menu's scrim (35), so an open drawer dims it with the page. In the page's source it follows the skip link, so the keyboard reaches its buttons before the header's */
+.consent{position:fixed;left:0;right:0;bottom:0;z-index:32;background:var(--bg);border-top:1px solid var(--line);font-size:14px;view-transition-name:consent}
+.consent[hidden]{display:none}
+.consent-sh{max-width:var(--shell);margin:0 auto;padding:0 20px}
+.consent-pad{min-width:0;padding:12px 0 12px 52px;container-type:inline-size}
+.consent-in{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px}
+.consent-t{flex:1 1 100%}.consent-t p{margin:0}
+/* room of 660px and over holds the text and the buttons in one row, the buttons (and the cross after them) at its end; narrower, the buttons stand under the text.
+   The text takes all the room up to the buttons and wraps only when it does not fit */
+@container (min-width:660px){.consent-in{flex-wrap:nowrap;justify-content:flex-start}.consent-t{flex:1 1 320px}.consent-in .consent-b{margin-left:auto}}
+/* the state has its own line under the description; the words that carry it are bold */
+.consent-t .consent-s{margin-top:6px}
+.consent-s strong{font-weight:700}
+.consent-b{flex:none;display:flex;gap:8px;margin:0}
+/* a column too narrow for both buttons in a row (the widest pair is "Analytics allowed", 8px, "Decline analytics"): they stand one under the other, the column wide */
+@container (max-width:306px){.consent-b{flex:1 1 100%;flex-direction:column}}
+/* both answers are one button, the text button of "Clear history" at the bar's size: no fill, a 1px rule, 6px corners, weight 600. The rule is the text's colour,
+   so the button's edge is seen on the page; under the pointer it takes the Contents item's hover tint */
+.consent-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
+@media (hover:hover){.consent-btn:not([aria-disabled="true"]):hover{background:var(--home-hov)}}
+/* the answer that holds is a fact, not an offer: the same box without its rule, filled with the Contents item's selected tint, the text's colour at weight 700; nothing under the pointer */
+.consent-btn[aria-disabled="true"]{border-color:transparent;background:var(--home-sel);font-weight:700;cursor:not-allowed}
+/* a finger's target: 44px high */
+@media (hover:none){.consent-btn{min-height:44px}}
+/* brought back from the footer, with an answer given, the bar can be closed without a new one: the search field's cross, in the column's
+   top right corner. Its box is 36px and the drawn cross 16px, so the box stands 10px out of the content's edge and 8px over its top: the cross ends on that
+   edge, on the text's first line, and the text beside it keeps clear of the box (--x-in, the box's part inside the column). So it stands while the buttons
+   are under the text. A finger's target is 44px, 4px beyond the box on every side */
+.consent{--x-in:26px}
+.consent-x{position:absolute;z-index:0;top:-8px;right:-10px;width:36px;height:36px;display:grid;place-items:center;margin:0;padding:0;border:0;background:transparent;color:var(--text);cursor:pointer}
+.consent-x[hidden]{display:none}
+.consent-x svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round}
+.consent-x::before{content:"";position:absolute;z-index:-1;inset:5px;border-radius:6px}
+@media (hover:hover){.consent-x:hover::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
+.consent-x:focus-visible{outline:none}.consent-x:focus-visible::before{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep);outline:2px solid var(--link);outline-offset:2px}
+@media (hover:none){.consent{--x-in:30px}.consent-x::after{content:"";position:absolute;inset:-4px}}
+.consent.can-close .consent-t{padding-right:var(--x-in)}
+/* beside the text the cross is the row's last item: after the buttons, 24px from them (the row's gap), on the middle of their height */
+@container (min-width:660px){.consent-x{position:relative;top:auto;right:auto;flex:none}.consent.can-close .consent-t{padding-right:0}}
+/* the bar's words can be selected, the buttons' too; a drag that leaves a selection in a button is not a press (app.js) */
+.consent,.consent-btn{-webkit-user-select:text;user-select:text}
+.consent-x{-webkit-user-select:none;user-select:none}
+body{padding-bottom:var(--consent-h,0px)}
+
 /* responsive */
 @media (max-width:1180px){body.has-toc .shell{grid-template-columns:var(--side-w) minmax(0,1fr)}.toc{display:none}.nav-sec{display:block}}
 @media (max-width:860px){
@@ -1275,6 +1352,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   .foot{grid-column:1;padding:0 16px 32px}
   .foot a{padding:14px 6px;margin:-14px -6px}  /* touch target: 44px tall, the line keeps its place */
   .foot-in{row-gap:28px}  /* the groups' lines stand 44.5px apart, so the touch targets of one line do not reach into the other's */
+  .consent-sh{padding:0 16px}.consent-pad{padding:12px 0}
   .pager{--pg-x:12px}  /* the box stays 4px inside the 16px gutter, its hover lift too */
 }
 /* phones: the field gets the title's room; inside the same home link the emblem stands in for it, and the link is named by the emblem's hidden text.
@@ -1291,7 +1369,7 @@ section>h2.dh.is-stuck::after{opacity:1}
   .hm .hm-t,.hm .hm-q{transition:opacity .15s linear!important}
   /* the theme icon keeps a fade between sun and moon and loses the morph */
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
-@media print{.top,.sidebar,.toc,.pager,.scrim{display:none!important}.shell{display:block}.main{padding:0}}
+@media print{.top,.sidebar,.toc,.pager,.scrim,.consent{display:none!important}body{padding-bottom:0}.shell{display:block}.main{padding:0}}
 """
 
 JS = r"""
@@ -1533,6 +1611,54 @@ JS = r"""
       var y=scrollY+mk.getBoundingClientRect().top-(parseFloat(getComputedStyle(mk).scrollMarginTop)||0);
       if(location.hash!=='#directives')location.hash='directives';
       focusTarget();scrollTo(0,Math.max(0,Math.min(y,root.scrollHeight-innerHeight)))})});}
+  // analytics consent: the choice lives in localStorage "ah-consent" ("granted" or "denied"; the portfolio the book is read under keeps the same key).
+  // Until there is one the bar is shown and Google Analytics is not loaded (ahGa, the page's head: it loads on alehhaiko.com alone, the bar shows on every host).
+  // Storage that fails keeps the choice for this page: the bar comes back on the next load.
+  // The text's second line says what holds now: analytics stays off until allowed, is on, or is off; the words that carry it are bold.
+  // The answer that holds is not offered again: its button states the fact instead ("Analytics allowed", "Analytics declined"), aria-disabled, so it keeps
+  // its place in the Tab order and is read out, and a press on it does nothing.
+  // The body keeps the bar's height free at its bottom, so the footer can be scrolled clear of it.
+  // The answer is also said aloud, in a status line that is not drawn (.consent-say): what was answered and where to change it.
+  // Declining after analytics was allowed removes Google Analytics' cookies (_ga, _ga_*: this host's and .alehhaiko.com's) and loads the page anew,
+  // without it; the focus then goes to the text, as after any answer.
+  var cb=document.querySelector('.consent'),CONSENT='ah-consent',consent=null;
+  try{consent=localStorage.getItem(CONSENT)}catch(e){}
+  if(consent!=='granted'&&consent!=='denied')consent=null;
+  function consentRoom(){root.style.setProperty('--consent-h',cb.hidden?'0px':cb.offsetHeight+'px')}
+  var CONSENT_SAYS={granted:'You <strong>allowed</strong> it. Current state is <strong>on</strong>.',denied:'You <strong>declined</strong> it. Current state is <strong>off</strong>.'};
+  var CONSENT_ACT={granted:'Allow analytics',denied:'Decline analytics'},CONSENT_FACT={granted:'Analytics allowed',denied:'Analytics declined'};
+  function consentShow(on){
+    if(on){cb.querySelector('.consent-s').innerHTML=CONSENT_SAYS[consent]||'It stays <strong>off</strong> unless you allow it.';
+      [].forEach.call(cb.querySelectorAll('[data-consent]'),function(b){var v=b.dataset.consent,is=v===consent;
+        b.textContent=(is?CONSENT_FACT:CONSENT_ACT)[v];if(is)b.setAttribute('aria-disabled','true');else b.removeAttribute('aria-disabled')})}
+    var can=on&&!!consent;cb.classList.toggle('can-close',can);cx.hidden=!can;
+    cb.hidden=!on;consentRoom()}
+  var csay=document.querySelector('.consent-say'),CONSENT_SAY={granted:'You allowed analytics. Change it with GA in the footer.',denied:'You declined analytics. Change it with GA in the footer.'};
+  // the line is emptied first and filled a moment later, so the same words are read out again after the same answer
+  function consentSay(){if(!csay||!CONSENT_SAY[consent])return;csay.textContent='';setTimeout(function(){csay.textContent=CONSENT_SAY[consent]},100)}
+  function consentClose(){consentShow(false)}
+  var cx=document.querySelector('.consent-x');
+  if(cb){
+    var consentX=0,consentY=0;cb.addEventListener('pointerdown',function(e){consentX=e.clientX;consentY=e.clientY});
+    cb.addEventListener('click',function(e){var b=e.target.closest('[data-consent]');if(!b||b.getAttribute('aria-disabled')==='true')return;
+      // the buttons' words can be selected: a pointer's click that moved over HOLD_MOVE since it went down, or leaves a selection in the button, was a drag, not a press
+      var sel=getSelection();if(e.detail&&(Math.hypot(e.clientX-consentX,e.clientY-consentY)>HOLD_MOVE||sel&&!sel.isCollapsed&&b.contains(sel.anchorNode)))return;
+      var was=consent;consent=b.dataset.consent;
+      try{localStorage.setItem(CONSENT,consent)}catch(err){}
+      consentShow(false);
+      if(consent==='denied'&&was==='granted'){
+        document.cookie.split(';').forEach(function(c){var n=c.split('=')[0].trim();if(!/^_ga(_|$)/.test(n))return;
+          ['',';domain='+location.hostname,';domain=.alehhaiko.com'].forEach(function(d){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'+d})});
+        try{sessionStorage.setItem(CONSENT+'-focus','1')}catch(err){}
+        location.reload();return}
+      if(consent==='granted')ahGa();
+      focusTarget(document.getElementById('main'));consentSay()});
+    cx.addEventListener('click',consentClose);
+    // Escape closes the bar that the cross can close, wherever the focus is; the open drawer takes the key first
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!cb.hidden&&!cx.hidden&&!document.body.classList.contains('nav-open'))consentClose()});
+    if(window.ResizeObserver)new ResizeObserver(consentRoom).observe(cb);else addEventListener('resize',consentRoom);
+    try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentSay()}}catch(e){}
+    if(!consent)consentShow(true)}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
