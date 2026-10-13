@@ -198,6 +198,8 @@ a{color:var(--link);text-decoration:none}
 .nav-home.is-cur{background:var(--home-sel);text-decoration:none}
 @media (hover:hover){a.nav-home:hover{background:var(--home-hov);text-decoration:none}}
 .nav-home.is-cur{cursor:default}
+/* the row after the chapters: "Skill for Claude", under a rule. The Contents row's box, its tints and its current look; no button beside it, so it is as wide as the menu */
+.nav-x{display:flex;margin:8px 0 6px;padding-top:8px;border-top:1px solid var(--line)}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 /* every chapter number takes the room of the widest ("4.", 14px at 600): the titles start on one vertical, and so do the subcategory numbers under them */
@@ -285,6 +287,8 @@ a{color:var(--link);text-decoration:none}
   .nav-ch-t[aria-current],.nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]) .nav-ch-t{background:var(--ch-sel);margin:1.5px -3px 1.5px 0;padding:4.5px 3px 4.5px 8px}
   /* (the second selector: a subcategory's chapter, folded. The current item is out of sight, so its chapter's title carries the mark) */
   /* "Contents" and "Expand all" are such a pair too: the pill is as tall as that button, level with it, and stops 3px short of it */
+  /* the skill's row has no button to stand level with: a pill as tall as a chapter's (41px) in a row of 44px */
+  .nav-x .nav-home{margin:1.5px 0;padding:9.3px 8px}
   .nav-home{margin:calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) -5px calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) 0;padding:calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 13px calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 8px}
 }
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
@@ -513,6 +517,40 @@ section>h2.dh.is-stuck::after{opacity:1}
 .prose blockquote{margin:18px 0;padding:2px 0 2px 18px;border-left:3px solid var(--quote)}
 .prose blockquote p{margin:8px 0}
 .prose ul,.prose ol{padding-left:22px}.prose ol li::marker{font-weight:700}.prose li+li{margin-top:6px}
+
+/* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
+.sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
+.sk a code{color:inherit}
+/* text to copy: a command or a prompt. A box on the soft ground, the cards' corners; long lines wrap, so nothing scrolls sideways at any width.
+   The button is the header's clear button: a 26px square that takes the Contents tints under the pointer; it stands at the box's top right and the text keeps clear of it.
+   It is shown with script alone (.js); copied, its sign is a tick for 2s */
+.code{position:relative;margin:8px 0 18px;border:1px solid var(--line);border-radius:12px;background:var(--bg-soft)}
+.code pre{margin:0;padding:12px 16px;font:500 13px/1.6 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.js .code pre{padding-right:48px}
+.code code{font:inherit}
+.code-l{margin:16px 0 0}
+.code-copy{display:none;position:absolute;top:8px;right:8px;width:30px;height:30px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;transition:background-color .2s var(--soft)}
+.js .code-copy{display:grid}
+.code-copy svg{grid-area:1/1;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.code-copy .ic-ok,.code-copy.is-ok .ic-cp{visibility:hidden}.code-copy.is-ok .ic-ok{visibility:visible}
+@media (hover:hover){.code-copy:hover{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
+.code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
+@media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
+/* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
+.tbl{margin:12px 0 18px}
+.tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
+.tbl th,.tbl td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th:last-child,.tbl td:last-child{padding-right:0}
+.tbl thead th{padding-top:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.tbl tbody th{font-weight:650;width:24%}.tbl td:nth-child(2){width:30%}
+@media (max-width:640px){
+  .tbl table,.tbl tbody,.tbl tr,.tbl tbody th,.tbl td{display:block;width:auto}
+  .tbl thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .tbl tbody tr{padding:12px 0;border-bottom:1px solid var(--line)}.tbl tbody tr:first-child{padding-top:0}
+  .tbl tbody th,.tbl td,.tbl td:nth-child(2){padding:0;border:0;width:auto}
+  .tbl td{margin-top:6px}
+  .tbl td::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+}
 
 /* chapter tiles */
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}

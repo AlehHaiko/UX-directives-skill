@@ -91,7 +91,7 @@
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
@@ -303,6 +303,16 @@
     if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
     try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}
     if(!consent)consentShow(true)}
+  // text to copy (the skill's page): the button copies its box's text and says so, in the pinned hint over it and in the status line that is not drawn;
+  // its sign is a tick for 2s. Where the clipboard cannot be written, the text is selected, so the reader's own copy is one key away
+  var skSay=document.querySelector('.sk-say');
+  [].forEach.call(document.querySelectorAll('.code-copy'),function(b){var c=b.parentNode.querySelector('code'),okT=0;
+    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);clearTimeout(okT);
+      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok')},2000);hintShow(b,t);
+      if(skSay){skSay.textContent='';setTimeout(function(){skSay.textContent=t},50)}}
+    function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
+      try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
+    b.addEventListener('click',function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.textContent).then(function(){done(true)},byHand);else byHand()})});
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

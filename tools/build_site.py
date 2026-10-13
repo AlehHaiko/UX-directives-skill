@@ -364,6 +364,11 @@ def layout(title, body, chapters, current_file="", current_ch=None, toc="", desc
         nav.append(
             f'<div class="nav-ch" data-ch="{c["n"]}"{" data-here" if here else ""} style="{chapter_vars(c["n"])}">'
             f'{head}<div class="nav-ch-c" id="nav-ch-{c["n"]}"{closed}>{sec if c["file"] == current_file else ""}<ul>{items}</ul></div></div>')
+    # under the nine chapters, after a rule: the page about the skill. It is no chapter, so its row is the Contents row: the same box and the same tints
+    # (--home-sel while it is the current page); its "On this page" items go under it, as the home page's go under "Contents"
+    on_skill = current_file == SKILL_FILE
+    nav.append('<div class="nav-x">' + (f'<span class="nav-home is-cur" aria-current="page">{SKILL_TITLE}</span>' if on_skill
+                                        else f'<a class="nav-home" href="{SKILL_FILE}">{SKILL_TITLE}</a>') + '</div>' + (sec if on_skill else ''))
     toc_style = f' style="{chapter_vars(current_ch)}"' if current_ch else ""
     toc_html = f'<aside class="toc"{toc_style} aria-label="On this page"><p class="toc-h">On this page</p>{toc}</aside>' if toc else ""
     return f"""<!doctype html>
@@ -629,6 +634,151 @@ FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>�
           + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}" aria-description="{d}">{ic}{t}</a></span>' for n, (h, t, ic, c, d) in enumerate(FOOT_R))
           + FOOT_GA + '</span></p></footer>')
 
+# ---------------------------------------------------------------- the skill's page
+# skill.html is neither a chapter nor a subcategory: it says what the skill is, how to install it and how to audit with it.
+# Its text is kept here, in the markdown subset md_blocks reads; links to the book are relative, as the book's own are.
+SKILL_FILE = "skill.html"
+SKILL_TITLE = "Skill for Claude"
+SKILL_DESC = "The Blue Book of UX Directives, packaged as a skill for Claude: what it does, how to install it and how to audit with it."
+SKILL_RAW = f"{REPO}/raw/main/ux-directives.skill"
+WCAG = "https://www.w3.org/TR/WCAG22/"
+ICON_COPY = ('<svg class="ic-cp" viewBox="0 0 20 20" aria-hidden="true"><rect x="7.25" y="7.25" width="9.5" height="9.5" rx="2"/>'
+             '<path d="M4.75 12.75h-.5a1.5 1.5 0 0 1-1.5-1.5v-7a1.5 1.5 0 0 1 1.5-1.5h7a1.5 1.5 0 0 1 1.5 1.5v.5"/></svg>')
+ICON_OK = '<svg class="ic-ok" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>'
+
+
+def code_block(text, what, by=""):
+    """Text to copy, not to read past: a command or a prompt in a box, with a button that copies it (app.js). Without script the button is not shown."""
+    desc = f' aria-describedby="{by}"' if by else ""
+    return (f'<div class="code"><pre><code>{html.escape(text, quote=False)}</code></pre>'
+            f'<button class="code-copy" type="button" aria-label="Copy {what}"{desc}>{ICON_COPY}{ICON_OK}</button></div>')
+
+
+SKILL_LEDE = "*[The Blue Book of UX Directives](index.html), packaged as a skill for Claude.*"
+SKILL_INTRO = ("The skill gives Claude the full text of the book. Claude then cites the exact directive, ID and title, instead of paraphrasing UX advice from memory. "
+               "A finding becomes a rule anyone on the team can look up and check, so designers, engineers, product managers and QA argue from the book, not from taste.")
+SKILL_CAN = """## What it can do, and why
+
+- **Cite exactly.** The book is bundled whole, so the title is quoted, not recalled.
+- **Find the directives for a topic.** [An index](index.html#chapters) maps all 62 subcategories with their "Ask yourself" questions.
+- **Audit what it is shown.** Screenshots, code, specs, flows. Each finding comes as Violates / Evidence / Fix / Severity.
+- **Write requirements** traced to directive IDs.
+- **Explain any ID,** including the five repealed ones and what replaced them.
+"""
+SKILL_CANNOT = f"""## What it cannot do, and why
+
+- **See what it is not shown.** A skill is text and instructions. It judges what is in front of it; a state nobody opened stays unchecked.
+- **Measure on its own.** Pixels, contrast and timing are measured only when the agent has a browser and uses it. Otherwise they are inferred from code, and the finding should say so.
+- **Know your history.** A deliberate decision looks like a defect unless it is listed as a decision.
+- **Know thresholds the book does not state.** The book names no numbers such as `3:1` for icons. Pair it with [WCAG]({WCAG}).
+- **Replace research.** Severity is a judgment by consequence, not data about your users.
+"""
+SKILL_INSTALL_1 = f"""## Install
+
+**Claude.ai** (Pro, Max, Team, Enterprise):
+
+1. Download [`ux-directives.skill`]({SKILL_RAW}) from the [GitHub repository]({REPO}). It is a zip of the `ux-directives/` folder.
+2. In [**Settings > Capabilities**](https://support.claude.com/en/articles/12512180-using-skills-in-claude), turn on code execution and file creation.
+3. In the **Skills** section, click **Upload skill** and choose the file.
+4. Find the skill in the list and toggle it on.
+
+Claude uses the skill on its own when a task calls for it. You don't need to name it.
+"""
+SKILL_CLONE = f"git clone {REPO}.git\ncp -R UX-directives-skill/ux-directives ~/.claude/skills/"
+SKILL_INSTALL_2 = ("[`~/.claude/skills/`](https://code.claude.com/docs/en/skills) makes the skill available in all your projects. To share it with a team, "
+                   "put it in the repository's `.claude/skills/` and commit it. Claude loads it when relevant, or you type `/ux-directives`.")
+SKILL_PROMPTS = [  # (label, prompt)
+    ("Audit", "Audit our account settings screen against the UX Directives. [screenshot]"),
+    ("Find by topic", "We're redesigning onboarding — new users get a 9-step tour before they can do anything. What does the Blue Book say?"),
+    ("Requirements", "Write acceptance criteria for an LLM that drafts support replies the agent can send or edit."),
+    ("Explain an ID", "What does directive 22/02 say, and how does it apply to an icon-only toolbar?"),
+]
+SKILL_SHARPER = f"""## Make audits sharper
+
+1. **Audit with fresh eyes.** The agent that built a screen has learned it and skips what is missing. Run the audit in a separate agent that gets the page, its source, the skill and the list of accepted decisions, and not the task history. Measured once, on one page: four fresh agents found a missing way out in 4 of 4 runs; the builder's audit had missed it. Forcing a sweep through all 62 questions did not change the result and took about a quarter longer.
+2. **Show every state.** List input × element × state × theme, so the audit sees what was never on screen.
+3. **Label the evidence:** measured, inferred from code, or assumed.
+4. **List accepted decisions,** so they are not raised again as defects.
+5. **Pair with numeric standards** such as [WCAG]({WCAG}) for thresholds.
+6. **Triage.** A fresh audit also stretches directives to fit; keep the findings that decide the case.
+"""
+SKILL_EXAMPLE = """## Worked example: a consent banner
+
+The Google Analytics consent banner on this site was built with Claude Code and audited with the skill every round.
+
+**Caught by the skill:**
+
+- **[25/03](2-5-state.html#25-03)—Make sure state is inspectable.** Reopened after "Allow analytics", the banner still said "It stays off unless you allow it." Fix: a state line per choice — "You allowed it. Current state is on."
+- **[54/07](5-4-accessibility.html#54-07)—Treat alternative input methods as primary.** The banner sat last in the page: 12 Tab stops before "Allow analytics". Fix: it now follows "Skip to content"; one stop.
+
+**Missed, then found:**
+
+- **[18/06](1-8-decision-making.html#18-06)—Allow decisions to be deferred.** Reopened from the footer, the banner had no way out except a choice. The owner noticed it; the builder's audit did not. Four fresh audits of the same build each named it under this directive. Fix: "Close" and Escape.
+
+The lesson is in the method: the book had the rule all along.
+"""
+# Who it might be for: (role, why, start with, the chapters the role starts in)
+SKILL_ROLES = [
+    ("Product designers", "A shared, citable language with engineering", "[Chapters 1–6](index.html#chapters)", (1, 2, 3, 4, 5, 6)),
+    ("Engineers without a designer", "The reviewer the team doesn't have",
+     "[44/01](4-4-error-prevention.html#44-01)—Design to prevent errors proactively. · [34/01](3-4-feedback.html#34-01)—Acknowledge every user action.", (3, 4)),
+    ("Product managers", "Acceptance criteria traced to IDs",
+     "[84/03](8-4-validation.html#84-03)—Evaluate success by measurable outcomes. · [84/02](8-4-validation.html#84-02)—Explicitly test underlying assumptions.", (8,)),
+    ("QA", "A directive as a defect class; the ID in the bug report",
+     "[63/02](6-3-patterns.html#63-02)—Ensure behavioral consistency within patterns. · [44/04](4-4-error-prevention.html#44-04)—Surface potential errors at the earliest viable moment.", (4, 6)),
+    ("AI product teams", "[Chapter 9](chapter-9-ai-mediated-interaction.html), for systems that can be wrong in ways no fixed rule predicts",
+     "[94/01](9-4-explainability.html#94-01)—Design explanations to enable informed judgment. · [95/01](9-5-confidence-signaling.html#95-01)—Calibrate confidence to actual reliability.", (9,)),
+    ("Privacy and compliance", "Consent and transparency in the form of an interface",
+     "[71/01](7-1-consent-and-control.html#71-01)—Design consent as a continuous capability. · [75/07](7-5-privacy.html#75-07)—Limit and state retention.", (7,)),
+    ("Design system teams", "Component docs that cite the rules",
+     "[64/01](6-4-design-system-integrity.html#64-01)—Prioritize systemic coherence over breadth. · [64/02](6-4-design-system-integrity.html#64-02)—Define and enforce governing principles.", (6,)),
+    ("UX writers", "Labels, errors, empty states",
+     "[27/01](2-7-search-and-labeling.html#27-01)—Label in the users’ vocabulary. · [73/01](7-3-error-communication.html#73-01)—Frame errors as system conditions.", (2, 7)),
+]
+SKILL_ROLES_END = f"Not on the list? Tell me in [Discussions]({REPO}/discussions) on GitHub."
+SKILL_LIMITS = """## Limits
+
+Severity is the skill's judgment, not research. Conclusions about screen readers come from the markup unless tested with one. The book states no numeric thresholds. [Chapter 9](chapter-9-ai-mediated-interaction.html) is still forming. The measurement above is one page and four runs: a signal, not a statistic.
+"""
+SKILL_GET = f"""## Get it
+
+[GitHub repository]({REPO}) · [Download `ux-directives.skill`]({SKILL_RAW}) · [Feedback]({REPO}/discussions) · [MIT License]({REPO}/blob/main/LICENSE)
+"""
+
+
+def roles_table():
+    """The roles as a table: the form the role picker has without script. Its cells keep their roles in the markup, so a narrow screen can stack them (style.css, .tbl)."""
+    rows = "".join(f'<tr role="row"><th role="rowheader" scope="row">{esc(r)}</th><td role="cell" data-l="Why">{inline(w)}</td>'
+                   f'<td role="cell" data-l="Start with">{inline(st)}</td></tr>' for r, w, st, _ in SKILL_ROLES)
+    return ('<div class="tbl"><table role="table" aria-labelledby="who-it-might-be-for"><thead role="rowgroup"><tr role="row">'
+            '<th role="columnheader" scope="col">Role</th><th role="columnheader" scope="col">Why</th><th role="columnheader" scope="col">Start with</th>'
+            f'</tr></thead><tbody role="rowgroup">{rows}</tbody></table></div>')
+
+
+def render_skill(chapters):
+    sec = lambda inner: f'<section class="prose sk">{inner}</section>'
+    prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
+    parts = [
+        f'<div class="hero"><h1>{SKILL_TITLE}</h1><p class="hero-s">{inline(SKILL_LEDE)}</p></div>',
+        sec(f'<p>{inline(SKILL_INTRO)}</p>'),
+        sec(md_blocks(SKILL_CAN)),
+        sec(md_blocks(SKILL_CANNOT)),
+        sec(md_blocks(SKILL_INSTALL_1) + '<p id="in-code"><strong>Claude Code:</strong></p>' + code_block(SKILL_CLONE, "commands", "in-code")
+            + f'<p>{inline(SKILL_INSTALL_2)}</p>'),
+        sec(md_blocks("## First prompts") + prompts),
+        sec(md_blocks(SKILL_SHARPER)),
+        sec(md_blocks(SKILL_EXAMPLE)),
+        sec(md_blocks("## Who it might be for") + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
+        sec(md_blocks(SKILL_LIMITS)),
+        sec(md_blocks(SKILL_GET)),
+        '<p class="sr sk-say" role="status"></p>',  # what a copy button did, said aloud (app.js)
+    ]
+    body = "\n".join(parts)
+    items = "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in re.findall(r'<h2 id="([^"]+)">(.+?)</h2>', body))
+    return layout(f"{SKILL_TITLE}—{BOOK_TITLE}", body, chapters, SKILL_FILE, None, f"<ol>{items}</ol>", SKILL_DESC,
+                  HOME_COVER.format(arrows=""), nav_sec=items)
+
+
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
 SKIP_FIX = ("<script>document.querySelector('.skip').addEventListener('click',function(e){e.preventDefault();"
             "var m=document.getElementById('main');m.setAttribute('tabindex','-1');m.focus()})</script>")
@@ -680,7 +830,7 @@ def main(base=BASE, out=None):
             return (f'{item[1]["n"]}. {item[1]["title"]}', item[1]["file"], item[1]["n"])
         return (f'{item[2]["code"]} {item[2]["name"]}', item[2]["file"], item[1]["n"])
 
-    expected = {"index.html", "404.html"} | {c["file"] for c in chapters} | {s["file"] for c in chapters for s in c["subs"]}
+    expected = {"index.html", "404.html", SKILL_FILE} | {c["file"] for c in chapters} | {s["file"] for c in chapters for s in c["subs"]}
     for f in HERE.glob("*.html"):
         if f.name not in expected:  # remove pages whose subcategory was renamed or removed
             try:
@@ -698,6 +848,7 @@ def main(base=BASE, out=None):
             html_ = render_sub(item[1], item[2], prev, nxt, chapters)
             (HERE / item[2]["file"]).write_text(html_, encoding="utf-8")
 
+    (HERE / SKILL_FILE).write_text(render_skill(chapters), encoding="utf-8")
     (HERE / "404.html").write_text(render_404(chapters), encoding="utf-8")  # not counted as a page of the book
 
     idx = []
@@ -731,7 +882,7 @@ def main(base=BASE, out=None):
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints, the brick edge, the consent button's orange */\n" + home + "\n", encoding="utf-8")
     (ASSETS / "app.js").write_text(JS.replace("__CUE_MIX__", json.dumps(CUE_MIX, separators=(",", ":"))), encoding="utf-8")
     n_dirs = sum(1 for x in idx if x["t"] == "d")
-    print(f"Built {1 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories; {n_dirs} directive IDs indexed.")
+    print(f"Built {2 + len(seq)} pages: 1 home, {len(chapters)} chapters, {len(seq) - len(chapters)} subcategories, 1 skill page; {n_dirs} directive IDs indexed.")
 
 
 CSS = r"""
@@ -934,6 +1085,8 @@ a{color:var(--link);text-decoration:none}
 .nav-home.is-cur{background:var(--home-sel);text-decoration:none}
 @media (hover:hover){a.nav-home:hover{background:var(--home-hov);text-decoration:none}}
 .nav-home.is-cur{cursor:default}
+/* the row after the chapters: "Skill for Claude", under a rule. The Contents row's box, its tints and its current look; no button beside it, so it is as wide as the menu */
+.nav-x{display:flex;margin:8px 0 6px;padding-top:8px;border-top:1px solid var(--line)}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
 /* every chapter number takes the room of the widest ("4.", 14px at 600): the titles start on one vertical, and so do the subcategory numbers under them */
@@ -1021,6 +1174,8 @@ a{color:var(--link);text-decoration:none}
   .nav-ch-t[aria-current],.nav-ch[data-here] .nav-ch-h:has(.chev[aria-expanded="false"]) .nav-ch-t{background:var(--ch-sel);margin:1.5px -3px 1.5px 0;padding:4.5px 3px 4.5px 8px}
   /* (the second selector: a subcategory's chapter, folded. The current item is out of sight, so its chapter's title carries the mark) */
   /* "Contents" and "Expand all" are such a pair too: the pill is as tall as that button, level with it, and stops 3px short of it */
+  /* the skill's row has no button to stand level with: a pill as tall as a chapter's (41px) in a row of 44px */
+  .nav-x .nav-home{margin:1.5px 0;padding:9.3px 8px}
   .nav-home{margin:calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) -5px calc((14px * 1.6 + 12px - 12px * 1.6 - 8px) / 2) 0;padding:calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 13px calc((12px * 1.6 + 8px - 14px * 1.6) / 2) 8px}
 }
 .nav-ch .num{font-family:var(--mono);font-size:12px;min-width:2.4em;color:var(--text);padding-top:1px}
@@ -1249,6 +1404,40 @@ section>h2.dh.is-stuck::after{opacity:1}
 .prose blockquote{margin:18px 0;padding:2px 0 2px 18px;border-left:3px solid var(--quote)}
 .prose blockquote p{margin:8px 0}
 .prose ul,.prose ol{padding-left:22px}.prose ol li::marker{font-weight:700}.prose li+li{margin-top:6px}
+
+/* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
+.sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
+.sk a code{color:inherit}
+/* text to copy: a command or a prompt. A box on the soft ground, the cards' corners; long lines wrap, so nothing scrolls sideways at any width.
+   The button is the header's clear button: a 26px square that takes the Contents tints under the pointer; it stands at the box's top right and the text keeps clear of it.
+   It is shown with script alone (.js); copied, its sign is a tick for 2s */
+.code{position:relative;margin:8px 0 18px;border:1px solid var(--line);border-radius:12px;background:var(--bg-soft)}
+.code pre{margin:0;padding:12px 16px;font:500 13px/1.6 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.js .code pre{padding-right:48px}
+.code code{font:inherit}
+.code-l{margin:16px 0 0}
+.code-copy{display:none;position:absolute;top:8px;right:8px;width:30px;height:30px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;transition:background-color .2s var(--soft)}
+.js .code-copy{display:grid}
+.code-copy svg{grid-area:1/1;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.code-copy .ic-ok,.code-copy.is-ok .ic-cp{visibility:hidden}.code-copy.is-ok .ic-ok{visibility:visible}
+@media (hover:hover){.code-copy:hover{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
+.code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
+@media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
+/* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
+.tbl{margin:12px 0 18px}
+.tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
+.tbl th,.tbl td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th:last-child,.tbl td:last-child{padding-right:0}
+.tbl thead th{padding-top:0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.tbl tbody th{font-weight:650;width:24%}.tbl td:nth-child(2){width:30%}
+@media (max-width:640px){
+  .tbl table,.tbl tbody,.tbl tr,.tbl tbody th,.tbl td{display:block;width:auto}
+  .tbl thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .tbl tbody tr{padding:12px 0;border-bottom:1px solid var(--line)}.tbl tbody tr:first-child{padding-top:0}
+  .tbl tbody th,.tbl td,.tbl td:nth-child(2){padding:0;border:0;width:auto}
+  .tbl td{margin-top:6px}
+  .tbl td::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+}
 
 /* chapter tiles */
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
@@ -1488,7 +1677,7 @@ JS = r"""
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
@@ -1700,6 +1889,16 @@ JS = r"""
     if(cs)cs.addEventListener('click',function(){if(hintIO){hintIO.disconnect();hintIO=null}consentShow(true);cb.querySelector('[data-consent]:not([aria-disabled="true"])').focus({preventScroll:true})});
     try{if(sessionStorage.getItem(CONSENT+'-focus')){sessionStorage.removeItem(CONSENT+'-focus');focusTarget(document.getElementById('main'));consentHint();consentSay()}}catch(e){}
     if(!consent)consentShow(true)}
+  // text to copy (the skill's page): the button copies its box's text and says so, in the pinned hint over it and in the status line that is not drawn;
+  // its sign is a tick for 2s. Where the clipboard cannot be written, the text is selected, so the reader's own copy is one key away
+  var skSay=document.querySelector('.sk-say');
+  [].forEach.call(document.querySelectorAll('.code-copy'),function(b){var c=b.parentNode.querySelector('code'),okT=0;
+    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);clearTimeout(okT);
+      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok')},2000);hintShow(b,t);
+      if(skSay){skSay.textContent='';setTimeout(function(){skSay.textContent=t},50)}}
+    function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
+      try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
+    b.addEventListener('click',function(){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.textContent).then(function(){done(true)},byHand);else byHand()})});
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
