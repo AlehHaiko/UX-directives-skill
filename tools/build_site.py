@@ -1574,11 +1574,12 @@ section>h2.dh.is-stuck::after{opacity:1}
    The buttons are the consent bar's text button; one that has nowhere to go is faint and takes no hover. The step's own ring and its line down are not drawn: the rail has them */
 .st-bar{margin-bottom:16px}
 .st-rail{display:flex;align-items:center;list-style:none;margin:0 0 14px;padding:0}
-.st-dot{flex:none;transition:opacity .2s var(--soft)}
+.st-dot{flex:none}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
 .st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
 .st-ln .st-lv{position:absolute;left:4px;top:0;width:calc(100% - 8px);height:12px}.st-ln .st-la{position:absolute;right:3px;top:0;width:8px;height:12px}
-.st-dot:not(.is-cur):not(.is-done),.st-ln:not(.is-done){opacity:.35}
+/* what is ahead: the ring and the line step back, the number keeps the text's colour */
+.st-dot:not(.is-cur):not(.is-done){border-color:color-mix(in srgb,var(--text) 35%,transparent)}.st-ln:not(.is-done){opacity:.35}
 .st-ctl{display:flex;align-items:center;gap:12px}
 .st-count{flex:1;margin:0;text-align:center;font-size:14px}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
