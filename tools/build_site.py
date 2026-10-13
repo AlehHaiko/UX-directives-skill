@@ -784,6 +784,57 @@ def scheme_id(chapters):
             f'<p class="sch-n">Subcategory 9.10 uses three digits, <code>910/05</code>.</p></figure>')
 
 
+# Scheme 2, how the skill works: five steps from a request to a finding, each with the real fragment of the consent banner's audit (the page's worked example):
+# the skill's own description (SKILL.md), the index's questions, the directive's line and the finding in the skill's four parts, all read from the book at build time.
+# Without script the steps stand one under another, joined by arrows. With it (app.js) one step shows at a time under a rail of the five,
+# with Previous, Next and a counter; the arrow keys step too. At step 5 the path forks: who audits decides what is found.
+# Lines and arrowheads are inline SVG: a line stretches (preserveAspectRatio none, the stroke does not scale), a head keeps its size
+ST_LINE_H = '<svg class="st-lv" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M0 6H100"/></svg>'
+ST_HEAD_R = '<svg class="st-la" viewBox="0 0 8 12" aria-hidden="true"><path d="M1.5 1.5L6.5 6l-5 4.5"/></svg>'
+ST_LINE_V = '<svg class="st-lv" viewBox="0 0 12 100" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M6 0V100"/></svg>'
+ST_HEAD_D = '<svg class="st-la" viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.5L6 6.5l4.5-5"/></svg>'
+# the fork: one stem, two branches to the middles of two equal columns; stretched across, 28px high
+ST_FORK = '<svg class="st-fk" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M50 0V12M25 28V12H75V28"/></svg>'
+ST_FOUND = "18/06"  # the directive the worked example's missed finding falls under
+ST_PICKED = ("1.8", "2.5", "5.4")  # the subcategories of the worked example's three findings
+
+
+def scheme_steps(chapters):
+    subs = {x["code"]: x for c in chapters for x in c["subs"]}
+    sub = subs[ST_PICKED[0]]
+    d = next(x for x in sub["directives"] if x["id"] == ST_FOUND)
+    desc = re.search(r"Use this skill whenever the user asks to audit[^;]+", (ROOT / "ux-directives" / "SKILL.md").read_text(encoding="utf-8")).group(0)
+    frag = lambda src, inner: f'<div class="st-f"><p class="st-src">{src}</p>{inner}</div>'
+    picked = "".join(f'<li><span class="mono">{k}</span> {esc(subs[k]["name"])}: {inline(subs[k]["ask"])}</li>' for k in ST_PICKED)
+    finding = (f'<dl class="st-dl"><dt>Violates</dt><dd><span class="mono">{d["id"]}</span>—{inline(d["title"])} ({sub["code"]} {esc(sub["name"])})</dd>'
+               '<dt>Evidence</dt><dd>Reopened from the footer, the banner had no way out except a choice.</dd>'
+               '<dt>Fix</dt><dd>“Close” and Escape.</dd>'
+               '<dt>Severity</dt><dd>High, Medium or Low, by consequence to the user.</dd></dl>')
+    fork = (f'<div class="st-fork">{ST_FORK}'
+            f'<p class="st-out c-pink">{ST_HEAD_D}Audited by the agent that built it<span class="sr">: </span><strong>Missed the way out</strong></p>'
+            f'<p class="st-out c-green">{ST_HEAD_D}Audited by a fresh agent<span class="sr">: </span><strong>Found it in 4 of 4</strong></p></div>')
+    steps = [
+        ("A request", frag("You", "<p>Audit this consent banner.</p>")),
+        ("Claude reads the skill’s description and loads it", frag("SKILL.md", f"<p>description: … {esc(desc)}; …</p>")),
+        ("<code>index.md</code>: subcategories picked by their “Ask yourself” questions", frag("references/index.md", f'<ul class="st-ul">{picked}</ul>')),
+        ("The chapter is read and the directive quoted verbatim",
+         frag("references/chapter_1.md", f'<p><a class="mono" href="{sub["file"]}#{d["id"].replace("/", "-")}">{d["id"]}</a>—<strong>{inline(d["title"])}</strong> {inline(d["body"])}</p>')),
+        ("A finding in four parts", frag("Claude", finding) + fork),
+    ]
+    n = len(steps)
+    items = "".join(
+        f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span><p class="st-h">{t}</p>'
+        + (f'<span class="st-dn" aria-hidden="true">{ST_LINE_V}{ST_HEAD_D}</span>' if i < n else "") + f'<div class="st-b">{b}</div></li>'
+        for i, (t, b) in enumerate(steps, 1))
+    rail = "".join((f'<li class="st-ln">{ST_LINE_H}{ST_HEAD_R}</li>' if i > 1 else "") + f'<li class="st-dot">{i}</li>' for i in range(1, n + 1))
+    bar = (f'<div class="st-bar" hidden><ol class="st-rail" aria-hidden="true">{rail}</ol><div class="st-ctl">'
+           '<button class="sch-btn st-prev" type="button">Previous</button>'
+           f'<p class="st-count" role="status"><span class="st-cn">Step 1 of {n}</span><span class="sr st-ct"></span></p>'
+           '<button class="sch-btn st-next" type="button">Next</button></div></div>')
+    return (f'<figure class="sch sch-st" aria-labelledby="sch-st-t"><figcaption class="sch-t" id="sch-st-t">How the skill works</figcaption>'
+            f'{bar}<ol class="st-list" role="list">{items}</ol></figure>')
+
+
 def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{inner}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
@@ -795,6 +846,7 @@ def render_skill(chapters):
         sec(md_blocks(SKILL_INSTALL_1) + '<p id="in-code"><strong>Claude Code:</strong></p>' + code_block(SKILL_CLONE, "commands", "in-code")
             + f'<p>{inline(SKILL_INSTALL_2)}</p>'),
         sec(md_blocks("## First prompts") + prompts),
+        f'<section class="sk">{scheme_steps(chapters)}</section>',
         sec(md_blocks(SKILL_SHARPER)),
         sec(md_blocks(SKILL_EXAMPLE)),
         sec(md_blocks("## Who it might be for") + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
@@ -1476,6 +1528,48 @@ section>h2.dh.is-stuck::after{opacity:1}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
+/* scheme 2. A step: its number in a ring, its name beside it, under the name the fragment in a box on the soft ground, the file it comes from over it in small type.
+   Under the ring a line runs down to the next step's ring and ends in an arrowhead */
+.st-list{list-style:none;margin:0;padding:0}
+.st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}.st-i[hidden]{display:none}
+.st-num,.st-dot{display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--text);border-radius:50%;font:600 13px/1 var(--mono)}
+.st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}
+.st-b{grid-column:2;min-width:0;padding:6px 0 18px}.st-i:last-child .st-b{padding-bottom:0}
+.st-dn{grid-column:1;grid-row:2;position:relative;margin:4px 0}
+.st-lv,.st-la,.st-fk{fill:none;stroke:var(--text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.st-dn .st-lv{position:absolute;left:8px;top:0;width:12px;height:100%}.st-dn .st-la{position:absolute;left:8px;bottom:0;width:12px;height:8px}
+.st-f{padding:10px 14px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg-soft);font-size:14px;line-height:1.5}
+.st-f p{margin:0}.st-f .st-src{margin-bottom:4px;font:600 11px/1.5 var(--mono)}
+.st-ul{margin:0;padding:0;list-style:none}.st-ul li+li{margin-top:6px}
+.st-dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0}.st-dl dt{font-weight:650}.st-dl dd{margin:0}
+/* the fork under the finding: the stem leaves the box's middle and each branch ends over the middle of its outcome. Two columns of one half each (the gap is inside them),
+   so the branches' ends, a quarter and three quarters across, are the columns' middles at any width. An outcome is the book's tinted block: who audited, then what was found, in bold */
+.st-fork{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.st-fk{grid-column:1/3;width:100%;height:28px}
+.st-out{position:relative;margin:6px 4px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}
+.st-out strong{display:block;font-size:14px}
+.st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
+/* with script: the rail and the buttons over one step. The rail: the step shown is the filled ring, the steps before it and the lines to it keep the text's colour, what is ahead steps back.
+   The buttons are the consent bar's text button; one that has nowhere to go is faint and takes no hover. The step's own ring and its line down are not drawn: the rail has them */
+.st-bar{margin-bottom:16px}
+.st-rail{display:flex;align-items:center;list-style:none;margin:0 0 14px;padding:0}
+.st-dot{flex:none;transition:opacity .2s var(--soft),background-color .2s var(--soft)}
+.st-dot.is-cur{background:var(--text);color:var(--bg)}
+.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
+.st-ln .st-lv{position:absolute;left:4px;top:0;width:calc(100% - 8px);height:12px}.st-ln .st-la{position:absolute;right:3px;top:0;width:8px;height:12px}
+.st-dot:not(.is-cur):not(.is-done),.st-ln:not(.is-done){opacity:.35}
+.st-ctl{display:flex;align-items:center;gap:12px}
+.st-count{flex:1;margin:0;text-align:center;font-size:14px}
+.sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):hover{background:var(--home-hov)}}
+.sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
+@media (hover:none){.sch-btn{min-height:44px}}
+.sch-st.is-js .st-i{display:block}.sch-st.is-js .st-i[hidden]{display:none}
+.sch-st.is-js .st-num,.sch-st.is-js .st-dn{display:none}
+.sch-st.is-js .st-b{padding-bottom:0}
+/* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
+.st-i.in{animation:bb-st-in .35s var(--soft)}
+@keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
@@ -1967,6 +2061,21 @@ JS = r"""
     idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
     idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
     idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
+  // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. Previous and Next step, and so do the left and right arrow keys
+  // while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled). The counter is a status line: it says the step and its name
+  var stg=document.querySelector('.sch-st');
+  if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stR=[].slice.call(stg.querySelectorAll('.st-rail>li')),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stAt=-1;
+    var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
+      stI.forEach(function(li,j){li.hidden=j!==i;li.classList.remove('in')});
+      if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
+      // the rail's items: rings at the even places, lines between them
+      stR.forEach(function(li,j){li.classList.toggle('is-cur',j===2*i);li.classList.toggle('is-done',j<2*i)});
+      stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
+      stg.querySelector('.st-cn').textContent='Step '+(i+1)+' of '+stI.length;stg.querySelector('.st-ct').textContent=': '+stI[i].querySelector('.st-h').textContent};
+    stg.classList.add('is-js');stg.querySelector('.st-bar').hidden=false;stSet(0);
+    stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
+    stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
+      if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;

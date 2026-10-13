@@ -560,6 +560,48 @@ section>h2.dh.is-stuck::after{opacity:1}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
+/* scheme 2. A step: its number in a ring, its name beside it, under the name the fragment in a box on the soft ground, the file it comes from over it in small type.
+   Under the ring a line runs down to the next step's ring and ends in an arrowhead */
+.st-list{list-style:none;margin:0;padding:0}
+.st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}.st-i[hidden]{display:none}
+.st-num,.st-dot{display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--text);border-radius:50%;font:600 13px/1 var(--mono)}
+.st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}
+.st-b{grid-column:2;min-width:0;padding:6px 0 18px}.st-i:last-child .st-b{padding-bottom:0}
+.st-dn{grid-column:1;grid-row:2;position:relative;margin:4px 0}
+.st-lv,.st-la,.st-fk{fill:none;stroke:var(--text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.st-dn .st-lv{position:absolute;left:8px;top:0;width:12px;height:100%}.st-dn .st-la{position:absolute;left:8px;bottom:0;width:12px;height:8px}
+.st-f{padding:10px 14px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg-soft);font-size:14px;line-height:1.5}
+.st-f p{margin:0}.st-f .st-src{margin-bottom:4px;font:600 11px/1.5 var(--mono)}
+.st-ul{margin:0;padding:0;list-style:none}.st-ul li+li{margin-top:6px}
+.st-dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0}.st-dl dt{font-weight:650}.st-dl dd{margin:0}
+/* the fork under the finding: the stem leaves the box's middle and each branch ends over the middle of its outcome. Two columns of one half each (the gap is inside them),
+   so the branches' ends, a quarter and three quarters across, are the columns' middles at any width. An outcome is the book's tinted block: who audited, then what was found, in bold */
+.st-fork{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.st-fk{grid-column:1/3;width:100%;height:28px}
+.st-out{position:relative;margin:6px 4px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}
+.st-out strong{display:block;font-size:14px}
+.st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
+/* with script: the rail and the buttons over one step. The rail: the step shown is the filled ring, the steps before it and the lines to it keep the text's colour, what is ahead steps back.
+   The buttons are the consent bar's text button; one that has nowhere to go is faint and takes no hover. The step's own ring and its line down are not drawn: the rail has them */
+.st-bar{margin-bottom:16px}
+.st-rail{display:flex;align-items:center;list-style:none;margin:0 0 14px;padding:0}
+.st-dot{flex:none;transition:opacity .2s var(--soft),background-color .2s var(--soft)}
+.st-dot.is-cur{background:var(--text);color:var(--bg)}
+.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
+.st-ln .st-lv{position:absolute;left:4px;top:0;width:calc(100% - 8px);height:12px}.st-ln .st-la{position:absolute;right:3px;top:0;width:8px;height:12px}
+.st-dot:not(.is-cur):not(.is-done),.st-ln:not(.is-done){opacity:.35}
+.st-ctl{display:flex;align-items:center;gap:12px}
+.st-count{flex:1;margin:0;text-align:center;font-size:14px}
+.sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):hover{background:var(--home-hov)}}
+.sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
+@media (hover:none){.sch-btn{min-height:44px}}
+.sch-st.is-js .st-i{display:block}.sch-st.is-js .st-i[hidden]{display:none}
+.sch-st.is-js .st-num,.sch-st.is-js .st-dn{display:none}
+.sch-st.is-js .st-b{padding-bottom:0}
+/* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
+.st-i.in{animation:bb-st-in .35s var(--soft)}
+@keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
