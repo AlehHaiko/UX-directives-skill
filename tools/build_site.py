@@ -573,17 +573,21 @@ SR = '<span class="r-sr">, </span>'
 # the author's name is the way back to his site, the portfolio the book is read under: a link as the footer's other two text links are
 # (the footer's grey, underlined when pointed at, the same tab); the year before it stays text
 AUTHOR_URL = "https://alehhaiko.com/"
-FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License"), (REPO, "Source")]
+# Each link says where it leads in the tooltip of the icon-only controls (app.js, TIP_SEL). Its text is the link's aria-description:
+# the word shown stays the link's name, the sentence is read after it
+AUTHOR_TIP = f"Visit {AUTHOR}'s site"
+FOOT_L = [(f"{REPO}/blob/main/LICENSE", "MIT License", "Read the license"), (REPO, "Source", "View the source on GitHub")]
 # The two signs of the right group, drawn on a 12 grid at the header icons' 1.5px (search, theme, menu, cross), round ends and joints:
 # a speech bubble for Feedback, the heart of GitHub Sponsors for Sponsor. Outlines in the link's own colour, inside the link
 ICON_TALK = ('<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.75 1.5h6.5a1.25 1.25 0 0 1 1.25 1.25v4.25'
              'a1.25 1.25 0 0 1-1.25 1.25H6.25L3.75 10.5V8.25H2.75A1.25 1.25 0 0 1 1.5 7V2.75A1.25 1.25 0 0 1 2.75 1.5z"/></svg>')
 ICON_HEART = '<svg class="foot-ic" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.25L2.3 6.6A2.6 2.6 0 0 1 6 2.95a2.6 2.6 0 0 1 3.7 3.65z"/></svg>'
 # the last field is the link's class: it names the colour its sign takes while the link is pointed at or focused (style.css, --in)
-FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb"), ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp")]
-FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a href="{AUTHOR_URL}">{AUTHOR}</a></span>'
-          + "".join(f'<span class="foot-i">{BUL}<a href="{h}">{t}</a></span>' for h, t in FOOT_L) + '</span><span class="foot-g">'
-          + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}">{ic}{t}</a></span>' for n, (h, t, ic, c) in enumerate(FOOT_R))
+FOOT_R = [(f"{REPO}/discussions", "Feedback", ICON_TALK, "foot-fb", "Leave feedback on GitHub"),
+          ("https://github.com/sponsors/AlehHaiko", "Sponsor", ICON_HEART, "foot-sp", "Sponsor on GitHub")]
+FOOTER = (f'<footer class="foot"><p class="foot-in"><span class="foot-g"><span>© 2026 <a href="{AUTHOR_URL}" aria-description="{AUTHOR_TIP}">{AUTHOR}</a></span>'
+          + "".join(f'<span class="foot-i">{BUL}<a href="{h}" aria-description="{d}">{t}</a></span>' for h, t, d in FOOT_L) + '</span><span class="foot-g">'
+          + "".join(f'<span class="foot-i">{BUL if n else SR}<a class="foot-il {c}" href="{h}" aria-description="{d}">{ic}{t}</a></span>' for n, (h, t, ic, c, d) in enumerate(FOOT_R))
           + '</span></p></footer>')
 
 # Under <base>, "#main" would resolve to the home page, so the skip link moves focus itself.
@@ -870,7 +874,7 @@ a{color:var(--link);text-decoration:none}
 :root[data-theme="dark"] .tip{background:#2f2f2f;color:var(--text);border-color:#474747}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tip{background:#2f2f2f;color:var(--text);border-color:#474747}}
 /* touch: a long press on an icon-only control shows its tooltip, so the browser's own callout and text selection are off on these controls */
-@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
+@media (hover:none){.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}}
 
 /* shell */
 .shell{--side-w:var(--side);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--toc);max-width:var(--shell);margin:0 auto;overflow-x:clip;transition:grid-template-columns .45s var(--soft)}
@@ -1380,7 +1384,8 @@ JS = r"""
   // tooltips: one styled label under an icon-only control; its text is the control's aria-label (the home link's: its emblem's hidden text, while the emblem shows).
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev',TIP_DELAY=400,TIP_CHAIN=300;
+  // The footer's links have it too: each keeps its word as its name, and the tooltip's text is its aria-description, where the link leads.
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
@@ -1395,7 +1400,7 @@ JS = r"""
     tip.style.transformOrigin=side?(sl?'100% 50%':'0 50%'):(cx-x)+'px '+(up?'100%':'0')}
   // the one exception: a chapter chevron keeps its label and its tooltip names what a click does to the list (the words of "Collapse all" / "Expand all")
   function tipText(el){if(el.matches('.brand')){var m=el.querySelector('.brand-m');return m&&m.offsetWidth?m.textContent:''}
-    return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')}
+    return el.matches('.chev')?(el.getAttribute('aria-expanded')==='true'?'Collapse':'Expand'):el.getAttribute('aria-label')||el.getAttribute('aria-description')}
   function tipShow(el){clearTimeout(tipT);var t=tipText(el);if(!t)return;tipOwn=el;tip.textContent=t;tipPlace();if(tipOwn)tip.classList.add('on')}
   function tipHide(){clearTimeout(tipT);if(tipOwn){tipOwn=null;tipGone=Date.now();tip.classList.remove('on')}}
   // a click or Escape may move the focus by script (the menu closing): that focus shows no tooltip
