@@ -882,7 +882,7 @@ def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{ext_marks(inner)}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
     # the lead ends in the page's two ways on: to the install steps below, and to the repository
-    cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install</a>'
+    cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install skill</a>'
            f'<a class="sch-btn" href="{REPO}" rel="noopener">GitHub</a></p>')
     # the order: who it is for and one worked case first, then how it works (the two schemes), then what it can and cannot do, then how to get and use it
     parts = [
