@@ -8,7 +8,7 @@
 
 ## What is this?
 
-*The Blue Book of UX Directives* is a field manual of Human-Centered Systems Engineering: 9 chapters, 62 subcategories and 550 numbered, command-form directives (IDs like `32/02`), from human cognition to AI-mediated interaction.
+*The Blue Book of UX Directives: A Uniform Code for Human-Centered Digital Systems* — 9 chapters, 62 subcategories and 550 numbered, command-form directives (IDs like `32/02`), from human cognition to AI-mediated interaction. It is written as a field manual of Human-Centered Systems Engineering: terse, absolute, command-form.
 
 The skill gives Claude the full text of the book. Claude then cites the exact directive, ID and title, instead of paraphrasing UX advice from memory. A finding becomes a rule anyone on the team can look up and check.
 

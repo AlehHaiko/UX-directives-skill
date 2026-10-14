@@ -1,6 +1,6 @@
 ---
 name: ux-directives
-description: Apply "The Blue Book of UX Directives" by Aleh Haiko — a field manual of 550 numbered, command-form UX directives (IDs like 32/02) in 9 chapters, from human cognition to AI-mediated interaction. Use this skill whenever the user asks to audit, review, or critique a UI, screen, flow, prototype, screenshot, PRD, spec, or AI feature against UX principles; asks which principles or directives apply to a design problem (onboarding, errors, navigation, forms, notifications, defaults, consent, privacy, AI explainability, confidence, trust); wants UX requirements or acceptance criteria written; or mentions the Blue Book, "UX directives", or a directive ID — even if they do not name the book.
+description: Apply "The Blue Book of UX Directives: A Uniform Code for Human-Centered Digital Systems" by Aleh Haiko — 550 numbered, command-form UX directives (IDs like 32/02) in 9 chapters, from human cognition to AI-mediated interaction. Use this skill whenever the user asks to audit, review, or critique a UI, screen, flow, prototype, screenshot, PRD, spec, or AI feature against UX principles; asks which principles or directives apply to a design problem (onboarding, errors, navigation, forms, notifications, defaults, consent, privacy, AI explainability, confidence, trust); wants UX requirements or acceptance criteria written; or mentions the Blue Book, "UX directives", or a directive ID — even if they do not name the book.
 ---
 
 # The Blue Book of UX Directives
