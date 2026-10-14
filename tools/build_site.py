@@ -703,14 +703,13 @@ SKILL_CANNOT = f"""## What it cannot do, and why
 """
 SKILL_INSTALL_1 = f"""## Install
 
-**Claude.ai** (Pro, Max, Team, Enterprise):
+**Claude.ai:**
 
 1. Download [`ux-directives.skill`]({SKILL_RAW}) from the [GitHub repository]({REPO}). It is a zip of the `ux-directives/` folder.
-2. In [**Settings > Capabilities**](https://support.claude.com/en/articles/12512180-using-skills-in-claude), turn on code execution and file creation.
-3. In the **Skills** section, click **Upload skill** and choose the file.
-4. Find the skill in the list and toggle it on.
+2. In Claude, open **Settings → Skills** and upload the file.
+3. Make sure the skill is turned on.
 
-Claude uses the skill on its own when a task calls for it. You don't need to name it.
+Claude uses the skill on its own when a task calls for it. You don't need to name it. Anthropic's guide: [Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude).
 """
 SKILL_CLONE = f"git clone {REPO}.git\ncp -R UX-directives-skill/ux-directives ~/.claude/skills/"
 SKILL_INSTALL_2 = ("[`~/.claude/skills/`](https://code.claude.com/docs/en/skills) makes the skill available in all your projects. To share it with a team, "
