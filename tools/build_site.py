@@ -297,11 +297,6 @@ BAND_DEEP = deeper(BAND)  # that button under the pointer, on the light page
 BAND_LIGHT = "#7fb8e6"  # and on the dark page: the dark theme's link blue, under a word in the page's colour
 assert cr(hex2rgb(BAND_DEEP), hex2rgb("#ffffff")) >= 4.5 and cr(hex2rgb(BAND_LIGHT), hex2rgb("#191919")) >= 4.5
 
-# The ground of a box of text to copy while its button shows the tick: a brick from Claude's clay (#d97757, OKLCH hue 41), solved as the menu's selected tint is
-# (1.30 against the light page, 1.45 against the dark one), so the box's text keeps well over 4.5:1 on it in both themes
-COPIED = {"l": tint("#d97757", "#ffffff", 1.30, .09), "d": tint("#d97757", "#191919", 1.45, .07)}
-assert cr(hex2rgb("#37352f"), hex2rgb(COPIED["l"])) >= 4.5 and cr(hex2rgb("#e6e6e4"), hex2rgb(COPIED["d"])) >= 4.5
-
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
 def cue_mix(accent, bg):
@@ -682,7 +677,8 @@ ICON_OK = '<svg class="ic-ok" viewBox="0 0 20 20" aria-hidden="true"><path d="M4
 def code_block(text, what, by=""):
     """Text to copy, not to read past: a command or a prompt in a box, with a button that copies it (app.js). Without script the button is not shown."""
     desc = f' aria-describedby="{by}"' if by else ""
-    return (f'<div class="code"><pre><code>{html.escape(text, quote=False)}</code></pre>'
+    # the box carries the variables of the chapter the ID figure is drawn in (7): copied, it takes the ground and the edge of that figure's parts (style.css, .code.is-ok)
+    return (f'<div class="code" style="{chapter_vars(int(ID_SAMPLE[0]))}"><pre><code>{html.escape(text, quote=False)}</code></pre>'
             f'<button class="code-copy" type="button" aria-label="Copy {what}"{desc}>{ICON_COPY}{ICON_OK}</button></div>')
 
 
@@ -1022,9 +1018,7 @@ def main(base=BASE, out=None):
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
                     f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]};--ga:{GA_LINE[k]}")
-    home = (f":root{{--book:{BAND};--book-deep:{BAND_DEEP};--book-light:{BAND_LIGHT};--copied:{COPIED['l']}}}"
-            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--copied:{COPIED['d']}}}}}"
-            f":root[data-theme=\"dark\"]{{--copied:{COPIED['d']}}}"
+    home = (f":root{{--book:{BAND};--book-deep:{BAND_DEEP};--book-light:{BAND_LIGHT}}}"
             f":root{{{hv('l')}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
             f":root[data-theme=\"dark\"]{{{hv('d')}}}")
@@ -1590,8 +1584,9 @@ section>h2.dh.is-stuck::after{opacity:1}
 .code-copy{display:none;position:absolute;top:8px;right:8px;width:30px;height:30px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;transition:background-color .2s var(--soft)}
 .js .code-copy{display:grid}
 .code-copy svg{grid-area:1/1;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-/* copied: the whole box takes the brick ground at once and keeps it while the tick shows (2s, app.js); then the ground goes back over .6s */
-.code{transition:background-color .6s var(--soft)}.code.is-ok{background:var(--copied);transition:none}
+/* copied: the whole box takes, at once, the ground and the edge of the parts of the ID figure at rest (--ch-hov and --ch-deep of the figure's chapter, whose variables the box carries)
+   and keeps them while the tick shows (2s, app.js); then ground and edge go back over .6s. No colour of its own */
+.code{transition:background-color .6s var(--soft),border-color .6s var(--soft)}.code.is-ok{background:var(--ch-hov);border-color:var(--ch-deep);transition:none}
 .code-copy .ic-ok,.code-copy.is-ok .ic-cp{visibility:hidden}.code-copy.is-ok .ic-ok{visibility:visible}
 @media (hover:hover){.code-copy:hover{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
 .code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
