@@ -66,6 +66,15 @@ def inline(text):
     return out
 
 
+# The mark of a link that leaves the site: the portfolio's drawing (its tools/build.py, ICON_EXT). It follows its link, outside the <a>, and is hidden from assistive technology
+ICON_EXT = '<svg class="ext" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5h5v5M9.5 2.5L2.75 9.25"/></svg>'
+
+
+def ext_marks(html_):
+    """Put the mark after every external link that inline() wrote (an <a> that opens with its href); buttons and scheme links open with a class and get none."""
+    return re.sub(r'(<a href="https?://[^"]*"[^>]*>.*?</a>)', r"\1" + ICON_EXT, html_)
+
+
 def md_blocks(text):
     """Render a small markdown subset (paragraphs, lists, blockquotes, h2/h3) to HTML."""
     lines = text.strip("\n").split("\n")
@@ -592,7 +601,7 @@ def render_home(chapters, front):
         f'<span class="card-n">{c["n"]}.</span><span class="ch-card-t">{esc(c["title"])}</span>'
         f'<span class="ch-card-d">{inline(c["intro"][0]) if c["intro"] else ""}</span>'
         f'<span class="card-foot"><span class="ch-card-c">{len(c["subs"])} subcategories</span>{GO}</span></a>' for c in chapters)
-    sections = "".join(f'<section class="prose">{md_blocks("## " + n + chr(10) + b)}</section>' for n, b in front)
+    sections = "".join(f'<section class="prose">{ext_marks(md_blocks("## " + n + chr(10) + b))}</section>' for n, b in front)
     items = '<li><a href="#chapters">Chapters</a></li>' + "".join(f'<li><a href="#{slug(n)}">{n}</a></li>' for n, _ in front)
     cv = HOME_COVER.format(arrows=cover_arrows((None, (f'1. {chapters[0]["title"]}', chapters[0]["file"]))))
     body = (f'<div class="hero"><p class="hero-k">{AUTHOR}</p><h1>{BOOK_TITLE}</h1><p class="hero-s">{BOOK_SUBTITLE}</p>'
@@ -867,7 +876,7 @@ def scheme_roles(chapters):
 
 
 def render_skill(chapters):
-    sec = lambda inner: f'<section class="prose sk">{inner}</section>'
+    sec = lambda inner: f'<section class="prose sk">{ext_marks(inner)}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
     # the lead ends in the page's two ways on: to the install steps below, and to the repository
     cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install</a>'
@@ -1531,16 +1540,15 @@ section>h2.dh.is-stuck::after{opacity:1}
 .prose blockquote p{margin:8px 0}
 .prose ul,.prose ol{padding-left:22px}.prose ol li::marker{font-weight:700}.prose li+li{margin-top:6px}
 
-/* a link in the book's text that leaves the site (the Contents page's front matter, the skill's page) ends in a small arrow, up and to the right, in the link's colour:
-   drawn as the link's background at the end of its last line, in room the link keeps for it, so it never wraps away from its word. Under the pointer and under
-   the keyboard's focus it grows on the cards' spring. Not in a scheme, not on a button, not in the footer (its links have their own signs) */
-:root{--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%231929c4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%237fb8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
-:root[data-theme="dark"]{--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%237fb8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-.prose a[href^="http"]:not(.sch-btn){padding-right:.9em;background:var(--ext) no-repeat right .1em top .3em/.56em;transition:background-size .5s var(--spring)}
-@media (hover:hover){.prose a[href^="http"]:not(.sch-btn):hover{background-size:.76em}}
-.prose a[href^="http"]:not(.sch-btn):focus-visible{background-size:.76em}
-.prose .sch a[href^="http"]{padding-right:0;background:none}
+/* a link that leaves the site is followed by the site's one mark (ICON_EXT), the portfolio's (alehhaiko.com at c9cdbcf, style.css and tools/build.py), rule for rule:
+   10px, beside the link, not in it, so it is neither underlined nor pressed, in the colour of the text it stands in. The link pointed at or focused, the mark grows
+   a fifth and steps 1px up and right, on the spring of the card arrows; with reduced motion it stays as it is. Here it follows the external links of the book's
+   text (the Contents page's front matter, the skill's page): not a button, not a link in a scheme, not the footer's links, which have their own signs */
+.ext{display:inline-block;flex:none;width:10px;height:10px;margin-left:4px;vertical-align:.02em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:transform .5s var(--spring)}
+@media (prefers-reduced-motion:no-preference){
+  @media (hover:hover){a:hover+.ext{transform:translate(1px,-1px) scale(1.2)}}
+  a:focus-visible+.ext{transform:translate(1px,-1px) scale(1.2)}
+}
 /* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
 .sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
 .sk a code{color:inherit}
@@ -1817,8 +1825,8 @@ html{scroll-padding-bottom:var(--consent-h,0px)}
    the theme button's is 4px clear of the search field. The drawn icons, the boxes and the focus rings keep their size */
 @media (max-width:520px){.menu-btn,.theme-btn{position:relative}.menu-btn::after,.theme-btn::after{content:"";position:absolute;inset:-4px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
-  /* the skill's page: a ring of the rail and a link's arrow do not grow (a box's height changes at once: app.js, skGrow) */
-  button.st-dot{transform:none!important}.prose a[href^="http"]:not(.sch-btn){background-size:.56em!important}
+  /* the skill's page: a ring of the rail does not grow (a box's height changes at once: app.js, skGrow; the mark of an external link moves only without this preference) */
+  button.st-dot{transform:none!important}
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
   /* the banner's emblem does not grow and its texts do not move; caption and quote keep their fade */
