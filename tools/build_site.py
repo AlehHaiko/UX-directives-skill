@@ -2162,6 +2162,9 @@ JS = r"""
     if(h0===h1||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
     box.style.height=h0+'px';void box.offsetHeight;box.classList.add('sk-h');box.style.height=h1+'px';
     box._g=setTimeout(function(){box.classList.remove('sk-h');box.style.height=''},480)}
+  // the step shown and the role chosen are kept for the tab's session, so a reader who follows a link from a role and comes back finds the page as it was left
+  var skSt={};try{skSt=JSON.parse(sessionStorage.getItem('bb-skill')||'{}')||{}}catch(e){}
+  function skKeep(k,v){skSt[k]=v;try{sessionStorage.setItem('bb-skill',JSON.stringify(skSt))}catch(e){}}
   // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. The rail's rings go to their steps, Previous and Next step,
   // and so do the left and right arrow keys while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled).
   // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
@@ -2176,8 +2179,8 @@ JS = r"""
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
-      if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent};
-    stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(0);
+      skKeep('s',i);if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent};
+    stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(+skSt.s||0);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
     stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});
@@ -2188,14 +2191,14 @@ JS = r"""
   // Each of the three boxes shows the chosen role's answer and takes its height (skGrow), so the names over them stand still. The table says the same for a page without script: here it is hidden
   var rlg=document.querySelector('.sch-rl');
   if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlS=[].slice.call(rlg.querySelectorAll('.rl-s')),rlT=document.querySelector('.tbl'),rlAt=-1;
-    var rlSet=function(i,go){var first=rlAt<0;rlAt=i;rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
+    var rlSet=function(i,go){var first=rlAt<0;rlAt=i;skKeep('r',i);rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
       rlS.forEach(function(box){var show=function(){[].forEach.call(box.children,function(v,j){if(j===i)v.removeAttribute('hidden');else v.setAttribute('hidden','until-found')})};
         if(first)show();else skGrow(box,show)});if(go)rlB[i].focus()};
     rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
       b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
         to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
         if(to!==null){e.preventDefault();rlSet(to,true)}})});
-    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0);
+    rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(Math.min(rlB.length-1,Math.max(0,+skSt.r||0)));
     // find-in-page lands in a folded answer: its role is chosen
     rlS.forEach(function(box){[].forEach.call(box.children,function(v,j){v.addEventListener('beforematch',function(){rlSet(j)})})})}
   // search
