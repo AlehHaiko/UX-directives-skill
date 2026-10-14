@@ -72,7 +72,10 @@ ICON_EXT = '<svg class="ext" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.
 
 def ext_marks(html_):
     """Put the mark after every external link that inline() wrote (an <a> that opens with its href); buttons and scheme links open with a class and get none."""
-    return re.sub(r'(<a href="https?://[^"]*"[^>]*>.*?</a>)', r"\1" + ICON_EXT, html_)
+    # link and mark stand in one span that does not wrap, the link inside it wraps as text does (style.css, .ext-w), and a word joiner (U+2060) stands between the two:
+    # a line then cannot break between the link's last word and the mark, which would otherwise open the next line alone (measured: either of the two alone does not hold it).
+    # The portfolio's mark closes a list item and needs neither
+    return re.sub(r'(<a href="https?://[^"]*"[^>]*>.*?</a>)', r'<span class="ext-w">\1&#8288;' + ICON_EXT + "</span>", html_)
 
 
 def md_blocks(text):
@@ -1546,6 +1549,7 @@ section>h2.dh.is-stuck::after{opacity:1}
    10px, beside the link, not in it, so it is neither underlined nor pressed, in the colour of the text it stands in. The link pointed at or focused, the mark grows
    a fifth and steps 1px up and right, on the spring of the card arrows; with reduced motion it stays as it is. Here it follows the external links of the book's
    text (the Contents page's front matter, the skill's page): not a button, not a link in a scheme, not the footer's links, which have their own signs */
+.ext-w{white-space:nowrap}.ext-w>a{white-space:normal}
 .ext{display:inline-block;flex:none;width:10px;height:10px;margin-left:4px;vertical-align:.02em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:transform .5s var(--spring)}
 @media (prefers-reduced-motion:no-preference){
   @media (hover:hover){a:hover+.ext{transform:translate(1px,-1px) scale(1.2)}}

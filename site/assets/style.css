@@ -534,6 +534,7 @@ section>h2.dh.is-stuck::after{opacity:1}
    10px, beside the link, not in it, so it is neither underlined nor pressed, in the colour of the text it stands in. The link pointed at or focused, the mark grows
    a fifth and steps 1px up and right, on the spring of the card arrows; with reduced motion it stays as it is. Here it follows the external links of the book's
    text (the Contents page's front matter, the skill's page): not a button, not a link in a scheme, not the footer's links, which have their own signs */
+.ext-w{white-space:nowrap}.ext-w>a{white-space:normal}
 .ext{display:inline-block;flex:none;width:10px;height:10px;margin-left:4px;vertical-align:.02em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:transform .5s var(--spring)}
 @media (prefers-reduced-motion:no-preference){
   @media (hover:hover){a:hover+.ext{transform:translate(1px,-1px) scale(1.2)}}
