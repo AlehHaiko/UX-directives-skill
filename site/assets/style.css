@@ -685,6 +685,9 @@ button.st-dot.is-cur{cursor:default}
 .st-ctl .sch-btn{transition:none}
 /* Install: its edge fades with its fill */
 .sk-cta .sch-btn{transition:background-color .35s var(--soft),border-color .35s var(--soft)}
+/* on the dark page its word changes with its ground (white on the blue, dark on the light blue), so there the two change at once: a fade under a word already changed drops it to 1.8:1 */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill{transition:none}}
+:root[data-theme="dark"] .sk-cta .sch-btn.is-fill{transition:none}
 .sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
 .rl-o{margin-top:4px;font-size:14px;line-height:1.5}
 .rl-o p{margin:0}.rl-o .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
