@@ -2207,10 +2207,15 @@ JS = r"""
     if(!consent)consentShow(true)}
   // text to copy (the skill's page): the button copies its box's text and says so, in the pinned hint over it and in the status line that is not drawn;
   // its sign is a tick for 2s. Where the clipboard cannot be written, the text is selected, so the reader's own copy is one key away
+  // (and the hint that says so stays until that selection is gone)
   var skSay=document.querySelector('.sk-say');
   [].forEach.call(document.querySelectorAll('.code-copy'),function(b){var c=b.parentNode.querySelector('code'),okT=0;
     function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);b.parentNode.classList.toggle('is-ok',ok);clearTimeout(okT);
-      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok');b.parentNode.classList.remove('is-ok')},2000);hintShow(b,t);
+      if(ok){okT=setTimeout(function(){b.classList.remove('is-ok');b.parentNode.classList.remove('is-ok')},2000);hintShow(b,t)}
+      // not copied: the hint is the only sign, so it does not leave by the clock. It stays while the text it speaks of stays selected,
+      // and goes with the selection (or with a press on the button, Escape or a resize, as any pinned hint does)
+      else{tipShow(b,t);var gone=function(){var g=getSelection();if(g.rangeCount&&!g.isCollapsed&&c.contains(g.anchorNode))return;
+        document.removeEventListener('selectionchange',gone);if(tipOwn===b)tipHide()};setTimeout(function(){document.addEventListener('selectionchange',gone)},0)}
       if(skSay){skSay.textContent='';setTimeout(function(){skSay.textContent=t},50)}}
     function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
