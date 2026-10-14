@@ -48,6 +48,9 @@ a{color:var(--link);text-decoration:none}
 @media (hover:hover){a:hover{text-decoration:underline}}
 .mono,code,kbd{font-family:var(--mono)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* a line that is not drawn and stands after the page (a status line at the body's end) takes no room there: left where the flow puts it, with a paragraph's margin over it,
+   it made the document 17px longer than the page, and at the scroll's end those 17px pushed the menu and "On this page" up from under the banner */
+body>.sr{top:0;margin:0}
 .skip{position:absolute;left:-999px;top:8px;background:var(--text);color:var(--bg);padding:8px 12px;border-radius:6px;z-index:100}.skip:focus{left:8px}
 :focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:4px}
 /* targets that only scripts focus (a heading after an in-page link, main after the skip link) are not controls: no ring */
