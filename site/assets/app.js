@@ -328,14 +328,22 @@
     idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
     idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
     idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
+  // a box whose content changes takes its new height as the menu's lists fold (style.css, .sk-h): from the height it has to the height its new content needs,
+  // then the height is its content's again. With reduced motion the change is at once
+  function skGrow(box,change){var h0=box.offsetHeight,h1;clearTimeout(box._g);box.classList.remove('sk-h');box.style.height='';change();h1=box.offsetHeight;
+    if(h0===h1||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+    box.style.height=h0+'px';void box.offsetHeight;box.classList.add('sk-h');box.style.height=h1+'px';
+    box._g=setTimeout(function(){box.classList.remove('sk-h');box.style.height=''},480)}
   // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. The rail's rings go to their steps, Previous and Next step,
   // and so do the left and right arrow keys while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled).
   // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
   var stg=document.querySelector('.sch-st');
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
       stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
+    var stBox=stg.querySelector('.st-list');
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
-      stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')});
+      var show=function(){stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')})};
+      if(first)show();else skGrow(stBox,show);
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});

@@ -629,6 +629,8 @@ button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
 .sch-st.is-js .st-hd{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:6px}
 .sch-st.is-js .st-n{display:block;flex:none;margin:0;font-size:14px}
 .sch-st.is-js .st-b{padding-top:0}
+/* a box whose content changes takes its new height over the time and on the curve of the menu's fold (.nav-ch-c: .45s, --soft); app.js sets the two heights (skGrow) */
+.sk-h{overflow:hidden;transition:height .45s var(--soft)}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
