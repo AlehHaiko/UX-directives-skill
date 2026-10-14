@@ -1637,7 +1637,7 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
 /* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by arrows.
    A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey arrow
-   (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring grows on the cards' spring. Next is filled, Previous outlined;
+   (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring that is not the shown step's grows on the cards' spring. Next is filled, Previous outlined;
    one with nowhere to go has a ring-ahead's grey edge and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
    The step's name and "Step N of 5" share a baseline over the fragment's card */
 .sch-st{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
@@ -1646,8 +1646,12 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-rail{display:flex;align-items:center;list-style:none;margin:8px 0 22px;padding:0}
 .st-rail>li{flex:none}
 button.st-dot{appearance:none;position:relative;padding:0;background:transparent;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .5s var(--spring)}
-@media (hover:hover){button.st-dot:hover{transform:scale(1.2)}}
-button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
+/* a ring that is not the step shown: under the pointer and the focus it grows, and its edge and its number go to --fill-h (black on the light page), with no fill.
+   The ring of the step shown leads nowhere: no growth, no change, the plain cursor */
+@media (hover:hover){button.st-dot:not(.is-cur):hover{transform:scale(1.2);border-color:var(--fill-h);color:var(--fill-h)}}
+button.st-dot:not(.is-cur):focus-visible{transform:scale(1.2);border-color:var(--fill-h);color:var(--fill-h)}
+button.st-dot:focus-visible{border-radius:50%}
+button.st-dot.is-cur{cursor:default}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
 .st-rail>.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
 .st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px}.st-ln .st-la{position:absolute;right:5px;top:0;width:8px;height:12px}
