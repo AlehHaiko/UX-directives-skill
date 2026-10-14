@@ -617,7 +617,8 @@ button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
 @media (hover:none){button.st-dot::after{content:"";position:absolute;inset:-8px}}
 /* five rings with their arrows need 204px; in a narrower figure the arrows go and the rings stand apart */
 @media (max-width:300px){.st-rail>.st-ln{display:none}.st-rail{justify-content:space-between}}
-.sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
+/* the schemes' buttons are small: 13px text in a box of 28.8px (the menu's "Collapse all" is 12px in 27.2px); a finger gets 44px */
+.sch-btn{appearance:none;margin:0;padding:3px 10px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
