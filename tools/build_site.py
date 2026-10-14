@@ -296,8 +296,10 @@ NAV_RESTORE = ("(function(){var st={},y=null,sb=document.getElementById('sidebar
                "[].forEach.call(sb.querySelectorAll('.nav-ch'),function(d){var k=d.dataset.ch;"
                "if(d.hasAttribute('data-here')){set(d,true);st[k]=true}else if(k in st)set(d,!!st[k]);});"
                "try{localStorage.setItem('bb-nav',JSON.stringify(st))}catch(e){}"
-               "if(y!==null){sb.scrollTop=+y}else{var c=sb.querySelector('[aria-current]');"
-               "if(c&&c.offsetTop>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2;}})();")
+               # the saved position holds while the current item is in view under it; an item it leaves out of view (the skill's row, pressed while it stood
+               # pinned at the menu's edge, stands at the list's end on its own page) is brought to the menu's middle, as on a first arrival
+               "var c=sb.querySelector('[aria-current]'),t;if(y!==null)sb.scrollTop=+y;"
+               "if(c){t=c.offsetTop-sb.scrollTop;if(y===null?c.offsetTop>sb.clientHeight-40:t<0||t>sb.clientHeight-40)sb.scrollTop=c.offsetTop-sb.clientHeight/2}})();")
 
 
 CANONICAL = "https://alehhaiko.com/ux/"  # where the book is read; an absolute URL, so no --base changes it
