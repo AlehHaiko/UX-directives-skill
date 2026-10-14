@@ -1584,7 +1584,11 @@ section>h2.dh.is-stuck::after{opacity:1}
 :root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--text);border-color:var(--text);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
-@media (hover:hover){.sch-btn.is-fill:not([aria-disabled="true"]):hover{background:color-mix(in srgb,var(--text) 82%,var(--bg))}}
+/* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
+:root{--fill-h:#000}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--fill-h:#fff}}
+:root[data-theme="dark"]{--fill-h:#fff}
+@media (hover:hover){.sch-btn.is-fill:not([aria-disabled="true"]):hover{background:var(--fill-h);border-color:var(--fill-h)}}
 .sch-t{margin:0 0 16px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .sch-n{margin:14px 0 0;font-size:13px}
 /* scheme 1. One grid: three rows of names, an 8px row, the ID. A name starts where its part's line ends (6px after the arrow), so the leftmost part has the top row, the names read in the ID's order and no line crosses a name.
