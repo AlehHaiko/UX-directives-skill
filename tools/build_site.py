@@ -1336,7 +1336,9 @@ body>.sr{top:0;margin:0}
 .cover-ch .cv-1{margin:0;font-size:24px;letter-spacing:.08em;line-height:1;text-transform:uppercase}
 .cv-2{margin:0;color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
 .cv-n{font-family:var(--mono);font-weight:500}.cv-c{display:none}
-.cover-home{background:#1829c4}
+/* the band's blue is a token (--band): the skill page's first button is filled with it */
+:root{--band:#1829c4}
+.cover-home{background:var(--band)}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -1574,6 +1576,12 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
 .sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
 .sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
+/* Install: the emblem band's blue under a white word; pointed at, black. On the dark page pointed at it takes the text's colour under a dark word: a filled button
+   goes darker under the pointer on the light page and lighter on the dark one, never the other way */
+.sk-cta .sch-btn.is-fill{background:var(--band);border-color:var(--band);color:#fff}
+@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:#000;border-color:#000}}
+@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--text);border-color:var(--text);color:var(--bg)}}
+:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--text);border-color:var(--text);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 @media (hover:hover){.sch-btn.is-fill:not([aria-disabled="true"]):hover{background:color-mix(in srgb,var(--text) 82%,var(--bg))}}
