@@ -838,20 +838,20 @@ f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span>'
 
 
 def scheme_roles(chapters):
-    """Scheme 3, pick a role: the roles' table as one choice of eight. Role buttons (one radio group) and the chosen role's row: why, the chapters it starts in
-    (a strip of the nine chapters, the role's lit in their own colours, and under it their names, as links) and what to start with. It is in the page hidden:
-    app.js shows it and hides the table, which says the same and is the form without script."""
+    """Scheme 3, pick a role: the roles' table as one choice of eight. Role buttons (one radio group) and, under three names that stand still, the chosen role's row:
+    why, the chapters it starts in (their names, as links) and what to start with. Each name has a box that holds all eight roles' answers and shows one,
+    so the names keep their places and a box alone changes height (app.js). It is in the page hidden: app.js shows it and hides the table,
+    which says the same and is the form without script."""
     btns = "".join(f'<button class="sch-btn" type="button" role="radio" aria-checked="{"true" if i == 0 else "false"}" tabindex="{0 if i == 0 else -1}">{esc(r)}</button>'
                    for i, (r, _, _, _) in enumerate(SKILL_ROLES))
-    rows = ""
-    for i, (r, why, start, chs) in enumerate(SKILL_ROLES):
-        names = "".join(f'<li><a href="{c["file"]}"><span class="mono">{c["n"]}.</span> {esc(c["title"])}</a></li>' for c in chapters if c["n"] in chs)
-        strip = "".join(f'<span class="rl-c{" lit" if c["n"] in chs else ""}" style="{chapter_vars(c["n"])}">{c["n"]}</span>' for c in chapters)
-        first = "".join(f"<li>{inline(x)}</li>" for x in start.split(" · "))
-        rows += (f'<div class="rl-i"{"" if i == 0 else " hidden"}><p class="rl-k">Why</p><p>{inline(why)}</p>'
-                 f'<p class="rl-k">Chapters</p><div class="rl-ch" aria-hidden="true">{strip}</div><ul>{names}</ul><p class="rl-k">Start with</p><ul>{first}</ul></div>')
+    hid = lambda i: "" if i == 0 else " hidden"
+    why = "".join(f'<p class="rl-v"{hid(i)}>{inline(w)}</p>' for i, (_, w, _, _) in enumerate(SKILL_ROLES))
+    chs = "".join(f'<ul class="rl-v"{hid(i)}>' + "".join(f'<li><a href="{c["file"]}">{c["n"]}. {esc(c["title"])}</a></li>' for c in chapters if c["n"] in ns) + "</ul>"
+                  for i, (_, _, _, ns) in enumerate(SKILL_ROLES))
+    first = "".join(f'<ul class="rl-v"{hid(i)}>' + "".join(f"<li>{inline(x)}</li>" for x in st.split(" · ")) + "</ul>" for i, (_, _, st, _) in enumerate(SKILL_ROLES))
+    rows = "".join(f'<p class="rl-k">{k}</p><div class="rl-s">{v}</div>' for k, v in (("Why", why), ("Chapters", chs), ("Start with", first)))
     return (f'<figure class="sch sch-rl" aria-labelledby="sch-rl-t" hidden><figcaption class="sch-t" id="sch-rl-t">Pick a role</figcaption>'
-            f'<div class="rl-g" role="radiogroup" aria-labelledby="sch-rl-t">{btns}</div>{rows}</figure>')
+            f'<div class="rl-g" role="radiogroup" aria-labelledby="sch-rl-t">{btns}</div><div class="rl-o">{rows}</div></figure>')
 
 
 def render_skill(chapters):
@@ -1626,23 +1626,18 @@ button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
 /* scheme 3. The roles are the schemes' button in a row that wraps; the chosen one is filled with the text's colour, as the rail's shown step is.
-   The strip: nine squares, a chapter each; the chosen role's chapters take their own ground and accent (the chapter cards'), the rest are an outline.
-   Under it the role's row of the table, each cell under its column's name in the table's small capitals */
+   Under them three names in the table's small capitals, each over a box with the chosen role's answer. The names stand still: the gaps are the same for every role,
+   and a box whose answer is longer or shorter takes its height as a step's card does (.sk-h) */
 .sch-rl{margin-top:12px}
 .rl-g{display:flex;flex-wrap:wrap;gap:8px}
 /* a choice changes its ground and its text at once: a ground that faded under a text that had already changed would hide the word for the fade's length */
 .sch-btn[role="radio"]{transition:none}
 .sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
-.rl-ch{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px}  /* nine squares and eight gaps are 284px: one row in the figure at 360px (286px) */
-.rl-c{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;font:600 13px/1 var(--mono)}
-.rl-c.lit{background:var(--ch-dark);border-color:var(--ch-dark);color:var(--ch-accent)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rl-c.lit{border-color:var(--ch-accent)}}
-:root[data-theme="dark"] .rl-c.lit{border-color:var(--ch-accent)}
-.rl-i{margin-top:4px;font-size:14px;line-height:1.5}
-.rl-i p{margin:0}.rl-i .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.rl-i ul{list-style:none;margin:0;padding:0}.rl-i li+li{margin-top:2px}
+.rl-o{margin-top:4px;font-size:14px;line-height:1.5}
+.rl-o p{margin:0}.rl-o .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.rl-o ul{list-style:none;margin:0;padding:0}.rl-o li+li{margin-top:2px}
 /* a finger's targets: the links of a list stand in rows of 44px, and a row's link takes taps over the whole row */
-@media (hover:none){.rl-i li{position:relative;padding:11.5px 0}.rl-i li+li{margin-top:0}.rl-i li a::after{content:"";position:absolute;inset:0}}
+@media (hover:none){.rl-o li{position:relative;padding:11.5px 0}.rl-o li+li{margin-top:0}.rl-o li a::after{content:"";position:absolute;inset:0}}
 /* a table: rules under the rows, the column heads in the "On this page" heading's small capitals. Under 640px a row is a block: the role, then each cell under its column's name */
 .tbl{margin:12px 0 18px}
 .tbl table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.5}
@@ -2165,18 +2160,19 @@ JS = r"""
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
   // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
-  // The chosen role's row shows, with its chapters lit in its strip. The table says the same for a page without script: here it is hidden
+  // Each of the three boxes shows the chosen role's answer and takes its height (skGrow), so the names over them stand still. The table says the same for a page without script: here it is hidden
   var rlg=document.querySelector('.sch-rl');
-  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlI=[].slice.call(rlg.querySelectorAll('.rl-i')),rlT=document.querySelector('.tbl');
-    var rlSet=function(i,go){rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
-      rlI.forEach(function(r,j){if(j===i)r.removeAttribute('hidden');else r.setAttribute('hidden','until-found')});if(go)rlB[i].focus()};
+  if(rlg){var rlB=[].slice.call(rlg.querySelectorAll('[role="radio"]')),rlS=[].slice.call(rlg.querySelectorAll('.rl-s')),rlT=document.querySelector('.tbl'),rlAt=-1;
+    var rlSet=function(i,go){var first=rlAt<0;rlAt=i;rlB.forEach(function(b,j){b.setAttribute('aria-checked',j===i);b.tabIndex=j===i?0:-1});
+      rlS.forEach(function(box){var show=function(){[].forEach.call(box.children,function(v,j){if(j===i)v.removeAttribute('hidden');else v.setAttribute('hidden','until-found')})};
+        if(first)show();else skGrow(box,show)});if(go)rlB[i].focus()};
     rlB.forEach(function(b,i){b.addEventListener('click',function(){rlSet(i)});
       b.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey)return;var n=rlB.length,k=e.key,
         to=k==='ArrowRight'||k==='ArrowDown'?(i+1)%n:k==='ArrowLeft'||k==='ArrowUp'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:null;
         if(to!==null){e.preventDefault();rlSet(to,true)}})});
     rlg.hidden=false;if(rlT)rlT.hidden=true;rlSet(0);
-    // find-in-page lands in a folded role's row: that role is chosen
-    rlI.forEach(function(r,j){r.addEventListener('beforematch',function(){rlSet(j)})})}
+    // find-in-page lands in a folded answer: its role is chosen
+    rlS.forEach(function(box){[].forEach.call(box.children,function(v,j){v.addEventListener('beforematch',function(){rlSet(j)})})})}
   // search
   var q=document.getElementById('q'),res=document.getElementById('results'),idx=window.BB_INDEX||[],chTitles=window.BB_CHAPTERS||{},vocab=window.BB_VOCAB||{},words={},sel=-1,items=[],off=0;
   if(!q)return;
