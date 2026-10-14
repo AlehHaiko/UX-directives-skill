@@ -68,6 +68,8 @@ def inline(text):
 
 # The mark of a link that leaves the site: the portfolio's drawing (its tools/build.py, ICON_EXT). It follows its link, outside the <a>, and is hidden from assistive technology
 ICON_EXT = '<svg class="ext" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5h5v5M9.5 2.5L2.75 9.25"/></svg>'
+# a link that carries the mark opens in a new tab: the reader leaves the book for a minute and comes back to the same place. The footer's links keep the same tab
+NEW_TAB = 'target="_blank"'
 
 
 def ext_marks(html_):
@@ -75,7 +77,11 @@ def ext_marks(html_):
     # link and mark stand in one span that does not wrap, the link inside it wraps as text does (style.css, .ext-w), and a word joiner (U+2060) stands between the two:
     # a line then cannot break between the link's last word and the mark, which would otherwise open the next line alone (measured: either of the two alone does not hold it).
     # The portfolio's mark closes a list item and needs neither
-    return re.sub(r'(<a href="https?://[^"]*"[^>]*>.*?</a>)', r'<span class="ext-w">\1&#8288;' + ICON_EXT + "</span>", html_)
+    # The link opens in a new tab (NEW_TAB), so the reader keeps the place in the book; the download of the skill's file leaves the page where it is and keeps the same tab
+    def mark(m):
+        a = m.group(1) if m.group(2) == SKILL_RAW else m.group(1).replace(">", f" {NEW_TAB}>", 1)
+        return f'<span class="ext-w">{a}&#8288;{ICON_EXT}</span>'
+    return re.sub(r'(<a href="(https?://[^"]*)"[^>]*>.*?</a>)', mark, html_)
 
 
 def md_blocks(text):
@@ -896,7 +902,7 @@ def render_skill(chapters):
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
     # the lead ends in the page's two ways on: to the install steps below, and to the repository; that one leaves the site and carries the mark, inside the button
     cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install skill</a>'
-           f'<a class="sch-btn" href="{REPO}" rel="noopener">GitHub{ICON_EXT}</a></p>')
+           f'<a class="sch-btn" href="{REPO}" rel="noopener" {NEW_TAB}>GitHub{ICON_EXT}</a></p>')
     # the order: who it is for and one worked case first, then how it works (the two schemes), then what it can and cannot do, then how to get and use it
     parts = [
         f'<div class="hero"><h1>{SKILL_TITLE}</h1><p class="hero-s">{inline(SKILL_LEDE)}</p></div>',
