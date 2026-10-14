@@ -360,7 +360,9 @@
     stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
-      if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
+      var k=e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:0;if(!k)return;e.preventDefault();stSet(stAt+k);
+      // on the rail the focus goes with the step, as the choice goes with the focus among the roles
+      if(document.activeElement.classList.contains('st-dot'))stD[stAt].focus()})}
   // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
   // Each of the three boxes shows the chosen role's answer and takes its height (skGrow), so the names over them stand still. The table says the same for a page without script: here it is hidden
   var rlg=document.querySelector('.sch-rl');
