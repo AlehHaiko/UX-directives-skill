@@ -91,7 +91,7 @@
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy,.st-dot',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
