@@ -1692,6 +1692,10 @@ button.st-dot.is-cur{cursor:default}
 .rl-g{display:flex;flex-wrap:wrap;gap:8px}
 /* a choice changes its ground and its text at once: a ground that faded under a text that had already changed would hide the word for the fade's length */
 .sch-btn[role="radio"]{transition:none}
+/* Previous and Next too: when one becomes available or unavailable its ground, edge and word change together */
+.st-ctl .sch-btn{transition:none}
+/* Install: its edge fades with its fill */
+.sk-cta .sch-btn{transition:background-color .35s var(--soft),border-color .35s var(--soft)}
 .sch-btn[aria-checked="true"]{background:var(--text);color:var(--bg);cursor:default}
 .rl-o{margin-top:4px;font-size:14px;line-height:1.5}
 .rl-o p{margin:0}.rl-o .rl-k{margin:14px 0 2px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
