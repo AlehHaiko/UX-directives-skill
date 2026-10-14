@@ -36,7 +36,7 @@ Who it might be for, a worked example and how to make audits sharper: [Skill for
 
 ### Claude.ai
 
-1. Download [`ux-directives.skill`](./ux-directives.skill). It is a zip of the [`ux-directives/`](./ux-directives) folder.
+1. Download [`ux-directives.skill`](https://github.com/AlehHaiko/UX-directives-skill/raw/main/ux-directives.skill). It is a zip of the [`ux-directives/`](./ux-directives) folder.
 2. In Claude, open **Settings → Skills** and upload the file.
 3. Make sure the skill is turned on.
 
