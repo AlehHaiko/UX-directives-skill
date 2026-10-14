@@ -654,7 +654,7 @@ def code_block(text, what, by=""):
             f'<button class="code-copy" type="button" aria-label="Copy {what}"{desc}>{ICON_COPY}{ICON_OK}</button></div>')
 
 
-SKILL_LEDE = "*[The Blue Book of UX Directives](index.html), packaged as a skill for Claude.*"
+SKILL_LEDE = "[The Blue Book of UX Directives](index.html), packaged as a skill for Claude."
 SKILL_INTRO = ("The skill gives Claude the full text of the book. Claude then cites the exact directive, ID and title, instead of paraphrasing UX advice from memory. "
                "A finding becomes a rule anyone on the team can look up and check, so designers, engineers, product managers and QA argue from the book, not from taste.")
 SKILL_CAN = """## What it can do, and why
@@ -693,7 +693,7 @@ SKILL_PROMPTS = [  # (label, prompt)
     ("Requirements", "Write acceptance criteria for an LLM that drafts support replies the agent can send or edit."),
     ("Explain an ID", "What does directive 22/02 say, and how does it apply to an icon-only toolbar?"),
 ]
-SKILL_SHARPER = f"""## Make audits sharper
+SKILL_SHARPER = f"""## Make UX audits sharper
 
 1. **Audit with fresh eyes.** The agent that built a screen has learned it and skips what is missing. Run the audit in a separate agent that gets the page, its source, the skill and the list of accepted decisions, and not the task history. Measured once, on one page: four fresh agents found a missing way out in 4 of 4 runs; the builder's audit had missed it. Forcing a sweep through all 62 questions did not change the result and took about a quarter longer.
 2. **Show every state.** List input × element × state × theme, so the audit sees what was never on screen.
@@ -743,6 +743,16 @@ SKILL_GET = f"""## Get it
 
 [GitHub repository]({REPO}) · [Download `ux-directives.skill`]({SKILL_RAW}) · [Feedback]({REPO}/discussions) · [MIT License]({REPO}/blob/main/LICENSE)
 """
+
+
+def typo(t):
+    """Prose on the skill's page is set with the book's marks: “…” for a pair of straight quotes, ’ for an apostrophe. Text to copy (commands, prompts) does not pass through here."""
+    return re.sub(r'"([^"\n]*)"', "“\\1”", t).replace("'", "’")
+
+
+(SKILL_INTRO, SKILL_CAN, SKILL_CANNOT, SKILL_INSTALL_1, SKILL_INSTALL_2, SKILL_SHARPER, SKILL_EXAMPLE, SKILL_LIMITS, SKILL_ROLES_END, SKILL_GET) = map(typo, (
+    SKILL_INTRO, SKILL_CAN, SKILL_CANNOT, SKILL_INSTALL_1, SKILL_INSTALL_2, SKILL_SHARPER, SKILL_EXAMPLE, SKILL_LIMITS, SKILL_ROLES_END, SKILL_GET))
+SKILL_ROLES = [(r, typo(w), typo(st), ns) for r, w, st, ns in SKILL_ROLES]
 
 
 def roles_table():
