@@ -542,6 +542,14 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
 /* a scheme: a figure in a hairline box, its name in the "On this page" heading's small capitals */
 .sch{margin:24px 0 8px;padding:20px;border:1px solid var(--line);border-radius:12px}
+/* a line under the name that ties the figure to the text before it */
+.sch-c{margin:-8px 0 16px;font-size:14px}
+/* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
+.sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
+.sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
+a.sch-btn,a.sch-btn:hover{text-decoration:none}
+.sch-btn.is-fill{background:var(--text);color:var(--bg)}
+@media (hover:hover){.sch-btn.is-fill:not([aria-disabled="true"]):hover{background:color-mix(in srgb,var(--text) 82%,var(--bg))}}
 .sch-t{margin:0 0 16px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .sch-n{margin:14px 0 0;font-size:13px}
 /* scheme 1. One grid: three rows of names, an 8px row, the ID. A name starts where its part's line ends (6px after the arrow), so the leftmost part has the top row, the names read in the ID's order and no line crosses a name.
@@ -600,7 +608,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .st-ctl{display:flex;align-items:center;gap:12px}
 .st-count{flex:1;margin:0;text-align:center;font-size:14px}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
-@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):hover{background:var(--home-hov)}}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
 /* a step that is not shown is folded as the menu's lists are (hidden="until-found"): it takes no room, and find-in-page still reaches its text and opens it (app.js) */

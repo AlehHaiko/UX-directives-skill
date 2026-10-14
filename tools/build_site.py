@@ -736,10 +736,9 @@ SKILL_ROLES = [
      "[27/01](2-7-search-and-labeling.html#27-01)—Label in the users’ vocabulary. · [73/01](7-3-error-communication.html#73-01)—Frame errors as system conditions.", (2, 7)),
 ]
 SKILL_ROLES_END = f"Not on the list? Tell me in [Discussions]({REPO}/discussions) on GitHub."
-SKILL_LIMITS = """## Limits
-
-Severity is the skill's judgment, not research. Conclusions about screen readers come from the markup unless tested with one. The book states no numeric thresholds. [Chapter 9](chapter-9-ai-mediated-interaction.html) is still forming. The measurement above is one page and four runs: a signal, not a statistic.
-"""
+# the limits close "What it cannot do"; the measurement they speak of stands further down the page, in the section on sharper audits
+SKILL_LIMITS = ("Severity is the skill's judgment, not research. Conclusions about screen readers come from the markup unless tested with one. The book states no numeric thresholds. "
+                "[Chapter 9](chapter-9-ai-mediated-interaction.html) is still forming. The measurement below is one page and four runs: a signal, not a statistic.")
 SKILL_GET = f"""## Get it
 
 [GitHub repository]({REPO}) · [Download `ux-directives.skill`]({SKILL_RAW}) · [Feedback]({REPO}/discussions) · [MIT License]({REPO}/blob/main/LICENSE)
@@ -779,7 +778,7 @@ def scheme_id(chapters):
     parts = "".join(f'<span class="id-p" data-p="{k}">{n}</span>' + ('<span class="id-s" aria-hidden="true">/</span>' if k == "sub" else "") for k, n, _ in names)
     card = (f'<div class="dir"><p class="dir-meta"><a class="chip" href="{href}">Directive<span class="bul" aria-hidden="true"></span>{d["id"]}</a></p>'
             f'<p class="dir-title">{inline(d["title"])}</p><p class="dir-body">{inline(d["body"])}</p></div>')
-    return (f'<figure class="sch sch-id" style="{chapter_vars(ch["n"])}" aria-labelledby="sch-id-t"><figcaption class="sch-t" id="sch-id-t">Anatomy of an ID</figcaption>'
+    return (f'<figure class="sch sch-id" style="{chapter_vars(ch["n"])}" aria-labelledby="sch-id-t"><figcaption class="sch-t" id="sch-id-t">Anatomy of an ID</figcaption><p class="sch-c">The IDs above read like this.</p>'
             f'<div class="id-g">{rows}{lines}<p class="id-n" role="group" aria-label="The parts of {ID_SAMPLE}">{parts}</p></div>{card}'
             f'<p class="sch-n">Subcategory 9.10 uses three digits, <code>910/05</code>.</p></figure>')
 
@@ -855,19 +854,23 @@ def scheme_roles(chapters):
 def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{inner}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
+    # the lead ends in the page's two ways on: to the install steps below, and to the repository
+    cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install</a>'
+           f'<a class="sch-btn" href="{REPO}" rel="noopener">GitHub</a></p>')
+    # the order: who it is for and one worked case first, then how it works (the two schemes), then what it can and cannot do, then how to get and use it
     parts = [
         f'<div class="hero"><h1>{SKILL_TITLE}</h1><p class="hero-s">{inline(SKILL_LEDE)}</p></div>',
-        sec(f'<p>{inline(SKILL_INTRO)}</p>' + scheme_id(chapters)),
+        sec(f'<p>{inline(SKILL_INTRO)}</p>' + cta),
+        sec(md_blocks("## Who it might be for") + scheme_roles(chapters) + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
+        sec(md_blocks(SKILL_EXAMPLE)),
+        f'<section class="sk">{scheme_steps(chapters)}</section>',
+        f'<section class="sk">{scheme_id(chapters)}</section>',
         sec(md_blocks(SKILL_CAN)),
-        sec(md_blocks(SKILL_CANNOT)),
+        sec(md_blocks(SKILL_CANNOT) + f'<p>{inline(SKILL_LIMITS)}</p>'),
         sec(md_blocks(SKILL_INSTALL_1) + '<p id="in-code"><strong>Claude Code:</strong></p>' + code_block(SKILL_CLONE, "commands", "in-code")
             + f'<p>{inline(SKILL_INSTALL_2)}</p>'),
         sec(md_blocks("## First prompts") + prompts),
-        f'<section class="sk">{scheme_steps(chapters)}</section>',
         sec(md_blocks(SKILL_SHARPER)),
-        sec(md_blocks(SKILL_EXAMPLE)),
-        sec(md_blocks("## Who it might be for") + scheme_roles(chapters) + roles_table() + f'<p>{inline(SKILL_ROLES_END)}</p>'),
-        sec(md_blocks(SKILL_LIMITS)),
         sec(md_blocks(SKILL_GET)),
         '<p class="sr sk-say" role="status"></p>',  # what a copy button did, said aloud (app.js)
     ]
@@ -1527,6 +1530,14 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
 /* a scheme: a figure in a hairline box, its name in the "On this page" heading's small capitals */
 .sch{margin:24px 0 8px;padding:20px;border:1px solid var(--line);border-radius:12px}
+/* a line under the name that ties the figure to the text before it */
+.sch-c{margin:-8px 0 16px;font-size:14px}
+/* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
+.sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
+.sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
+a.sch-btn,a.sch-btn:hover{text-decoration:none}
+.sch-btn.is-fill{background:var(--text);color:var(--bg)}
+@media (hover:hover){.sch-btn.is-fill:not([aria-disabled="true"]):hover{background:color-mix(in srgb,var(--text) 82%,var(--bg))}}
 .sch-t{margin:0 0 16px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .sch-n{margin:14px 0 0;font-size:13px}
 /* scheme 1. One grid: three rows of names, an 8px row, the ID. A name starts where its part's line ends (6px after the arrow), so the leftmost part has the top row, the names read in the ID's order and no line crosses a name.
@@ -1585,7 +1596,7 @@ section>h2.dh.is-stuck::after{opacity:1}
 .st-ctl{display:flex;align-items:center;gap:12px}
 .st-count{flex:1;margin:0;text-align:center;font-size:14px}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
-@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):hover{background:var(--home-hov)}}
+@media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
 /* a step that is not shown is folded as the menu's lists are (hidden="until-found"): it takes no room, and find-in-page still reaches its text and opens it (app.js) */
