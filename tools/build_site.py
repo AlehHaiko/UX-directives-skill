@@ -1526,6 +1526,16 @@ section>h2.dh.is-stuck::after{opacity:1}
 .prose blockquote p{margin:8px 0}
 .prose ul,.prose ol{padding-left:22px}.prose ol li::marker{font-weight:700}.prose li+li{margin-top:6px}
 
+/* a link in the book's text that leaves the site (the Contents page's front matter, the skill's page) ends in a small arrow, up and to the right, in the link's colour:
+   drawn as the link's background at the end of its last line, in room the link keeps for it, so it never wraps away from its word. Under the pointer and under
+   the keyboard's focus it grows on the cards' spring. Not in a scheme, not on a button, not in the footer (its links have their own signs) */
+:root{--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%231929c4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%237fb8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
+:root[data-theme="dark"]{--ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.25 8.75l5.5-5.5M4 3.25h4.75V8' fill='none' stroke='%237fb8e6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.prose a[href^="http"]:not(.sch-btn){padding-right:.9em;background:var(--ext) no-repeat right .1em top .3em/.56em;transition:background-size .5s var(--spring)}
+@media (hover:hover){.prose a[href^="http"]:not(.sch-btn):hover{background-size:.76em}}
+.prose a[href^="http"]:not(.sch-btn):focus-visible{background-size:.76em}
+.prose .sch a[href^="http"]{padding-right:0;background:none}
 /* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
 .sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
 .sk a code{color:inherit}
