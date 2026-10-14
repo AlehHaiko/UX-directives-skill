@@ -626,7 +626,7 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 /* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by arrows.
    A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey arrow
    (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring grows on the cards' spring. Next is filled, Previous outlined;
-   one with nowhere to go is pale and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
+   one with nowhere to go has a ring-ahead's grey edge and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
    The step's name and "Step N of 5" share a baseline over the fragment's card */
 .sch-st{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
 .sch-st>*{grid-column:1/-1}.sch-st>.sch-t{grid-column:1;padding-right:12px}
@@ -647,7 +647,8 @@ button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
 /* the schemes' buttons are small: 13px text in a box of 28.8px (the menu's "Collapse all" is 12px in 27.2px); a finger gets 44px */
 .sch-btn{appearance:none;margin:0;padding:3px 10px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
-.sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
+/* a button with nowhere to go: no fill, the edge of a ring that is ahead (the text's colour at 35%), its word in --muted; the plain cursor, and nothing under the pointer or a press */
+.sch-btn[aria-disabled="true"],.sch-btn.is-fill[aria-disabled="true"]{background:transparent;border-color:color-mix(in srgb,var(--text) 35%,transparent);color:var(--muted);cursor:default}
 @media (hover:none){.sch-btn{min-height:44px}}
 /* a step that is not shown is folded as the menu's lists are (hidden="until-found"): it takes no room, and find-in-page still reaches its text and opens it (app.js) */
 .sch-st.is-js .st-i{display:block}
