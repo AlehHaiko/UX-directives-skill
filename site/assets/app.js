@@ -348,7 +348,7 @@
       // the focus on a link in the step that is being folded goes to the ring of the step shown: it stays in the figure, and the arrow keys go on working
       var lost=stI.some(function(li,j){return j!==i&&li.contains(document.activeElement)});
       var show=function(){stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')})};
-      if(first)show();else skGrow(stBox,show);if(lost)stD[i].focus();
+      if(first)show();else skGrow(stBox,show);if(lost){tipDismiss();stD[i].focus()}
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
@@ -362,7 +362,8 @@
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       var k=e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:0;if(!k)return;e.preventDefault();stSet(stAt+k);
       // on the rail the focus goes with the step, as the choice goes with the focus among the roles
-      if(document.activeElement.classList.contains('st-dot'))stD[stAt].focus()})}
+      // the focus this moves shows no tooltip (as after Enter on a ring): the step's name has just appeared right under the rail, and the tooltip would lie over it
+      if(document.activeElement.classList.contains('st-dot')){tipDismiss();stD[stAt].focus()}})}
   // scheme 3 (the skill's page): the roles. One choice of eight: a radio group, one Tab stop; the arrow keys move the choice round the group, Home and End take its ends.
   // Each of the three boxes shows the chosen role's answer and takes its height (skGrow), so the names over them stand still. The table says the same for a page without script: here it is hidden
   var rlg=document.querySelector('.sch-rl');
