@@ -841,8 +841,8 @@ html{scroll-padding-bottom:var(--consent-h,0px)}
    the theme button's is 4px clear of the search field. The drawn icons, the boxes and the focus rings keep their size */
 @media (max-width:520px){.menu-btn,.theme-btn{position:relative}.menu-btn::after,.theme-btn::after{content:"";position:absolute;inset:-4px}}
 @media (prefers-reduced-motion:reduce){@view-transition{navigation:none}*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
-  /* the skill's page: a ring of the rail does not grow (a box's height changes at once: app.js, skGrow; the mark of an external link moves only without this preference) */
-  button.st-dot{transform:none!important}
+  /* the skill's page: a ring of the rail takes its larger size at once, with no growth to watch (the rule above ends its transition); a box's height changes at once
+     (app.js, skGrow), the copied box's ground comes and goes at once, and the mark of an external link moves only without this preference */
   /* the tooltip keeps its fade and loses its move */
   .tip,.tip.up,.tip.at-r,.tip.at-l{transform:none;transition:opacity .15s linear,visibility 0s .15s!important}.tip.on{transition:opacity .15s linear,visibility 0s!important}
   /* the banner's emblem does not grow and its texts do not move; caption and quote keep their fade */
