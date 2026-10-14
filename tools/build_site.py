@@ -284,6 +284,19 @@ def ga_tint(bg, accent="#f9ab00"): return accent if cr(hex2rgb(accent), hex2rgb(
 GA_LINE = {"l": ga_tint("#ffffff"), "d": ga_tint("#191919")}
 assert all(cr(hex2rgb(GA_LINE[k]), hex2rgb(bg)) >= 3 for k, bg in (("l", "#ffffff"), ("d", "#191919")))
 
+# A filled button under the pointer takes the next step of its own colour on the page's side of it: the same hue and chroma at the first lightness step (.001 of OKLCH L)
+# that stands `ratio` from the colour at rest, the ratio of the menu's selected tint to the light page (1.30). Darker here: the fill is dark and the page light
+def deeper(color, ratio=1.30):
+    L,C,h=rgb2oklch(hex2rgb(color)); base=hex2rgb(color)
+    for i in range(1,1001):
+        l=L-i/1000; c=C; rgb=oklch2rgb(l,c,h)
+        while not ingamut(rgb) and c>0: c-=0.002; rgb=oklch2rgb(l,c,h)
+        if cr(rgb,base)>=ratio: return rgb2hex(rgb)
+BAND = "#1829c4"  # the Contents banner's blue, and the fill of the skill page's "Install skill"
+BAND_DEEP = deeper(BAND)  # that button under the pointer, on the light page
+BAND_LIGHT = "#7fb8e6"  # and on the dark page: the dark theme's link blue, under a word in the page's colour
+assert cr(hex2rgb(BAND_DEEP), hex2rgb("#ffffff")) >= 4.5 and cr(hex2rgb(BAND_LIGHT), hex2rgb("#191919")) >= 4.5
+
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
 def cue_mix(accent, bg):
@@ -1004,7 +1017,8 @@ def main(base=BASE, out=None):
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
                     f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]};--ga:{GA_LINE[k]}")
-    home = (f":root{{{hv('l')}}}"
+    home = (f":root{{--band-deep:{BAND_DEEP};--band-light:{BAND_LIGHT}}}"
+            f":root{{{hv('l')}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
             f":root[data-theme=\"dark\"]{{{hv('d')}}}")
     (ASSETS / "style.css").write_text(CSS + "/* search result tints */\n" + rc + "\n/* Contents tints, the brick edge, the consent button's orange */\n" + home + "\n", encoding="utf-8")
@@ -1583,12 +1597,13 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
 .sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
 .sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
-/* Install: the emblem band's blue under a white word; pointed at, black. On the dark page pointed at it takes the text's colour under a dark word: a filled button
-   goes darker under the pointer on the light page and lighter on the dark one, never the other way */
+/* Install skill: the emblem band's blue under a white word. Pointed at, it takes the next step of its own blue: darker on the light page (--band-deep, solved by the build),
+   and on the dark page the dark theme's link blue under a word in the page's colour (--band-light). A filled button goes darker under the pointer on the light page
+   and lighter on the dark one, never the other way */
 .sk-cta .sch-btn.is-fill{background:var(--band);border-color:var(--band);color:#fff}
-@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:#000;border-color:#000}}
-@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--text);border-color:var(--text);color:var(--bg)}}
-:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--text);border-color:var(--text);color:var(--bg)}}
+@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--band-deep);border-color:var(--band-deep)}}
+@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--band-light);border-color:var(--band-light);color:var(--bg)}}
+:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--band-light);border-color:var(--band-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 /* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
