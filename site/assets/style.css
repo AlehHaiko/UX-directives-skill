@@ -1,6 +1,6 @@
 
 :root{
-  --bg:#ffffff;--bg-soft:#f7f6f3;--text:#37352f;--muted:var(--text);--line:#e9e9e7;--link:var(--blue);
+  --bg:#ffffff;--bg-soft:#f7f6f3;--text:#37352f;--muted:var(--text);--line:#e9e9e7;--link:var(--book);
   --peach:#fbecdd;--blue:#e7f3f8;--pink:#f9e8ef;--yellow:#fbf3db;--green:#e8f1ec;--gray:#f1f1ef;--quote:#d44c47;
   --chip:#e9e5f2;--chip-t:#4b3c63;--shadow:0 1px 2px rgba(15,15,15,.06);--marker:#38222c;--arrow:#b83d80;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
@@ -324,9 +324,9 @@ body>.sr{top:0;margin:0}
 .cover-ch .cv-1{margin:0;font-size:24px;letter-spacing:.08em;line-height:1;text-transform:uppercase}
 .cv-2{margin:0;color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
 .cv-n{font-family:var(--mono);font-weight:500}.cv-c{display:none}
-/* the band is the book's one blue (--blue, written by the build): the light page's links and the skill page's first button are the same token.
+/* the band is the book's one blue (--book, written by the build; --blue is the blue callout's ground): the light page's links and the skill page's first button are the same token.
    It was #1829c4, one step of red from the links' #1929c4; the dark page's links keep their own, lighter blue */
-.cover-home{background:var(--blue)}
+.cover-home{background:var(--book)}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -570,13 +570,13 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
 .sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
 .sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
-/* Install skill: the emblem band's blue under a white word. Pointed at, it takes the next step of its own blue: darker on the light page (--blue-deep, solved by the build),
-   and on the dark page the dark theme's link blue under a word in the page's colour (--blue-light). A filled button goes darker under the pointer on the light page
+/* Install skill: the emblem band's blue under a white word. Pointed at, it takes the next step of its own blue: darker on the light page (--book-deep, solved by the build),
+   and on the dark page the dark theme's link blue under a word in the page's colour (--book-light). A filled button goes darker under the pointer on the light page
    and lighter on the dark one, never the other way */
-.sk-cta .sch-btn.is-fill{background:var(--blue);border-color:var(--blue);color:#fff}
-@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--blue-deep);border-color:var(--blue-deep)}}
-@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--blue-light);border-color:var(--blue-light);color:var(--bg)}}
-:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--blue-light);border-color:var(--blue-light);color:var(--bg)}}
+.sk-cta .sch-btn.is-fill{background:var(--book);border-color:var(--book);color:#fff}
+@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--book-deep);border-color:var(--book-deep)}}
+@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
+:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 /* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
@@ -856,4 +856,4 @@ html{scroll-padding-bottom:var(--consent-h,0px)}
 /* search result tints */
 .rc1{--ch-sel-l:#ffd5fd;--ch-hov-l:#fee9fd;--ch-sel-d:#4b2a4b;--ch-hov-d:#372137;--ch-live-l:#fec3fd;--ch-live-d:#5c305c;--ch-deep-l:#feb3fd;--ch-deep-d:#6b346b}.rc2{--ch-sel-l:#bdefb8;--ch-hov-l:#d2f9cf;--ch-sel-d:#1c3d1a;--ch-hov-d:#182d16;--ch-live-l:#a8e6a3;--ch-live-d:#1d491a;--ch-deep-l:#95de8f;--ch-deep-d:#1a5417}.rc3{--ch-sel-l:#93f2f1;--ch-hov-l:#b5fcfb;--ch-sel-d:#033d3d;--ch-hov-d:#012e2e;--ch-live-l:#6ee9e8;--ch-live-d:#014848;--ch-deep-l:#3ce2e1;--ch-deep-d:#055252}.rc4{--ch-sel-l:#ffdcb7;--ch-hov-l:#ffecd9;--ch-sel-d:#4e2f04;--ch-hov-d:#39240a;--ch-live-l:#ffce99;--ch-live-d:#5d3801;--ch-deep-l:#ffc17b;--ch-deep-d:#694003}.rc5{--ch-sel-l:#f6f063;--ch-hov-l:#fcf997;--ch-sel-d:#3a3701;--ch-hov-d:#2b2a08;--ch-live-l:#f0e710;--ch-live-d:#454202;--ch-deep-l:#e8df01;--ch-deep-d:#4e4b00}.rc6{--ch-sel-l:#feddab;--ch-hov-l:#ffedd2;--ch-sel-d:#4a3102;--ch-hov-d:#372508;--ch-live-l:#fad091;--ch-live-d:#583b01;--ch-deep-l:#f0c688;--ch-deep-d:#634301}.rc7{--ch-sel-l:#ffdcb5;--ch-hov-l:#ffecd8;--ch-sel-d:#4d2f03;--ch-hov-d:#39240a;--ch-live-l:#ffce94;--ch-live-d:#5c3902;--ch-deep-l:#fec176;--ch-deep-d:#684001}.rc8{--ch-sel-l:#aff1c4;--ch-hov-l:#c9fbd8;--ch-sel-d:#0e3e23;--ch-hov-d:#102e1c;--ch-live-l:#97e8b2;--ch-live-d:#014b27;--ch-deep-l:#7ee1a1;--ch-deep-d:#02552d}.rc9{--ch-sel-l:#95f2e9;--ch-hov-l:#b6fcf5;--ch-sel-d:#013d39;--ch-hov-d:#022e2b;--ch-live-l:#71eadf;--ch-live-d:#044944;--ch-deep-l:#42e2d6;--ch-deep-d:#03524d}
 /* Contents tints, the brick edge, the consent button's orange */
-:root{--blue:#1929c4;--blue-deep:#1202af;--blue-light:#7fb8e6;--copied:#ffdace}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--copied:#56291b}}:root[data-theme="dark"]{--copied:#56291b}:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-live:#b9d9ff;--home-deep:#a8d0ff;--home-line:#5f92cc;--brick:#da674b;--brick-fill:#c35338;--ga:#c88802}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}
+:root{--book:#1929c4;--book-deep:#1202af;--book-light:#7fb8e6;--copied:#ffdace}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--copied:#56291b}}:root[data-theme="dark"]{--copied:#56291b}:root{--home-sel:#cde4ff;--home-hov:#e5f0fe;--home-live:#b9d9ff;--home-deep:#a8d0ff;--home-line:#5f92cc;--brick:#da674b;--brick-fill:#c35338;--ga:#c88802}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}}:root[data-theme="dark"]{--home-sel:#183759;--home-hov:#152a40;--home-live:#16426e;--home-deep:#174a7e;--home-line:#3b6da3;--brick:#be4e33;--brick-fill:#be4e33;--ga:#f9ab00}

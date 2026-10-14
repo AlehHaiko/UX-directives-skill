@@ -292,7 +292,7 @@ def deeper(color, ratio=1.30):
         l=L-i/1000; c=C; rgb=oklch2rgb(l,c,h)
         while not ingamut(rgb) and c>0: c-=0.002; rgb=oklch2rgb(l,c,h)
         if cr(rgb,base)>=ratio: return rgb2hex(rgb)
-BAND = "#1929c4"  # the book's one blue (--blue): the Contents banner, the light page's links, the fill of the skill page's "Install skill"
+BAND = "#1929c4"  # the book's one blue (--book): the Contents banner, the light page's links, the fill of the skill page's "Install skill"
 BAND_DEEP = deeper(BAND)  # that button under the pointer, on the light page
 BAND_LIGHT = "#7fb8e6"  # and on the dark page: the dark theme's link blue, under a word in the page's colour
 assert cr(hex2rgb(BAND_DEEP), hex2rgb("#ffffff")) >= 4.5 and cr(hex2rgb(BAND_LIGHT), hex2rgb("#191919")) >= 4.5
@@ -601,7 +601,7 @@ HM_MARK = ('<svg class="hm-mark" viewBox="676 37 98 98" aria-hidden="true" fill=
            '<rect x="685" y="54" width="80" height="80"/><circle cx="725" cy="86" r="48"/>'
            '<path d="M723,132l-4-49-30-24v-1l36,16,36-16v1l-30,24-4,49h-4Z"/><path d="M720,63l5-5,5,5-5,6-5-6Z"/></svg>')
 
-# Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on the book's blue (--blue; the cover's #1829c4 is one step of red from it).
+# Contents banner, after the author's Notion cover (11-01__Hero__Cover.svg): emblem and two lines on the book's blue (--book; the cover's #1829c4 is one step of red from it).
 # The emblem keeps a line of Leonardo's, the closing sentence of the Preface's epigraph: it takes the caption's place while the emblem is pointed at
 # or has the keyboard's focus (its one Tab stop); on touch a tap shows it and hides it.
 # its attribution is a line of its own (.hm-a), smaller and quieter, so the sentence is what reads
@@ -1022,7 +1022,7 @@ def main(base=BASE, out=None):
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
                     f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]};--ga:{GA_LINE[k]}")
-    home = (f":root{{--blue:{BAND};--blue-deep:{BAND_DEEP};--blue-light:{BAND_LIGHT};--copied:{COPIED['l']}}}"
+    home = (f":root{{--book:{BAND};--book-deep:{BAND_DEEP};--book-light:{BAND_LIGHT};--copied:{COPIED['l']}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--copied:{COPIED['d']}}}}}"
             f":root[data-theme=\"dark\"]{{--copied:{COPIED['d']}}}"
             f":root{{{hv('l')}}}"
@@ -1036,7 +1036,7 @@ def main(base=BASE, out=None):
 
 CSS = r"""
 :root{
-  --bg:#ffffff;--bg-soft:#f7f6f3;--text:#37352f;--muted:var(--text);--line:#e9e9e7;--link:var(--blue);
+  --bg:#ffffff;--bg-soft:#f7f6f3;--text:#37352f;--muted:var(--text);--line:#e9e9e7;--link:var(--book);
   --peach:#fbecdd;--blue:#e7f3f8;--pink:#f9e8ef;--yellow:#fbf3db;--green:#e8f1ec;--gray:#f1f1ef;--quote:#d44c47;
   --chip:#e9e5f2;--chip-t:#4b3c63;--shadow:0 1px 2px rgba(15,15,15,.06);--marker:#38222c;--arrow:#b83d80;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
@@ -1360,9 +1360,9 @@ body>.sr{top:0;margin:0}
 .cover-ch .cv-1{margin:0;font-size:24px;letter-spacing:.08em;line-height:1;text-transform:uppercase}
 .cv-2{margin:0;color:var(--ch-accent);font-size:30px;font-weight:600;letter-spacing:-.005em;line-height:1}
 .cv-n{font-family:var(--mono);font-weight:500}.cv-c{display:none}
-/* the band is the book's one blue (--blue, written by the build): the light page's links and the skill page's first button are the same token.
+/* the band is the book's one blue (--book, written by the build; --blue is the blue callout's ground): the light page's links and the skill page's first button are the same token.
    It was #1829c4, one step of red from the links' #1929c4; the dark page's links keep their own, lighter blue */
-.cover-home{background:var(--blue)}
+.cover-home{background:var(--book)}
 /* the 1500x260 Notion composition, scaled by .8 to fit the 1500x200 banner */
 /* the emblem and its caption are one box, as large as the two and centred in the banner */
 .hm{position:absolute;inset:0;margin:auto;width:fit-content;height:fit-content;max-width:100%;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
@@ -1606,13 +1606,13 @@ section>h2.dh.is-stuck::after{opacity:1}
 /* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
 .sk-cta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}
 .sk-cta .sch-btn{font-size:inherit;padding:8px 16px}
-/* Install skill: the emblem band's blue under a white word. Pointed at, it takes the next step of its own blue: darker on the light page (--blue-deep, solved by the build),
-   and on the dark page the dark theme's link blue under a word in the page's colour (--blue-light). A filled button goes darker under the pointer on the light page
+/* Install skill: the emblem band's blue under a white word. Pointed at, it takes the next step of its own blue: darker on the light page (--book-deep, solved by the build),
+   and on the dark page the dark theme's link blue under a word in the page's colour (--book-light). A filled button goes darker under the pointer on the light page
    and lighter on the dark one, never the other way */
-.sk-cta .sch-btn.is-fill{background:var(--blue);border-color:var(--blue);color:#fff}
-@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--blue-deep);border-color:var(--blue-deep)}}
-@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--blue-light);border-color:var(--blue-light);color:var(--bg)}}
-:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--blue-light);border-color:var(--blue-light);color:var(--bg)}}
+.sk-cta .sch-btn.is-fill{background:var(--book);border-color:var(--book);color:#fff}
+@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--book-deep);border-color:var(--book-deep)}}
+@media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
+:root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 /* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
