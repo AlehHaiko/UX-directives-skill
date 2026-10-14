@@ -1610,7 +1610,8 @@ section>h2.dh.is-stuck::after{opacity:1}
    and on the dark page the dark theme's link blue under a word in the page's colour (--book-light). A filled button goes darker under the pointer on the light page
    and lighter on the dark one, never the other way */
 .sk-cta .sch-btn.is-fill{background:var(--book);border-color:var(--book);color:#fff}
-@media (hover:hover){.sk-cta .sch-btn.is-fill:hover{background:var(--book-deep);border-color:var(--book-deep)}}
+/* (a.sch-btn: one step over the schemes' own rule for a filled button under the pointer, which comes later and would make this one black) */
+@media (hover:hover){.sk-cta a.sch-btn.is-fill:hover{background:var(--book-deep);border-color:var(--book-deep)}}
 @media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 :root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
