@@ -1207,6 +1207,9 @@ body>.sr{top:0;margin:0}
    and takes its place under the last chapter when the list is scrolled to its end */
 /* a sticky box stops at the menu's padding (40px at its foot), and the chapters would show in that strip under the row: the row is let down by those 40px,
    to the menu's very edge, and keeps 16px of its own under the pill */
+/* on the skill's own page the row is the current item and its sections follow it (where "On this page" is hidden): there it stands in the flow, as a current subcategory does,
+   and the menu is scrolled to it on arrival */
+.nav-x:has(.is-cur){position:static;padding-bottom:0}
 .nav-x{display:flex;position:sticky;bottom:-40px;z-index:1;margin:8px 0 6px;padding:8px 0 16px;border-top:1px solid var(--line);background:var(--bg)}
 .nav-ch-h{display:flex;align-items:stretch;cursor:pointer;border-radius:6px;font-weight:600}
 .nav-ch-t{flex:1;min-width:0;display:flex;gap:6px;align-items:center;padding:6px 0 6px 8px;color:var(--text);border-radius:6px;line-height:1.3}
