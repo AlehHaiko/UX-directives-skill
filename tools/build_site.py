@@ -2095,18 +2095,22 @@ JS = r"""
     // scrollend where the browser has it (only at the jump's own stop, not an earlier scroll's); elsewhere 100ms without a scroll event
     var cueEnd=function(){if(Math.abs(scrollY-cueY)<2)cueNow()};
     var cueWait=function(){clearTimeout(cueT);cueT=setTimeout(cueNow,100)};
+    var cueGo=function(e,el,hd){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+      // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
+      var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
+      cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
+      cueEl=hd;if(Math.abs(cueY-scrollY)<1){cueNow();return}
+      addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
+      // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
+      clearTimeout(cueT);cueT=setTimeout(cueNow,400)};
     links.forEach(function(a){var el=document.getElementById(a.getAttribute('href').slice(1));if(!el)return;
       // #directives is the mark before the sticky heading: the jump is measured on the mark, the cue plays on the heading
       var hd=el.classList.contains('dh-mark')?el.nextElementSibling:el;
       if(!a.closest('.nav-sec'))hd.addEventListener('animationend',function(e){if(e.target===hd&&/^bb-cue-/.test(e.animationName))hd.classList.remove('cue')});
-      a.addEventListener('click',function(e){if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
-        // where the jump will stop: the heading's line (the sticky heading's mark), kept within the page
-        var d=topOf(el)-(parseFloat(getComputedStyle(el).scrollMarginTop)||0);
-        cueY=Math.max(0,Math.min(scrollY+d,root.scrollHeight-innerHeight));
-        cueEl=hd;if(Math.abs(cueY-scrollY)<1){cueNow();return}
-        addEventListener('scroll',cueWait,{passive:true});addEventListener('scrollend',cueEnd);
-        // the jump can start a few frames late: give it 400ms before taking "no scroll" for an answer
-        clearTimeout(cueT);cueT=setTimeout(cueNow,400)})});
+      a.addEventListener('click',function(e){cueGo(e,el,hd)})});
+    // a button in the page's text that leads to one of its sections ("Install skill" on the skill's page) lands as a line of "On this page" does: the same jump, the same cue
+    [].forEach.call(document.querySelectorAll('.sk-cta a[href^="#"]'),function(a){var el=document.getElementById(a.getAttribute('href').slice(1));
+      if(el)a.addEventListener('click',function(e){cueGo(e,el,el)})});
   }
   // directives heading: shadow only while stuck under the banner
   var dh=document.querySelector('h2.dh');
