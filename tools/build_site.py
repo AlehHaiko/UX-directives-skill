@@ -1570,7 +1570,10 @@ section>h2.dh.is-stuck::after{opacity:1}
 .code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
 @media (hover:none){.code-copy::after{content:"";position:absolute;inset:-7px}}  /* a finger's target: 44px */
 /* a scheme: a figure in a hairline box, its name in the "On this page" heading's small capitals */
-.sch{margin:24px 0 8px;padding:20px;border:1px solid var(--line);border-radius:12px}
+/* its edge is #dadada on the light page, a step darker than the book's hairline, and the book's own line on the dark one */
+.sch{--sch-line:#dadada;margin:24px 0 8px;padding:20px;border:1px solid var(--sch-line);border-radius:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sch{--sch-line:var(--line)}}
+:root[data-theme="dark"] .sch{--sch-line:var(--line)}
 /* a line under the name that ties the figure to the text before it */
 .sch-c{margin:-8px 0 16px;font-size:14px}
 /* the lead's two links are the schemes' button at the text's size; the first is filled with the text's colour */
