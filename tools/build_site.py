@@ -297,6 +297,11 @@ BAND_DEEP = deeper(BAND)  # that button under the pointer, on the light page
 BAND_LIGHT = "#7fb8e6"  # and on the dark page: the dark theme's link blue, under a word in the page's colour
 assert cr(hex2rgb(BAND_DEEP), hex2rgb("#ffffff")) >= 4.5 and cr(hex2rgb(BAND_LIGHT), hex2rgb("#191919")) >= 4.5
 
+# The ground of a box of text to copy while its button shows the tick: a brick from Claude's clay (#d97757, OKLCH hue 41), solved as the menu's selected tint is
+# (1.30 against the light page, 1.45 against the dark one), so the box's text keeps well over 4.5:1 on it in both themes
+COPIED = {"l": tint("#d97757", "#ffffff", 1.30, .09), "d": tint("#d97757", "#191919", 1.45, .07)}
+assert cr(hex2rgb("#37352f"), hex2rgb(COPIED["l"])) >= 4.5 and cr(hex2rgb("#e6e6e4"), hex2rgb(COPIED["d"])) >= 4.5
+
 # Landing-cue ring (reduced motion): the chapter accent, mixed with black in OKLab by the smallest whole
 # percentage that gives 3:1 against the page background; None if no step does (the ring then uses --link).
 def cue_mix(accent, bg):
@@ -1017,7 +1022,9 @@ def main(base=BASE, out=None):
     h = HOME_TINTS
     hv = lambda k: (f"--home-sel:{h['sel-' + k]};--home-hov:{h['hov-' + k]};--home-live:{h['live-' + k]};--home-deep:{h['deep-' + k]};"
                     f"--home-line:{HOME_LINE[k]};--brick:{BRICK[k]};--brick-fill:{BRICK_FILL[k]};--ga:{GA_LINE[k]}")
-    home = (f":root{{--band-deep:{BAND_DEEP};--band-light:{BAND_LIGHT}}}"
+    home = (f":root{{--band-deep:{BAND_DEEP};--band-light:{BAND_LIGHT};--copied:{COPIED['l']}}}"
+            f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{--copied:{COPIED['d']}}}}}"
+            f":root[data-theme=\"dark\"]{{--copied:{COPIED['d']}}}"
             f":root{{{hv('l')}}}"
             f"@media (prefers-color-scheme:dark){{:root:not([data-theme=\"light\"]){{{hv('d')}}}}}"
             f":root[data-theme=\"dark\"]{{{hv('d')}}}")
@@ -1583,6 +1590,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 .code-copy{display:none;position:absolute;top:8px;right:8px;width:30px;height:30px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;transition:background-color .2s var(--soft)}
 .js .code-copy{display:grid}
 .code-copy svg{grid-area:1/1;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+/* copied: the whole box takes the brick ground at once and keeps it while the tick shows (2s, app.js); then the ground goes back over .6s */
+.code{transition:background-color .6s var(--soft)}.code.is-ok{background:var(--copied);transition:none}
 .code-copy .ic-ok,.code-copy.is-ok .ic-cp{visibility:hidden}.code-copy.is-ok .ic-ok{visibility:visible}
 @media (hover:hover){.code-copy:hover{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}}
 .code-copy:focus-visible{background:var(--home-live);box-shadow:inset 0 0 0 1px var(--home-deep)}
@@ -2195,8 +2204,8 @@ JS = r"""
   // its sign is a tick for 2s. Where the clipboard cannot be written, the text is selected, so the reader's own copy is one key away
   var skSay=document.querySelector('.sk-say');
   [].forEach.call(document.querySelectorAll('.code-copy'),function(b){var c=b.parentNode.querySelector('code'),okT=0;
-    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);clearTimeout(okT);
-      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok')},2000);hintShow(b,t);
+    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);b.parentNode.classList.toggle('is-ok',ok);clearTimeout(okT);
+      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok');b.parentNode.classList.remove('is-ok')},2000);hintShow(b,t);
       if(skSay){skSay.textContent='';setTimeout(function(){skSay.textContent=t},50)}}
     function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}

@@ -311,8 +311,8 @@
   // its sign is a tick for 2s. Where the clipboard cannot be written, the text is selected, so the reader's own copy is one key away
   var skSay=document.querySelector('.sk-say');
   [].forEach.call(document.querySelectorAll('.code-copy'),function(b){var c=b.parentNode.querySelector('code'),okT=0;
-    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);clearTimeout(okT);
-      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok')},2000);hintShow(b,t);
+    function done(ok){var t=ok?'Copied':'Not copied: the text is selected, copy it yourself';b.classList.toggle('is-ok',ok);b.parentNode.classList.toggle('is-ok',ok);clearTimeout(okT);
+      if(ok)okT=setTimeout(function(){b.classList.remove('is-ok');b.parentNode.classList.remove('is-ok')},2000);hintShow(b,t);
       if(skSay){skSay.textContent='';setTimeout(function(){skSay.textContent=t},50)}}
     function byHand(){var r=document.createRange(),g=getSelection(),ok=false;r.selectNodeContents(c);g.removeAllRanges();g.addRange(r);
       try{ok=document.execCommand('copy')}catch(e){}if(ok)g.removeAllRanges();done(ok)}
