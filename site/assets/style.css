@@ -618,7 +618,7 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
    one with nowhere to go is pale and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
    The step's name and "Step N of 5" share a baseline over the fragment's card */
 .sch-st{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
-.sch-st>*{grid-column:1/-1}.sch-st>.sch-t{grid-column:1}
+.sch-st>*{grid-column:1/-1}.sch-st>.sch-t{grid-column:1;padding-right:12px}
 .st-ctl{grid-column:2;grid-row:1;display:flex;gap:8px;margin-bottom:16px}.st-ctl[hidden],.st-rail[hidden]{display:none}
 .st-rail{display:flex;align-items:center;list-style:none;margin:8px 0 22px;padding:0}
 .st-rail>li{flex:none}
