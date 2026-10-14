@@ -785,8 +785,8 @@ def scheme_id(chapters):
 
 # Scheme 2, how the skill works: five steps from a request to a finding, each with the real fragment of the consent banner's audit (the page's worked example):
 # the skill's own description (SKILL.md), the index's questions, the directive's line and the finding in the skill's four parts, all read from the book at build time.
-# Without script the steps stand one under another, joined by arrows. With it (app.js) one step shows at a time under a rail of the five,
-# with Previous, Next and a counter; the arrow keys step too. At step 5 the path forks: who audits decides what is found.
+# Without script the steps stand one under another, joined by arrows. With it (app.js) one step shows at a time under a rail of the five:
+# the rail's rings are buttons to their steps, Previous and Next head the figure, the arrow keys step too, and the step's name stands with "Step N of 5". At step 5 the path forks: who audits decides what is found.
 # Lines and arrowheads are inline SVG: a line stretches (preserveAspectRatio none, the stroke does not scale), a head keeps its size
 ST_LINE_H = '<svg class="st-lv" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M0 6H100"/></svg>'
 ST_HEAD_R = '<svg class="st-la" viewBox="0 0 8 12" aria-hidden="true"><path d="M1.5 1.5L6.5 6l-5 4.5"/></svg>'
@@ -822,16 +822,19 @@ def scheme_steps(chapters):
     ]
     n = len(steps)
     items = "".join(
-        f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span><p class="st-h">{t}</p>'
+f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span>'
+        f'<div class="st-hd"><p class="st-h">{t}</p><p class="st-n" aria-hidden="true">Step {i} of {n}</p></div>'
         + (f'<span class="st-dn" aria-hidden="true">{ST_LINE_V}{ST_HEAD_D}</span>' if i < n else "") + f'<div class="st-b">{b}</div></li>'
         for i, (t, b) in enumerate(steps, 1))
-    rail = "".join((f'<li class="st-ln">{ST_LINE_H}{ST_HEAD_R}</li>' if i > 1 else "") + f'<li class="st-dot">{i}</li>' for i in range(1, n + 1))
-    bar = (f'<div class="st-bar" hidden><ol class="st-rail" aria-hidden="true">{rail}</ol><div class="st-ctl">'
-           '<button class="sch-btn st-prev" type="button">Previous</button>'
-           f'<p class="st-count" role="status"><span class="st-cn">Step 1 of {n}</span><span class="sr st-ct"></span></p>'
-           '<button class="sch-btn st-next" type="button">Next</button></div></div>')
-    return (f'<figure class="sch sch-st" aria-labelledby="sch-st-t"><figcaption class="sch-t" id="sch-st-t">How the skill works</figcaption>'
-            f'{bar}<ol class="st-list" role="list">{items}</ol></figure>')
+    # the rail's rings are buttons to their steps, each named by its step; the name and the buttons head the figure, the status line says the step shown
+    rail = "".join((f'<li class="st-ln" aria-hidden="true">{ST_LINE_H}{ST_HEAD_R}</li>' if i > 1 else "")
+                   + f'<li><button class="st-dot" type="button" aria-label="Step {i}: {esc(re.sub("<[^>]+>", "", t))}">{i}</button></li>'
+                   for i, (t, _) in enumerate(steps, 1))
+    ctl = ('<div class="st-ctl" hidden><button class="sch-btn st-prev" type="button">Previous</button>'
+           '<button class="sch-btn is-fill st-next" type="button">Next</button></div>')
+    return (f'<figure class="sch sch-st" aria-labelledby="sch-st-t"><figcaption class="sch-t" id="sch-st-t">How the skill works</figcaption>{ctl}'
+            f'<ol class="st-rail" role="list" hidden>{rail}</ol><p class="sr st-say" role="status"></p>'
+            f'<ol class="st-list" role="list">{items}</ol></figure>')
 
 
 def scheme_roles(chapters):
@@ -1567,7 +1570,8 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-list{list-style:none;margin:0;padding:0}
 .st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}
 .st-num,.st-dot{display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--text);border-radius:50%;font:600 13px/1 var(--mono)}
-.st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}
+.st-hd{grid-column:2;min-width:0}
+.st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}.st-n{display:none}
 .st-b{grid-column:2;min-width:0;padding:6px 0 18px}.st-i:last-child .st-b{padding-bottom:0}
 .st-dn{grid-column:1;grid-row:2;position:relative;margin:4px 0}
 .st-lv,.st-la,.st-fk{fill:none;stroke:var(--text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -1583,18 +1587,27 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-out{position:relative;margin:6px 4px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}
 .st-out strong{display:block;font-size:14px}
 .st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
-/* with script: the rail and the buttons over one step. The rail: the step shown is the filled ring, the steps before it and the lines to it keep the text's colour, what is ahead steps back.
-   The buttons are the consent bar's text button; one that has nowhere to go is faint and takes no hover. The step's own ring and its line down are not drawn: the rail has them */
-.st-bar{margin-bottom:16px}
-.st-rail{display:flex;align-items:center;list-style:none;margin:0 0 14px;padding:0}
-.st-dot{flex:none}
+/* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by arrows.
+   A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey arrow
+   (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring grows on the cards' spring. Next is filled, Previous outlined;
+   one with nowhere to go is pale and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
+   The step's name and "Step N of 5" share a baseline over the fragment's card */
+.sch-st{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.sch-st>*{grid-column:1/-1}.sch-st>.sch-t{grid-column:1}
+.st-ctl{grid-column:2;grid-row:1;display:flex;gap:8px;margin-bottom:16px}.st-ctl[hidden],.st-rail[hidden]{display:none}
+.st-rail{display:flex;align-items:center;list-style:none;margin:8px 0 22px;padding:0}
+.st-rail>li{flex:none}
+button.st-dot{appearance:none;position:relative;padding:0;background:transparent;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .5s var(--spring)}
+@media (hover:hover){button.st-dot:hover{transform:scale(1.2)}}
+button.st-dot:focus-visible{transform:scale(1.2);border-radius:50%}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
-.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
-.st-ln .st-lv{position:absolute;left:4px;top:0;width:calc(100% - 8px);height:12px}.st-ln .st-la{position:absolute;right:3px;top:0;width:8px;height:12px}
-/* what is ahead: the ring and the line step back, the number keeps the text's colour */
+.st-rail>.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
+.st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px}.st-ln .st-la{position:absolute;right:5px;top:0;width:8px;height:12px}
 .st-dot:not(.is-cur):not(.is-done){border-color:color-mix(in srgb,var(--text) 35%,transparent)}.st-ln:not(.is-done){opacity:.35}
-.st-ctl{display:flex;align-items:center;gap:12px}
-.st-count{flex:1;margin:0;text-align:center;font-size:14px}
+/* a finger's target: 44px round a ring of 28px */
+@media (hover:none){button.st-dot::after{content:"";position:absolute;inset:-8px}}
+/* five rings with their arrows need 204px; in a narrower figure the arrows go and the rings stand apart */
+@media (max-width:300px){.st-rail>.st-ln{display:none}.st-rail{justify-content:space-between}}
 .sch-btn{appearance:none;margin:0;padding:6px 12px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
 .sch-btn[aria-disabled="true"]{opacity:.4;cursor:default}
@@ -1603,6 +1616,9 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .sch-st.is-js .st-i{display:block}
 .sch-st.is-js .st-num,.sch-st.is-js .st-dn{display:none}
 .sch-st.is-js .st-b{padding-bottom:0}
+.sch-st.is-js .st-hd{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:6px}
+.sch-st.is-js .st-n{display:block;flex:none;margin:0;font-size:14px}
+.sch-st.is-js .st-b{padding-top:0}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
@@ -1784,7 +1800,7 @@ html{scroll-padding-bottom:var(--consent-h,0px)}
   .ic-theme .th-cut{display:none}.ic-theme .th-rays,.ic-theme .th-disc{transform:none}.ic-theme *{transition:opacity .15s linear!important}}
 @media print{.top,.sidebar,.toc,.pager,.scrim,.consent{display:none!important}body{padding-bottom:0}.shell{display:block}.main{padding:0}
   /* the skill's page on paper is its form without script: every step, the roles' table, no controls */
-  .st-bar,.sch-rl,.code-copy{display:none!important}.sch-st .st-i[hidden],.tbl[hidden]{display:block!important;content-visibility:visible!important}.st-i+.st-i{margin-top:16px}}
+  .st-ctl,.st-rail,.sch-rl,.code-copy{display:none!important}.sch-st .st-i[hidden],.tbl[hidden]{display:block!important;content-visibility:visible!important}.st-i+.st-i{margin-top:16px}}
 """
 
 JS = r"""
@@ -2117,20 +2133,23 @@ JS = r"""
     idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
     idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
     idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
-  // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. Previous and Next step, and so do the left and right arrow keys
-  // while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled). The counter is a status line: it says the step and its name
+  // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. The rail's rings go to their steps, Previous and Next step,
+  // and so do the left and right arrow keys while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled).
+  // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
   var stg=document.querySelector('.sch-st');
-  if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stR=[].slice.call(stg.querySelectorAll('.st-rail>li')),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stAt=-1;
+  if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
+      stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
       stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')});
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
-      // the rail's items: rings at the even places, lines between them
-      stR.forEach(function(li,j){li.classList.toggle('is-cur',j===2*i);li.classList.toggle('is-done',j<2*i)});
+      stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
-      stg.querySelector('.st-cn').textContent='Step '+(i+1)+' of '+stI.length;stg.querySelector('.st-ct').textContent=': '+stI[i].querySelector('.st-h').textContent};
-    stg.classList.add('is-js');stg.querySelector('.st-bar').hidden=false;stSet(0);
+      if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent};
+    stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(0);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
+    stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}

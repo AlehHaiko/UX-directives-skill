@@ -328,20 +328,23 @@
     idg.addEventListener('click',function(e){var n=e.target.closest('.id-p,.id-l');if(n&&!e.target.closest('a'))idPress(n.dataset.p)});
     idg.addEventListener('pointerover',function(e){if(e.pointerType==='touch')return;var n=e.target.closest('.id-p,.id-l');idHov=n?n.dataset.p:null;idShow()});
     idg.addEventListener('pointerleave',function(){idHov=null;idShow()})}
-  // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. Previous and Next step, and so do the left and right arrow keys
-  // while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled). The counter is a status line: it says the step and its name
+  // scheme 2 (the skill's page): the steps. Without script they are a list; here one shows at a time. The rail's rings go to their steps, Previous and Next step,
+  // and so do the left and right arrow keys while the focus is in the figure; a button with nowhere to go stays in the Tab order and says so (aria-disabled).
+  // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
   var stg=document.querySelector('.sch-st');
-  if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stR=[].slice.call(stg.querySelectorAll('.st-rail>li')),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stAt=-1;
+  if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
+      stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
       stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')});
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
-      // the rail's items: rings at the even places, lines between them
-      stR.forEach(function(li,j){li.classList.toggle('is-cur',j===2*i);li.classList.toggle('is-done',j<2*i)});
+      stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
-      stg.querySelector('.st-cn').textContent='Step '+(i+1)+' of '+stI.length;stg.querySelector('.st-ct').textContent=': '+stI[i].querySelector('.st-h').textContent};
-    stg.classList.add('is-js');stg.querySelector('.st-bar').hidden=false;stSet(0);
+      if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent};
+    stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(0);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
+    stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});
     stP.addEventListener('click',function(){stSet(stAt-1)});stN.addEventListener('click',function(){stSet(stAt+1)});
     stg.addEventListener('keydown',function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
       if(e.key==='ArrowLeft'){e.preventDefault();stSet(stAt-1)}else if(e.key==='ArrowRight'){e.preventDefault();stSet(stAt+1)}})}
