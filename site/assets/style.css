@@ -580,6 +580,12 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 :root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
+/* a button that leaves the site (GitHub) has the external link's mark after its word, inside it, in the word's colour: the portfolio's drawing and its move,
+   here while the whole button is pointed at or focused; with reduced motion it stays as it is */
+@media (prefers-reduced-motion:no-preference){
+  @media (hover:hover){.sch-btn:hover .ext{transform:translate(1px,-1px) scale(1.2)}}
+  .sch-btn:focus-visible .ext{transform:translate(1px,-1px) scale(1.2)}
+}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 /* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
 :root{--fill-h:#000}

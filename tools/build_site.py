@@ -895,9 +895,9 @@ def scheme_roles(chapters):
 def render_skill(chapters):
     sec = lambda inner: f'<section class="prose sk">{ext_marks(inner)}</section>'
     prompts = "".join(f'<p class="code-l" id="pr-{slug(l)}"><strong>{l}:</strong></p>{code_block(t, "prompt", "pr-" + slug(l))}' for l, t in SKILL_PROMPTS)
-    # the lead ends in the page's two ways on: to the install steps below, and to the repository
+    # the lead ends in the page's two ways on: to the install steps below, and to the repository; that one leaves the site and carries the mark, inside the button
     cta = (f'<p class="sk-cta"><a class="sch-btn is-fill" href="#install">Install skill</a>'
-           f'<a class="sch-btn" href="{REPO}" rel="noopener">GitHub</a></p>')
+           f'<a class="sch-btn" href="{REPO}" rel="noopener">GitHub{ICON_EXT}</a></p>')
     # the order: who it is for and one worked case first, then how it works (the two schemes), then what it can and cannot do, then how to get and use it
     parts = [
         f'<div class="hero"><h1>{SKILL_TITLE}</h1><p class="hero-s">{inline(SKILL_LEDE)}</p></div>',
@@ -1610,6 +1610,12 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (hover:hover){@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 :root[data-theme="dark"] .sk-cta .sch-btn.is-fill:hover{background:var(--book-light);border-color:var(--book-light);color:var(--bg)}}
 a.sch-btn,a.sch-btn:hover{text-decoration:none}
+/* a button that leaves the site (GitHub) has the external link's mark after its word, inside it, in the word's colour: the portfolio's drawing and its move,
+   here while the whole button is pointed at or focused; with reduced motion it stays as it is */
+@media (prefers-reduced-motion:no-preference){
+  @media (hover:hover){.sch-btn:hover .ext{transform:translate(1px,-1px) scale(1.2)}}
+  .sch-btn:focus-visible .ext{transform:translate(1px,-1px) scale(1.2)}
+}
 .sch-btn.is-fill{background:var(--text);color:var(--bg)}
 /* a button filled with the text's colour (Next) goes to the end of its own side under the pointer: black on the light page, white on the dark one (--fill-h) */
 :root{--fill-h:#000}
