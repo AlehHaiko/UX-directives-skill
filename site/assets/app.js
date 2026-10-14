@@ -91,7 +91,8 @@
   // Hover shows it after TIP_DELAY, at once if another tooltip was showing within TIP_CHAIN; keyboard focus shows it at once; touch: a long press (below).
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy,.st-dot',TIP_DELAY=400,TIP_CHAIN=300;
+  // So do the links that open in a new tab (the text links that carry the mark, the GitHub button): their tooltip says so. A text link has none on touch: its long press is the system's link menu
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy,.st-dot,a[target=_blank]',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}
@@ -142,7 +143,7 @@
     holdOutT=setTimeout(function(){holdOn=false;tipHide()},HOLD_OUT)}
   document.addEventListener('touchstart',function(e){
     clearTimeout(holdOutT);holdStop();if(holdOn){holdOn=false;tipHide()}
-    var el=e.touches.length===1?tipCtl(e.target):null;if(!el)return;
+    var el=e.touches.length===1?tipCtl(e.target):null;if(!el||el.matches('.ext-w>a'))return;
     holdEl=el;holdX=e.touches[0].clientX;holdY=e.touches[0].clientY;
     holdT=setTimeout(function(){holdT=0;holdOn=true;tipShow(el)},HOLD)},{passive:true,capture:true});
   document.addEventListener('touchmove',function(e){
