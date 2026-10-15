@@ -697,7 +697,7 @@ SKILL_CAN = """## What it can do, and why
 
 - **Cite exactly.** The book is bundled whole, so the title is quoted, not recalled.
 - **Find the directives for a topic.** [An index](index.html#chapters) maps all 62 subcategories with their "Ask yourself" questions.
-- **Audit what it is shown.** Screenshots, code, specs, flows. Each finding comes as Violates / Evidence / Fix / Severity.
+- **Audit what it is shown.** Screenshots, code, specs, flows. Every report names its source, ranks findings High to Low in one table, gives evidence and a fix for each, and ends with what it covered and what it could not check.
 - **Write requirements** traced to directive IDs.
 - **Explain any ID,** including the five repealed ones and what replaced them.
 """
@@ -829,7 +829,7 @@ def scheme_id(chapters):
 
 
 # Scheme 2, how the skill works: five steps from a request to a finding, each with the real fragment of the consent banner's audit (the page's worked example):
-# the skill's own description (SKILL.md), the index's questions, the directive's line and the finding in the skill's four parts, all read from the book at build time.
+# the skill's own description (SKILL.md), the index's questions, the directive's line and the report in the skill's six parts, all read from the book at build time.
 # Without script the steps stand one under another, joined by arrows. With it (app.js) one step shows at a time under a rail of the five:
 # the rail's rings are buttons to their steps, Previous and Next head the figure, the arrow keys step too, and the step's name stands with "Step N of 5". At step 5 the path forks: who audits decides what is found.
 # Lines and arrowheads are inline SVG: a line stretches (preserveAspectRatio none, the stroke does not scale), a head keeps its size
@@ -850,10 +850,13 @@ def scheme_steps(chapters):
     desc = re.search(r"Use this skill whenever the user asks to audit[^;]+", (ROOT / "ux-directives" / "SKILL.md").read_text(encoding="utf-8")).group(0)
     frag = lambda src, inner: f'<div class="st-f"><p class="st-src">{src}</p>{inner}</div>'
     picked = "".join(f'<li><span class="mono">{k}</span> {esc(subs[k]["name"])}: {inline(subs[k]["ask"])}</li>' for k in ST_PICKED)
-    finding = (f'<dl class="st-dl"><dt>Violates</dt><dd><span class="mono">{d["id"]}</span>—{inline(d["title"])} ({sub["code"]} {esc(sub["name"])})</dd>'
-               '<dt>Evidence</dt><dd>Reopened from the footer, the banner had no way out except a choice.</dd>'
-               '<dt>Fix</dt><dd>“Close” and Escape.</dd>'
-               '<dt>Severity</dt><dd>High, Medium or Low, by consequence to the user.</dd></dl>')
+    covered = ", ".join(f'<span class="mono">{k}</span> {esc(subs[k]["name"])}' for k in ST_PICKED)
+    finding = ('<dl class="st-dl"><dt>Source</dt><dd>Rendered page: the banner, reopened from the footer.</dd>'
+               f'<dt>Findings</dt><dd>One table ranked High to Low: 1. No way out but a choice · <span class="mono">{d["id"]}</span>—{inline(d["title"])} · High</dd>'
+               '<dt>Evidence and Fix</dt><dd>Reopened from the footer, the banner had no way out except a choice. Fix: “Close” and Escape.</dd>'
+               f'<dt>Coverage</dt><dd>{covered}</dd>'
+               '<dt>Already meets</dt><dd>Directives met, each with its evidence, held to the same bar.</dd>'
+               '<dt>Not checked</dt><dd>What the source did not show.</dd></dl>')
     fork = (f'<div class="st-fork">{ST_FORK}'
             f'<p class="st-out c-pink">{ST_HEAD_D}Audited by the agent that built it<span class="sr">: </span><strong>Missed the way out</strong></p>'
             f'<p class="st-out c-green">{ST_HEAD_D}Audited by a fresh agent<span class="sr">: </span><strong>Found it in 4 of 4</strong></p></div>')
@@ -863,7 +866,7 @@ def scheme_steps(chapters):
         ("<code>index.md</code>: subcategories picked by their “Ask yourself” questions", frag("references/index.md", f'<ul class="st-ul">{picked}</ul>')),
         ("The chapter is read and the directive quoted verbatim",
          frag("references/chapter_1.md", f'<p><a class="mono" href="{sub["file"]}#{d["id"].replace("/", "-")}">{d["id"]}</a>—<strong>{inline(d["title"])}</strong> {inline(d["body"])}</p>')),
-        ("A finding in four parts", frag("Claude", finding) + fork),
+        ("The report", frag("Claude", finding) + fork),
     ]
     n = len(steps)
     items = "".join(
