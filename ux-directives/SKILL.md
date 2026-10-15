@@ -61,19 +61,44 @@ Find its chapter from the first digit of the ID, search the file for the ID, and
 
 ### Audit a design, flow, or spec
 
-1. Understand what is being audited: look at the screenshot or prototype, or read the spec, and identify the user's task, the states shown, and what the system does on its own.
-2. Choose the relevant subcategories from `index.md` (use their "Ask yourself" questions as a checklist), then read those sections.
-3. Report findings in this format, most consequential first:
+Follow the steps in order. Each one closes a way an audit goes wrong: directives matched by title alone, hidden content taken as visible, a directive stretched to fit, the same ID both violated and met.
+
+1. **Know the artifact and the source.** Identify the user's task, the states shown, and what the system does on its own. Name the source you have: a *text conversion* (fetched or extracted text), the *page source* (markup, styles, scripts), or the *rendered page* (a screenshot, a live view, a prototype). A text conversion flattens closed menus, collapsed panels and off-screen content into what reads like visible text; treat such content as visible only when the markup or a rendering confirms it.
+2. **Pick subcategories by their questions.** Read `references/index.md` and put each subcategory's "Ask yourself" question to the artifact. Pick the subcategories whose question the artifact raises, not the ones whose name or directive titles match a keyword.
+3. **Read each picked section in full before any verdict.** In the chapter file, read the subcategory's `## N.M` section: the `> Governs` line, **Ask yourself**, and every directive under `### Directives`, title and body. The body says what the directive requires; a title alone does not. A subcategory whose section you have not read in full goes neither into Coverage nor into a citation.
+4. **Judge against the text.** For each directive that bears on the artifact, decide: violated, met, or not checkable from this source. Cite a directive only when its text, as written, covers the evidence. If nothing in the book covers a point, say so (rule 1).
+5. **Self-check before output.** Go through the draft and fix it until every line holds:
+   - Each cited directive: reread its title and body; they describe the evidence given. If not, re-cite or drop it.
+   - No ID is both in the findings and in Already meets. A directive met in one place and violated in another is a finding; its Evidence says where it is met.
+   - Already meets is held to the same bar as findings: concrete evidence from the source you saw that satisfies the directive as written. The absence of a visible problem is not evidence that a directive is met.
+   - Every ID exists in the book, and every title is verbatim.
+   - Every finding that rests only on a text conversion is marked.
+6. **Report** in this form unless the user asks for another:
 
 ```
-### <Short name of the problem>
-Violates: <ID>—<directive title> (<N.M Subcategory>)
-Evidence: <what is visible or written that shows it — concrete, from the artifact>
+Source: <text conversion | page source | rendered page> — <what exactly: URL, file, screenshot>
+
+| # | Finding | Directive | Severity |
+|---|---|---|---|
+| 1 | <short name of the problem> | <ID>—<directive title> | High |
+
+### 1. <Short name of the problem>
+Evidence: <what is visible or written that shows it — concrete, from the source>
 Fix: <the specific change that would satisfy the directive>
-Severity: <High | Medium | Low>, by consequence to the user (general provision 1: proportionality)
+
+### Coverage
+| Subcategory | What was checked |
+|---|---|
+| <N.M Name> | <the parts of the artifact put to its question> |
+
+### Already meets
+- <ID>—<directive title>: <the evidence that meets it>
+
+### Not checked
+- <what the source did not show, for example error states missing from a screenshot>
 ```
 
-4. Close with what already meets the directives (cite IDs) and the subcategories you checked, so the reader knows the scope of the audit. If you could not see something (for example error states not shown in a screenshot), list it as not checked instead of guessing.
+Sort the table by severity: High, then Medium, then Low, judged by consequence to the user (general provision 1: proportionality). Evidence and Fix follow in the table's order, one block per `#`. A finding that rests only on a text conversion carries `(text conversion only)` in its Finding cell and its Evidence. When the source is a text conversion, Not checked says that it may include content hidden on the page, such as closed menus and collapsed panels. List anything you could not see as not checked instead of guessing.
 
 ### Write requirements or acceptance criteria
 
