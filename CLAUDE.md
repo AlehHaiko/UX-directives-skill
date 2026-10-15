@@ -37,6 +37,8 @@ Rebuild `ux-directives.skill` so the packaged skill matches the folder:
 rm -f ux-directives.skill && zip -r -X -D ux-directives.skill ux-directives -x '*.DS_Store'
 ```
 
+**Version.** The skill's version is the line `Version X.Y.Z` directly under the first heading of `ux-directives/SKILL.md`. The build reads it and shows `(vX.Y.Z)` beside both download links on `skill.html`; without the line the build stops and writes nothing. A branch that changes anything in `ux-directives/` raises the version in that same branch: a wording edit raises the third digit (`1.1.1` → `1.1.2`), a change in how the skill behaves raises the second (`1.1.1` → `1.2.0`). Then rebuild `ux-directives.skill` and the site.
+
 ## Checks
 
 There are no automated tests. These are the checks, in the order the work rules use them.
@@ -55,14 +57,15 @@ Healthy output: `Built 73 pages: 1 home, 9 chapters, 62 subcategories, 1 skill p
 python3 tools/check_links.py --base /ux/
 ```
 
-Healthy output, two lines:
+Healthy output, three lines:
 
 ```
 pages 74, local links checked 8481, missing 0, anchors checked 2045, anchors missing 0, external skipped 456
 index links checked 617, missing 0, anchors checked 555, anchors missing 0
+skill ux-directives.skill: SKILL.md matches ux-directives/SKILL.md (10826 bytes)
 ```
 
-The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. External links are counted, never fetched; the 73 canonical links are among them. `--base /ux/` is the base `site/` is built for: without the flag the links of `404.html` are reported missing (83). For a build made with `--out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
+The first line covers every `href` and `src` in the HTML pages, the second every `url` in `assets/search-index.js`. Each miss follows as a `file -> target` line, and the exit code is 1. The third line compares `SKILL.md` inside `ux-directives.skill` with `ux-directives/SKILL.md` byte for byte; on a mismatch it names both sizes and the exit code is 1: rebuild the archive. `--skill FILE` checks another archive. The byte count changes with `SKILL.md`. External links are counted, never fetched; the 73 canonical links are among them. `--base /ux/` is the base `site/` is built for: without the flag the links of `404.html` are reported missing (83). For a build made with `--out PATH`, run `python3 tools/check_links.py PATH --base /ux/`. The counts change when the book or the templates gain or lose links; `missing` stays 0.
 
 **Local preview.** `file://` loads pages without CSS and JS, so serve the folder:
 
@@ -81,6 +84,15 @@ https://ux-directives-git-<branch>-alehhaiko-6562s-projects.vercel.app/
 Previews require being signed in to Vercel. A preview serves the site from its root, so its 404 page has no styles; that is expected. The fingerprint is the short hash of the branch's last commit (`git rev-parse --short HEAD`); report it with "Ready for check".
 
 **Release.** After the owner's go, fast-forward `main` to the branch and push. Vercel publishes `main` within a minute; the book is then at https://alehhaiko.com/ux/.
+
+**Skill release.** A merge that changes anything in `ux-directives/` ends with a tag and a GitHub release of the version in `SKILL.md`, with `ux-directives.skill` attached. On `main`, after the push, for version `X.Y.Z`:
+
+```
+git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+gh release create vX.Y.Z ux-directives.skill --title "vX.Y.Z" --notes "..."
+```
+
+The notes say what changed for someone using the skill. A merge that leaves `ux-directives/` alone gets no tag and no release.
 
 **Commits.** Use the owner's time zone: `TZ=America/Los_Angeles git commit ...`.
 
