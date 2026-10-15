@@ -72,6 +72,9 @@ ICON_EXT = '<svg class="ext" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.
 # It says so before the press: the sentence is read after the link's name and shown in the tooltip of the icon-only controls (app.js, TIP_SEL)
 NEW_TAB_SAY = "Opens in a new tab"
 NEW_TAB = f'target="_blank" aria-description="{NEW_TAB_SAY}"'
+# a link to the skill's file downloads it and keeps the tab: its mark points down, and its sentence, read and shown in the tooltip, says what the press does
+ICON_DL = '<svg class="ext dl" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2.5v7M2.75 6.25L6 9.5l3.25-3.25"/></svg>'
+DL_SAY = "Download the skill file"
 
 
 def ext_marks(html_):
@@ -81,8 +84,11 @@ def ext_marks(html_):
     # The portfolio's mark closes a list item and needs neither
     # The link opens in a new tab (NEW_TAB), so the reader keeps the place in the book; the download of the skill's file leaves the page where it is and keeps the same tab
     def mark(m):
-        a = m.group(1) if m.group(2) == SKILL_RAW else m.group(1).replace(">", f" {NEW_TAB}>", 1)
-        return f'<span class="ext-w">{a}&#8288;{ICON_EXT}</span>'
+        if m.group(2) == SKILL_RAW:
+            a, icon = m.group(1).replace(">", f' class="dl" aria-description="{DL_SAY}">', 1), ICON_DL
+        else:
+            a, icon = m.group(1).replace(">", f" {NEW_TAB}>", 1), ICON_EXT
+        return f'<span class="ext-w">{a}&#8288;{icon}</span>'
     return re.sub(r'(<a href="(https?://[^"]*)"[^>]*>.*?</a>)', mark, html_)
 
 
@@ -1591,6 +1597,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (prefers-reduced-motion:no-preference){
   @media (hover:hover){a:hover+.ext{transform:translate(1px,-1px) scale(1.2)}}
   a:focus-visible+.ext{transform:translate(1px,-1px) scale(1.2)}
+  @media (hover:hover){a:hover+.ext.dl{transform:translateY(1px) scale(1.2)}}
+  a:focus-visible+.ext.dl{transform:translateY(1px) scale(1.2)}
 }
 /* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
 .sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
@@ -2012,7 +2020,7 @@ JS = r"""
   // A click and Escape hide it, and it does not return while the pointer stays on the same control.
   // The footer's links and its consent button have it too: each keeps its word as its name, and the tooltip's text is its aria-description: where the link leads, what the button offers.
   // So do the links that open in a new tab (the text links that carry the mark, the GitHub button): their tooltip says so. A text link has none on touch: its long press is the system's link menu
-  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy,.st-dot,a[target=_blank]',TIP_DELAY=400,TIP_CHAIN=300;
+  var TIP_SEL='.menu-btn,.theme-btn,.brand,.search-x,.r-x,.cv-arr,a.cn,.chev,.foot a,.foot-b,.consent-x,.code-copy,.st-dot,a[target=_blank],a.dl',TIP_DELAY=400,TIP_CHAIN=300;
   var tip=document.createElement('div'),tipOwn=null,tipOver=null,tipT=0,tipGone=0,tipMute=false,tipPin=false,hintT=0,hintDue=false,HINT_HOLD=4000,canHover=matchMedia('(hover:hover)');
   tip.className='tip';tip.setAttribute('aria-hidden','true');document.body.appendChild(tip);
   function tipCtl(n){var el=n&&n.closest?n.closest(TIP_SEL):null;return el&&tipText(el)?el:null}

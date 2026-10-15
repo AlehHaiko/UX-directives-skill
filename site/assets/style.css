@@ -539,6 +539,8 @@ section>h2.dh.is-stuck::after{opacity:1}
 @media (prefers-reduced-motion:no-preference){
   @media (hover:hover){a:hover+.ext{transform:translate(1px,-1px) scale(1.2)}}
   a:focus-visible+.ext{transform:translate(1px,-1px) scale(1.2)}
+  @media (hover:hover){a:hover+.ext.dl{transform:translateY(1px) scale(1.2)}}
+  a:focus-visible+.ext.dl{transform:translateY(1px) scale(1.2)}
 }
 /* the skill's page (.sk). Words set as code in a line of text stand on the soft ground */
 .sk :not(pre)>code{font-size:.9em;padding:1px 4px;border-radius:4px;background:var(--bg-soft)}
