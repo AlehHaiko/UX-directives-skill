@@ -5,6 +5,8 @@ description: Apply "The Blue Book of UX Directives: A Uniform Code for Human-Cen
 
 # The Blue Book of UX Directives
 
+Version 1.1.1
+
 A doctrine of Human-Centered Systems Engineering written as a field manual: terse, absolute, command-form. Every directive has a stable ID and is meant to be met, not debated. Use it to judge designs and to state requirements, and always cite the exact directives you rely on, so the reader can look them up and the claim can be checked.
 
 ## Files

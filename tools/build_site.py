@@ -676,6 +676,18 @@ SKILL_FILE = "skill.html"
 SKILL_TITLE = "Skill for Claude"
 SKILL_DESC = "The Blue Book of UX Directives, packaged as a skill for Claude: what it does, how to install it and how to audit with it."
 SKILL_RAW = f"{REPO}/raw/main/ux-directives.skill"
+
+
+def skill_version():
+    """The skill's version: the line "Version X.Y.Z" directly under SKILL.md's first heading. Without it the build stops."""
+    text = (ROOT / "ux-directives" / "SKILL.md").read_text(encoding="utf-8")
+    m = re.search(r"^# [^\n]*\n+(?:Version (\d+\.\d+\.\d+)\n)?", text, re.M)
+    if not (m and m.group(1)):
+        sys.exit('Error: ux-directives/SKILL.md has no line "Version X.Y.Z" directly under its first heading. Nothing was written.')
+    return m.group(1)
+
+
+SKILL_VERSION = skill_version()  # shown beside both links that download the skill's file
 WCAG = "https://www.w3.org/TR/WCAG22/"
 ICON_COPY = ('<svg class="ic-cp" viewBox="0 0 20 20" aria-hidden="true"><rect x="7.25" y="7.25" width="9.5" height="9.5" rx="2"/>'
              '<path d="M4.75 12.75h-.5a1.5 1.5 0 0 1-1.5-1.5v-7a1.5 1.5 0 0 1 1.5-1.5h7a1.5 1.5 0 0 1 1.5 1.5v.5"/></svg>')
@@ -713,7 +725,7 @@ SKILL_INSTALL_1 = f"""## Install
 
 **Claude.ai:**
 
-1. Download [`ux-directives.skill`]({SKILL_RAW}) from the [GitHub repository]({REPO}). It is a zip of the `ux-directives/` folder.
+1. Download [`ux-directives.skill`]({SKILL_RAW}) (v{SKILL_VERSION}) from the [GitHub repository]({REPO}). It is a zip of the `ux-directives/` folder.
 2. In Claude, open **Settings → Skills** and upload the file.
 3. Make sure the skill is turned on.
 
@@ -776,7 +788,7 @@ SKILL_LIMITS = ("Severity is the skill's judgment, not research. Conclusions abo
                 "[Chapter 9](chapter-9-ai-mediated-interaction.html) is still forming. The measurement below is one page and four runs: a signal, not a statistic.")
 SKILL_GET = f"""## Get it
 
-[GitHub repository]({REPO}) · [Download `ux-directives.skill`]({SKILL_RAW}) · [Feedback]({REPO}/discussions) · [MIT License]({REPO}/blob/main/LICENSE)
+[GitHub repository]({REPO}) · [Download `ux-directives.skill`]({SKILL_RAW}) (v{SKILL_VERSION}) · [Feedback]({REPO}/discussions) · [MIT License]({REPO}/blob/main/LICENSE)
 """
 
 
