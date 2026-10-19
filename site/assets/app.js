@@ -363,7 +363,7 @@
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
-      skKeep('s',i);if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent};
+      skKeep('s',i);if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent.replace(/:$/,'')};
     stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(+skSt.s||0);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});

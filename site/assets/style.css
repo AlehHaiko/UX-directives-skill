@@ -618,13 +618,13 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .id-l.on{background:var(--ch-sel)}
 .id-c.on{stroke-width:2.5}
 .sch-id.has-on .id-c:not(.on){opacity:.3}
-/* scheme 2. A step: its number in a ring, its name beside it, under the name the fragment in a box on the soft ground, the file it comes from over it in small type.
+/* scheme 2. A step: its number in a ring, its name beside it in bold, closed by a colon that leads to the fragment (the status line and the rings' names leave the colon out); under the name the fragment in a box on the soft ground, the file it comes from over it in small type.
    Under the ring a line runs down to the next step's ring and ends in an arrowhead */
 .st-list{list-style:none;margin:0;padding:0}
 .st-i{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px}
 .st-num,.st-dot{display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--text);border-radius:50%;font:600 13px/1 var(--mono)}
 .st-hd{grid-column:2;min-width:0}
-.st-h{margin:0;padding:2px 0;font-weight:650;line-height:24px}.st-n{display:none}
+.st-d{margin:0;padding:2px 0;line-height:24px}.st-h{font-weight:650}.st-n{display:none}
 .st-b{grid-column:2;min-width:0;padding:6px 0 18px}.st-i:last-child .st-b{padding-bottom:0}
 .st-dn{grid-column:1;grid-row:2;position:relative;margin:4px 0}
 .st-lv,.st-la,.st-fk{fill:none;stroke:var(--text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -675,7 +675,7 @@ button.st-dot.is-cur{cursor:default}
 .sch-st.is-js .st-i{display:block}
 .sch-st.is-js .st-num,.sch-st.is-js .st-dn{display:none}
 .sch-st.is-js .st-b{padding-bottom:0}
-.sch-st.is-js .st-hd{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:6px}
+.sch-st.is-js .st-hd{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:8px}.sch-st.is-js .st-d{padding:0;line-height:inherit}
 .sch-st.is-js .st-n{display:block;flex:none;margin:0;font-size:14px}
 .sch-st.is-js .st-b{padding-top:0}
 /* a box whose content changes takes its new height over the time and on the curve of the menu's fold (.nav-ch-c: .45s, --soft); app.js sets the two heights (skGrow) */
