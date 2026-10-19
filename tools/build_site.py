@@ -1733,8 +1733,9 @@ button.st-dot.is-cur{cursor:default}
 .st-dot:not(.is-cur):not(.is-done){border-color:color-mix(in srgb,var(--text) 35%,transparent)}.st-ln:not(.is-done){opacity:.35}
 /* a finger's target: 44px round a ring of 28px */
 @media (hover:none){button.st-dot::after{content:"";position:absolute;inset:-8px}}
-/* five rings with their arrows need 204px; in a narrower figure the arrows go and the rings stand apart */
-@media (max-width:300px){.st-rail>:is(.st-ln,.st-ar){display:none}.st-rail{justify-content:space-between}}
+/* five rings with their lines need 204px; in a narrower figure (its own width, not the window's) the lines and the arrowhead go and the rings stand apart */
+.sch-st{container-type:inline-size}
+@container (max-width:203px){.st-rail>:is(.st-ln,.st-ar){display:none}.st-rail{justify-content:space-between}}
 /* the schemes' buttons are small: 13px text in a box of 28.8px (the menu's "Collapse all" is 12px in 27.2px); a finger gets 44px */
 .sch-btn{appearance:none;margin:0;padding:3px 10px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
