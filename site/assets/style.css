@@ -683,6 +683,14 @@ button.st-dot.is-cur{cursor:default}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
+/* "Step N of 5" stays where it stands while the step's words arrive; only N rolls to the new number: up going forward, down going back, on the same time and curve.
+   With reduced motion N is swapped (app.js) */
+.st-n{font-variant-numeric:tabular-nums}
+.st-nr{display:inline-block;height:1lh;overflow:hidden;vertical-align:top}
+.st-nc,.st-nc>span{display:block}
+.st-nc.up{animation:bb-st-up .35s var(--soft) forwards}.st-nc.dn{animation:bb-st-dn .35s var(--soft)}
+@keyframes bb-st-up{to{transform:translateY(-50%)}}
+@keyframes bb-st-dn{from{transform:translateY(-50%)}}
 /* scheme 3. The roles are the schemes' button in a row that wraps; the chosen one is filled with the text's colour, as the rail's shown step is.
    Under them three names in the table's small capitals, each over a box with the chosen role's answer. The names stand still: the gaps are the same for every role,
    and a box whose answer is longer or shorter takes its height as a step's card does (.sk-h) */

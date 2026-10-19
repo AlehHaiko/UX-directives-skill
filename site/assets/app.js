@@ -354,12 +354,17 @@
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
       stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stBox=stg.querySelector('.st-list');
-    var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
+    // "Step N of 5" keeps its place; N rolls from the old number to the new, up going forward and down going back. With reduced motion it is swapped
+    var stRoll=function(nr,from,to,d){nr.textContent=to;if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+      var c=document.createElement('span'),a=document.createElement('span'),b=document.createElement('span');
+      a.textContent=d>0?from:to;b.textContent=d>0?to:from;c.className='st-nc '+(d>0?'up':'dn');c.appendChild(a);c.appendChild(b);
+      nr.textContent='';nr.appendChild(c);c.addEventListener('animationend',function(){if(c.parentNode===nr)nr.textContent=to})};
+    var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0,was=stAt;stAt=i;
       // the focus on a link in the step that is being folded goes to the ring of the step shown: it stays in the figure, and the arrow keys go on working
       var lost=stI.some(function(li,j){return j!==i&&li.contains(document.activeElement)});
       var show=function(){stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')})};
       if(first)show();else skGrow(stBox,show);if(lost){tipDismiss();stD[i].focus()}
-      if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
+      if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in');stRoll(stI[i].querySelector('.st-nr'),was+1,i+1,d)}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);

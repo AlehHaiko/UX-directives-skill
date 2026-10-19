@@ -889,7 +889,7 @@ def scheme_steps(chapters):
     n = len(steps)
     items = "".join(
 f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span>'
-        f'<div class="st-hd"><p class="st-d"><strong class="st-h">{t}:</strong></p><p class="st-n" aria-hidden="true">Step {i} of {n}</p></div>'
+        f'<div class="st-hd"><p class="st-d"><strong class="st-h">{t}:</strong></p><p class="st-n" aria-hidden="true">Step <span class="st-nr">{i}</span> of {n}</p></div>'
         + (f'<span class="st-dn" aria-hidden="true">{ST_LINE_V}{ST_HEAD_D}</span>' if i < n else "") + f'<div class="st-b">{b}</div></li>'
         for i, (t, b) in enumerate(steps, 1))
     # the rail's rings are buttons to their steps, each named by its step; the name and the buttons head the figure, the status line says the step shown
@@ -1741,6 +1741,14 @@ button.st-dot.is-cur{cursor:default}
 /* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
 .st-i.in{animation:bb-st-in .35s var(--soft)}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
+/* "Step N of 5" stays where it stands while the step's words arrive; only N rolls to the new number: up going forward, down going back, on the same time and curve.
+   With reduced motion N is swapped (app.js) */
+.st-n{font-variant-numeric:tabular-nums}
+.st-nr{display:inline-block;height:1lh;overflow:hidden;vertical-align:top}
+.st-nc,.st-nc>span{display:block}
+.st-nc.up{animation:bb-st-up .35s var(--soft) forwards}.st-nc.dn{animation:bb-st-dn .35s var(--soft)}
+@keyframes bb-st-up{to{transform:translateY(-50%)}}
+@keyframes bb-st-dn{from{transform:translateY(-50%)}}
 /* scheme 3. The roles are the schemes' button in a row that wraps; the chosen one is filled with the text's colour, as the rail's shown step is.
    Under them three names in the table's small capitals, each over a box with the chosen role's answer. The names stand still: the gaps are the same for every role,
    and a box whose answer is longer or shorter takes its height as a step's card does (.sk-h) */
@@ -2282,12 +2290,17 @@ JS = r"""
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
       stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stBox=stg.querySelector('.st-list');
-    var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0;stAt=i;
+    // "Step N of 5" keeps its place; N rolls from the old number to the new, up going forward and down going back. With reduced motion it is swapped
+    var stRoll=function(nr,from,to,d){nr.textContent=to;if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+      var c=document.createElement('span'),a=document.createElement('span'),b=document.createElement('span');
+      a.textContent=d>0?from:to;b.textContent=d>0?to:from;c.className='st-nc '+(d>0?'up':'dn');c.appendChild(a);c.appendChild(b);
+      nr.textContent='';nr.appendChild(c);c.addEventListener('animationend',function(){if(c.parentNode===nr)nr.textContent=to})};
+    var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0,was=stAt;stAt=i;
       // the focus on a link in the step that is being folded goes to the ring of the step shown: it stays in the figure, and the arrow keys go on working
       var lost=stI.some(function(li,j){return j!==i&&li.contains(document.activeElement)});
       var show=function(){stI.forEach(function(li,j){if(j===i)li.removeAttribute('hidden');else li.setAttribute('hidden','until-found');li.classList.remove('in')})};
       if(first)show();else skGrow(stBox,show);if(lost){tipDismiss();stD[i].focus()}
-      if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in')}
+      if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in');stRoll(stI[i].querySelector('.st-nr'),was+1,i+1,d)}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
       stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
