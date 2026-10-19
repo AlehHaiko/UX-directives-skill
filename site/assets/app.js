@@ -352,13 +352,24 @@
   // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
   var stg=document.querySelector('.sch-st');
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
-      stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
+      stAr=stg.querySelector('.st-ar'),stR=stg.querySelector('.st-rail'),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stBox=stg.querySelector('.st-list');
     // "Step N of 5" keeps its place; N rolls from the old number to the new, up going forward and down going back. With reduced motion it is swapped
     var stRoll=function(nr,from,to,d){nr.textContent=to;if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
       var c=document.createElement('span'),a=document.createElement('span'),b=document.createElement('span');
       a.textContent=d>0?from:to;b.textContent=d>0?to:from;c.className='st-nc '+(d>0?'up':'dn');c.appendChild(a);c.appendChild(b);
       nr.textContent='';nr.appendChild(c);c.addEventListener('animationend',function(){if(c.parentNode===nr)nr.textContent=to})};
+    // the rail's one arrowhead stands at the end of the line into the step shown, its point (6.5 in its box, and the stroke's round .75) 5.25px short of the ring:
+    // the room a line leaves after the ring before it, so both ends of a line stand alike; the first step has none
+    // The line into that step stops at the arms' inner corner (is-into), so none of it shows past them
+    // Going on, it starts at the right edge of the step left, faded, and slides to the chosen one; going back, it slides from where it stands. With reduced motion it is put there
+    // A ring is measured by its list item, which does not grow: a ring under the pointer is still scaled when its click places the arrowhead
+    var stArX=function(j,out){var r=stR.getBoundingClientRect(),b=stD[j].parentNode.getBoundingClientRect();return (out?b.right-r.left:b.left-r.left-12.5)+'px'};
+    var stArGo=function(from,to){var still=from<0||matchMedia('(prefers-reduced-motion:reduce)').matches;
+      if(!still&&to>from){stAr.classList.add('is-set');stAr.classList.remove('on');stAr.style.setProperty('--ar-x',stArX(from,true));void stAr.offsetWidth;stAr.classList.remove('is-set')}
+      else if(still)stAr.classList.add('is-set');
+      stAr.style.setProperty('--ar-x',stArX(to,to===0));stAr.classList.toggle('on',to>0);
+      if(still){void stAr.offsetWidth;stAr.classList.remove('is-set')}};
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0,was=stAt;stAt=i;
       // the focus on a link in the step that is being folded goes to the ring of the step shown: it stays in the figure, and the arrow keys go on working
       var lost=stI.some(function(li,j){return j!==i&&li.contains(document.activeElement)});
@@ -366,10 +377,11 @@
       if(first)show();else skGrow(stBox,show);if(lost){tipDismiss();stD[i].focus()}
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in');stRoll(stI[i].querySelector('.st-nr'),was+1,i+1,d)}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
-      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
+      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i);l.classList.toggle('is-into',j===i-1)});stArGo(was,i);
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
       skKeep('s',i);if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent.replace(/:$/,'')};
     stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(+skSt.s||0);
+    if(window.ResizeObserver)new ResizeObserver(function(){stArGo(-1,stAt)}).observe(stR);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
     stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});

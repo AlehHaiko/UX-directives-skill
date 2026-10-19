@@ -640,8 +640,8 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-out{position:relative;margin:6px 4px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}
 .st-out strong{display:block;font-size:14px}
 .st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
-/* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by arrows.
-   A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey arrow
+/* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by lines, one arrowhead on the line into the step shown.
+   A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey line
    (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring that is not the shown step's grows on the cards' spring. Next is filled, Previous outlined;
    one with nowhere to go has a ring-ahead's grey edge and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
    The step's name and "Step N of 5" share a baseline over the fragment's card */
@@ -659,12 +659,23 @@ button.st-dot:focus-visible{border-radius:50%}
 button.st-dot.is-cur{cursor:default}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
 .st-rail>.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
-.st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px}.st-ln .st-la{position:absolute;right:5px;top:0;width:8px;height:12px}
+.st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px;overflow:visible}
+/* a line of the rail stands 6px from either ring and shows its round ends (.75), so it starts 5.25px after one ring and ends 5.25px before the next, grey or dark.
+   One arrowhead on the rail, at the end of the line into the step shown, its point as far short of the ring as the line starts after the ring before; the first step has none.
+   Chosen further on, it comes out of the step left and slides to the chosen one; chosen further back, it slides back from where it stands; on the fold's time and curve.
+   With reduced motion it is simply there (app.js) */
+.st-rail{position:relative}
+.st-ar{position:absolute;left:0;top:calc(50% - 6px);width:8px;height:12px;opacity:0;pointer-events:none;transform:translateX(var(--ar-x,0px));transition:transform .45s var(--soft),opacity .2s var(--soft)}
+.st-ar.on{opacity:1}.st-ar.is-set{transition:none}
+.st-ar .st-la{display:block;width:8px;height:12px}
+/* the line into the step shown ends where the arrowhead's arms meet inside: the arms (from 1.5,1.5 and 1.5,10.5 to 6.5,6, 1.5 wide) close at 5.38 in its box,
+   1.12 short of their point (.75 / sin 42°) and 1.87 short of their outer vertex; the line's round end (.75) reaches there: its body stops 7.87px short of the ring, 6px after the ring before, so the gap less 13.87 */
+.st-ln.is-into .st-lv{width:calc(100% - 13.87px)}
 .st-dot:not(.is-cur):not(.is-done){border-color:color-mix(in srgb,var(--text) 35%,transparent)}.st-ln:not(.is-done){opacity:.35}
 /* a finger's target: 44px round a ring of 28px */
 @media (hover:none){button.st-dot::after{content:"";position:absolute;inset:-8px}}
 /* five rings with their arrows need 204px; in a narrower figure the arrows go and the rings stand apart */
-@media (max-width:300px){.st-rail>.st-ln{display:none}.st-rail{justify-content:space-between}}
+@media (max-width:300px){.st-rail>:is(.st-ln,.st-ar){display:none}.st-rail{justify-content:space-between}}
 /* the schemes' buttons are small: 13px text in a box of 28.8px (the menu's "Collapse all" is 12px in 27.2px); a finger gets 44px */
 .sch-btn{appearance:none;margin:0;padding:3px 10px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}

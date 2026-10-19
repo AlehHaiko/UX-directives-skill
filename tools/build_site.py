@@ -893,9 +893,10 @@ f'<li class="st-i"><span class="st-num"><span class="sr">Step </span>{i}</span>'
         + (f'<span class="st-dn" aria-hidden="true">{ST_LINE_V}{ST_HEAD_D}</span>' if i < n else "") + f'<div class="st-b">{b}</div></li>'
         for i, (t, b) in enumerate(steps, 1))
     # the rail's rings are buttons to their steps, each named by its step; the name and the buttons head the figure, the status line says the step shown
-    rail = "".join((f'<li class="st-ln" aria-hidden="true">{ST_LINE_H}{ST_HEAD_R}</li>' if i > 1 else "")
+    # the rail's lines carry no heads: one arrowhead (li.st-ar, last) stands on the line into the step shown and slides between them (app.js)
+    rail = "".join((f'<li class="st-ln" aria-hidden="true">{ST_LINE_H}</li>' if i > 1 else "")
                    + f'<li><button class="st-dot" type="button" aria-label="Step {i}: {esc(re.sub("<[^>]+>", "", t))}">{i}</button></li>'
-                   for i, (t, _) in enumerate(steps, 1))
+                   for i, (t, _) in enumerate(steps, 1)) + f'<li class="st-ar" aria-hidden="true">{ST_HEAD_R}</li>'
     ctl = ('<div class="st-ctl" hidden><button class="sch-btn st-prev" type="button">Previous</button>'
            '<button class="sch-btn is-fill st-next" type="button">Next</button></div>')
     return (f'<figure class="sch sch-st" aria-labelledby="sch-st-t"><figcaption class="sch-t" id="sch-st-t">How the skill works</figcaption>{ctl}'
@@ -1698,8 +1699,8 @@ a.sch-btn,a.sch-btn:hover{text-decoration:none}
 .st-out{position:relative;margin:6px 4px 0;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.4}
 .st-out strong{display:block;font-size:14px}
 .st-out .st-la{position:absolute;left:50%;top:-10px;width:12px;height:8px;margin-left:-6px}
-/* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by arrows.
-   A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey arrow
+/* with script: the figure's head holds its name at the left and Previous and Next at the right; under it the rail, five rings in a row joined by lines, one arrowhead on the line into the step shown.
+   A ring is a button to its step: the step shown is filled with the text's colour, the steps before it keep the dark edge, what is ahead has a grey edge and a grey line
    (its number keeps the text's colour). Under the pointer and under the keyboard's focus a ring that is not the shown step's grows on the cards' spring. Next is filled, Previous outlined;
    one with nowhere to go has a ring-ahead's grey edge and takes no hover. The step's own ring and its line down are not drawn: the rail has them.
    The step's name and "Step N of 5" share a baseline over the fragment's card */
@@ -1717,12 +1718,23 @@ button.st-dot:focus-visible{border-radius:50%}
 button.st-dot.is-cur{cursor:default}
 .st-dot.is-cur{background:var(--text);color:var(--bg)}
 .st-rail>.st-ln{flex:1;position:relative;height:12px;min-width:16px;transition:opacity .2s var(--soft)}
-.st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px}.st-ln .st-la{position:absolute;right:5px;top:0;width:8px;height:12px}
+.st-ln .st-lv{position:absolute;left:6px;top:0;width:calc(100% - 12px);height:12px;overflow:visible}
+/* a line of the rail stands 6px from either ring and shows its round ends (.75), so it starts 5.25px after one ring and ends 5.25px before the next, grey or dark.
+   One arrowhead on the rail, at the end of the line into the step shown, its point as far short of the ring as the line starts after the ring before; the first step has none.
+   Chosen further on, it comes out of the step left and slides to the chosen one; chosen further back, it slides back from where it stands; on the fold's time and curve.
+   With reduced motion it is simply there (app.js) */
+.st-rail{position:relative}
+.st-ar{position:absolute;left:0;top:calc(50% - 6px);width:8px;height:12px;opacity:0;pointer-events:none;transform:translateX(var(--ar-x,0px));transition:transform .45s var(--soft),opacity .2s var(--soft)}
+.st-ar.on{opacity:1}.st-ar.is-set{transition:none}
+.st-ar .st-la{display:block;width:8px;height:12px}
+/* the line into the step shown ends where the arrowhead's arms meet inside: the arms (from 1.5,1.5 and 1.5,10.5 to 6.5,6, 1.5 wide) close at 5.38 in its box,
+   1.12 short of their point (.75 / sin 42°) and 1.87 short of their outer vertex; the line's round end (.75) reaches there: its body stops 7.87px short of the ring, 6px after the ring before, so the gap less 13.87 */
+.st-ln.is-into .st-lv{width:calc(100% - 13.87px)}
 .st-dot:not(.is-cur):not(.is-done){border-color:color-mix(in srgb,var(--text) 35%,transparent)}.st-ln:not(.is-done){opacity:.35}
 /* a finger's target: 44px round a ring of 28px */
 @media (hover:none){button.st-dot::after{content:"";position:absolute;inset:-8px}}
 /* five rings with their arrows need 204px; in a narrower figure the arrows go and the rings stand apart */
-@media (max-width:300px){.st-rail>.st-ln{display:none}.st-rail{justify-content:space-between}}
+@media (max-width:300px){.st-rail>:is(.st-ln,.st-ar){display:none}.st-rail{justify-content:space-between}}
 /* the schemes' buttons are small: 13px text in a box of 28.8px (the menu's "Collapse all" is 12px in 27.2px); a finger gets 44px */
 .sch-btn{appearance:none;margin:0;padding:3px 10px;border:1px solid var(--text);border-radius:6px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .35s var(--soft)}
 @media (hover:hover){.sch-btn:not([aria-disabled="true"]):not([aria-checked="true"]):not(.is-fill):hover{background:var(--home-hov)}}
@@ -2288,13 +2300,24 @@ JS = r"""
   // The ring of the step shown says so (aria-current); a status line that is not drawn says the step and its name after each change
   var stg=document.querySelector('.sch-st');
   if(stg){var stI=[].slice.call(stg.querySelectorAll('.st-i')),stD=[].slice.call(stg.querySelectorAll('.st-rail .st-dot')),stL=[].slice.call(stg.querySelectorAll('.st-ln')),
-      stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
+      stAr=stg.querySelector('.st-ar'),stR=stg.querySelector('.st-rail'),stP=stg.querySelector('.st-prev'),stN=stg.querySelector('.st-next'),stSay=stg.querySelector('.st-say'),stAt=-1;
     var stBox=stg.querySelector('.st-list');
     // "Step N of 5" keeps its place; N rolls from the old number to the new, up going forward and down going back. With reduced motion it is swapped
     var stRoll=function(nr,from,to,d){nr.textContent=to;if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
       var c=document.createElement('span'),a=document.createElement('span'),b=document.createElement('span');
       a.textContent=d>0?from:to;b.textContent=d>0?to:from;c.className='st-nc '+(d>0?'up':'dn');c.appendChild(a);c.appendChild(b);
       nr.textContent='';nr.appendChild(c);c.addEventListener('animationend',function(){if(c.parentNode===nr)nr.textContent=to})};
+    // the rail's one arrowhead stands at the end of the line into the step shown, its point (6.5 in its box, and the stroke's round .75) 5.25px short of the ring:
+    // the room a line leaves after the ring before it, so both ends of a line stand alike; the first step has none
+    // The line into that step stops at the arms' inner corner (is-into), so none of it shows past them
+    // Going on, it starts at the right edge of the step left, faded, and slides to the chosen one; going back, it slides from where it stands. With reduced motion it is put there
+    // A ring is measured by its list item, which does not grow: a ring under the pointer is still scaled when its click places the arrowhead
+    var stArX=function(j,out){var r=stR.getBoundingClientRect(),b=stD[j].parentNode.getBoundingClientRect();return (out?b.right-r.left:b.left-r.left-12.5)+'px'};
+    var stArGo=function(from,to){var still=from<0||matchMedia('(prefers-reduced-motion:reduce)').matches;
+      if(!still&&to>from){stAr.classList.add('is-set');stAr.classList.remove('on');stAr.style.setProperty('--ar-x',stArX(from,true));void stAr.offsetWidth;stAr.classList.remove('is-set')}
+      else if(still)stAr.classList.add('is-set');
+      stAr.style.setProperty('--ar-x',stArX(to,to===0));stAr.classList.toggle('on',to>0);
+      if(still){void stAr.offsetWidth;stAr.classList.remove('is-set')}};
     var stSet=function(i){i=Math.max(0,Math.min(stI.length-1,i));if(i===stAt)return;var d=i<stAt?-1:1,first=stAt<0,was=stAt;stAt=i;
       // the focus on a link in the step that is being folded goes to the ring of the step shown: it stays in the figure, and the arrow keys go on working
       var lost=stI.some(function(li,j){return j!==i&&li.contains(document.activeElement)});
@@ -2302,10 +2325,11 @@ JS = r"""
       if(first)show();else skGrow(stBox,show);if(lost){tipDismiss();stD[i].focus()}
       if(!first){stI[i].style.setProperty('--st-d',d);void stI[i].offsetWidth;stI[i].classList.add('in');stRoll(stI[i].querySelector('.st-nr'),was+1,i+1,d)}
       stD.forEach(function(b,j){b.classList.toggle('is-cur',j===i);b.classList.toggle('is-done',j<i);if(j===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
-      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i)});
+      stL.forEach(function(l,j){l.classList.toggle('is-done',j<i);l.classList.toggle('is-into',j===i-1)});stArGo(was,i);
       stP.setAttribute('aria-disabled',i===0);stN.setAttribute('aria-disabled',i===stI.length-1);
       skKeep('s',i);if(!first)stSay.textContent='Step '+(i+1)+' of '+stI.length+': '+stI[i].querySelector('.st-h').textContent.replace(/:$/,'')};
     stg.classList.add('is-js');stg.querySelector('.st-ctl').hidden=false;stg.querySelector('.st-rail').hidden=false;stSet(+skSt.s||0);
+    if(window.ResizeObserver)new ResizeObserver(function(){stArGo(-1,stAt)}).observe(stR);
     // find-in-page lands in a folded step: that step is shown
     stI.forEach(function(li,j){li.addEventListener('beforematch',function(){stSet(j)})});
     stD.forEach(function(b,j){b.addEventListener('click',function(){stSet(j)})});
