@@ -1750,9 +1750,12 @@ button.st-dot.is-cur{cursor:default}
 .sch-st.is-js .st-b{padding-top:0}
 /* a box whose content changes takes its new height over the time and on the curve of the menu's fold (.nav-ch-c: .45s, --soft); app.js sets the two heights (skGrow) */
 .sk-h{overflow:hidden;transition:height .45s var(--soft)}
-/* a step arrives from the side it lies on: 12px and a fade (not with reduced motion) */
-.st-i.in{animation:bb-st-in .35s var(--soft)}
+/* a step arrives from the side it lies on: its name first, 12px and a fade; its card follows .12s later, fading in as it rises 4px, on the same time and curve (the whole entry .47s).
+   A hidden step loses .in (app.js), so a press during the entry drops the old step's waiting card; reduced motion drops the delay with the animation */
+.st-i.in .st-d{animation:bb-st-in .35s var(--soft)}
+.st-i.in .st-b{animation:bb-st-rise .35s var(--soft) .12s backwards}
 @keyframes bb-st-in{from{opacity:0;transform:translateX(calc(var(--st-d,1) * 12px))}}
+@keyframes bb-st-rise{from{opacity:0;transform:translateY(4px)}}
 /* "Step N of 5" stays where it stands while the step's words arrive; only N rolls to the new number: up going forward, down going back, on the same time and curve.
    With reduced motion N is swapped (app.js) */
 .st-n{font-variant-numeric:tabular-nums}
